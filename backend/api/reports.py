@@ -77,8 +77,9 @@ async def generate_report(
     # Check if form type is supported (via schema DB or hardcoded registry)
     from backend.services.schema_registry import get_form_schema
 
+    supported_types = ("BIR_2550M", "BIR_2550Q", "BIR_1601C", "BIR_0619E")
     schema = await get_form_schema(data.report_type, db)
-    if not schema and data.report_type not in ("BIR_2550M", "BIR_2550Q"):
+    if not schema and data.report_type not in supported_types:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Report type {data.report_type} not yet supported",
@@ -149,11 +150,18 @@ async def generate_report(
             detail="Provide session_id, data_file_id with column_mappings, or manual_data",
         )
 
+    extra_kwargs: dict = {}
+    if data.report_type == "BIR_1601C":
+        extra_kwargs["compensation_data"] = data.manual_data or {}
+    elif data.report_type == "BIR_0619E":
+        extra_kwargs["ewt_data"] = data.manual_data or {}
+
     calculated = await calculate_report(
         form_type=data.report_type,
         sales_data=sales_data,
         purchases_data=purchases_data,
         db=db,
+        **extra_kwargs,
     )
     calculated["period"] = data.period
 

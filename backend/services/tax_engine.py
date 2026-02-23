@@ -69,30 +69,62 @@ SUPPORTED_FORMS = {
             "tax_credit_carried_forward",
         ],
     },
+    "BIR_1601C": {
+        "name": "Monthly Remittance Return of Income Taxes Withheld on Compensation",
+        "frequency": "monthly",
+        "fields": [
+            "line_1_total_compensation",
+            "line_2_statutory_minimum_wage",
+            "line_3_nontaxable_13th_month",
+            "line_4_nontaxable_deminimis",
+            "line_5_sss_gsis_phic_hdmf",
+            "line_6_other_nontaxable",
+            "line_7_total_nontaxable",
+            "line_8_taxable_compensation",
+            "line_9_tax_withheld",
+            "line_10_adjustment",
+            "line_11_total_tax_remitted",
+            "line_12_surcharge",
+            "line_13_interest",
+            "line_14_compromise",
+            "line_15_total_penalties",
+            "line_16_total_amount_due",
+        ],
+    },
+    "BIR_0619E": {
+        "name": "Monthly Remittance Form for Creditable Income Taxes Withheld (Expanded)",
+        "frequency": "monthly",
+        "fields": [
+            "line_1_total_amount_of_income_payments",
+            "line_2_total_taxes_withheld",
+            "line_3_adjustment",
+            "line_4_tax_still_due",
+            "line_5_surcharge",
+            "line_6_interest",
+            "line_7_compromise",
+            "line_8_total_penalties",
+            "line_9_total_amount_due",
+        ],
+    },
     "BIR_1701": {
         "name": "Annual Income Tax Return (Individual)",
         "frequency": "annual",
-        "fields": [],  # TODO: Future
+        "fields": [],  # Future phase
     },
     "BIR_1702": {
         "name": "Annual Income Tax Return (Corporate)",
         "frequency": "annual",
-        "fields": [],  # TODO: Future
+        "fields": [],  # Future phase
     },
     "BIR_2316": {
         "name": "Certificate of Compensation Payment/Tax Withheld",
         "frequency": "annual",
-        "fields": [],  # TODO: Future
-    },
-    "BIR_1601C": {
-        "name": "Monthly Remittance Return of Income Taxes Withheld",
-        "frequency": "monthly",
-        "fields": [],  # TODO: Future
+        "fields": [],  # Future phase
     },
     "SAWT": {
         "name": "Summary Alphalist of Withholding Taxes",
         "frequency": "attachment",
-        "fields": [],  # TODO: Future
+        "fields": [],  # Generated via withholding module
     },
 }
 
@@ -239,13 +271,92 @@ def calculate_bir_2550q(
     return result
 
 
+def calculate_bir_1601c(
+    compensation_data: dict[str, Any],
+) -> dict[str, Any]:
+    """Calculate BIR 1601-C (Monthly Remittance of Withholding Tax on Compensation).
+
+    Args:
+        compensation_data: Dict with keys matching 1601C fields.
+    """
+    total_comp = Decimal(str(compensation_data.get("total_compensation", 0)))
+    min_wage = Decimal(str(compensation_data.get("statutory_minimum_wage", 0)))
+    thirteenth = Decimal(str(compensation_data.get("nontaxable_13th_month", 0)))
+    deminimis = Decimal(str(compensation_data.get("nontaxable_deminimis", 0)))
+    sss_gsis = Decimal(str(compensation_data.get("sss_gsis_phic_hdmf", 0)))
+    other_nt = Decimal(str(compensation_data.get("other_nontaxable", 0)))
+    tax_withheld = Decimal(str(compensation_data.get("tax_withheld", 0)))
+    adjustment = Decimal(str(compensation_data.get("adjustment", 0)))
+    surcharge = Decimal(str(compensation_data.get("surcharge", 0)))
+    interest = Decimal(str(compensation_data.get("interest", 0)))
+    compromise = Decimal(str(compensation_data.get("compromise", 0)))
+
+    total_nontaxable = min_wage + thirteenth + deminimis + sss_gsis + other_nt
+    taxable_comp = max(total_comp - total_nontaxable, Decimal("0"))
+    total_tax_remitted = tax_withheld + adjustment
+    total_penalties = surcharge + interest + compromise
+    total_due = total_tax_remitted + total_penalties
+
+    return {
+        "line_1_total_compensation": str(total_comp),
+        "line_2_statutory_minimum_wage": str(min_wage),
+        "line_3_nontaxable_13th_month": str(thirteenth),
+        "line_4_nontaxable_deminimis": str(deminimis),
+        "line_5_sss_gsis_phic_hdmf": str(sss_gsis),
+        "line_6_other_nontaxable": str(other_nt),
+        "line_7_total_nontaxable": str(total_nontaxable),
+        "line_8_taxable_compensation": str(taxable_comp),
+        "line_9_tax_withheld": str(tax_withheld),
+        "line_10_adjustment": str(adjustment),
+        "line_11_total_tax_remitted": str(total_tax_remitted),
+        "line_12_surcharge": str(surcharge),
+        "line_13_interest": str(interest),
+        "line_14_compromise": str(compromise),
+        "line_15_total_penalties": str(total_penalties),
+        "line_16_total_amount_due": str(total_due),
+    }
+
+
+def calculate_bir_0619e(
+    ewt_data: dict[str, Any],
+) -> dict[str, Any]:
+    """Calculate BIR 0619-E (Monthly Remittance of Expanded Withholding Tax).
+
+    Args:
+        ewt_data: Dict with keys matching 0619-E fields.
+    """
+    total_income = Decimal(str(ewt_data.get("total_income_payments", 0)))
+    total_withheld = Decimal(str(ewt_data.get("total_taxes_withheld", 0)))
+    adjustment = Decimal(str(ewt_data.get("adjustment", 0)))
+    surcharge = Decimal(str(ewt_data.get("surcharge", 0)))
+    interest = Decimal(str(ewt_data.get("interest", 0)))
+    compromise = Decimal(str(ewt_data.get("compromise", 0)))
+
+    tax_still_due = max(total_withheld - adjustment, Decimal("0"))
+    total_penalties = surcharge + interest + compromise
+    total_due = tax_still_due + total_penalties
+
+    return {
+        "line_1_total_amount_of_income_payments": str(total_income),
+        "line_2_total_taxes_withheld": str(total_withheld),
+        "line_3_adjustment": str(adjustment),
+        "line_4_tax_still_due": str(tax_still_due),
+        "line_5_surcharge": str(surcharge),
+        "line_6_interest": str(interest),
+        "line_7_compromise": str(compromise),
+        "line_8_total_penalties": str(total_penalties),
+        "line_9_total_amount_due": str(total_due),
+    }
+
+
 async def calculate_report(
     form_type: str,
-    sales_data: list[dict],
-    purchases_data: list[dict],
+    sales_data: list[dict] | None = None,
+    purchases_data: list[dict] | None = None,
     db: Any = None,
     tax_credits: Decimal | str | None = None,
     penalties: Decimal | str | None = None,
+    **kwargs: Any,
 ) -> dict[str, Any]:
     """Generic entry point: try schema from DB first, fallback to hardcoded.
 
@@ -269,7 +380,7 @@ async def calculate_report(
             if schema:
                 # Aggregate raw data into base fields
                 base_fields = _aggregate_base_fields(
-                    form_type, sales_data, purchases_data, tax_credits, penalties
+                    form_type, sales_data or [], purchases_data or [], tax_credits, penalties
                 )
                 # Evaluate formulas from schema
                 return evaluate_formulas(schema, base_fields)
@@ -281,6 +392,10 @@ async def calculate_report(
         return calculate_bir_2550m(sales_data, purchases_data, tax_credits, penalties)
     if form_type == "BIR_2550Q":
         return calculate_bir_2550q(sales_data, purchases_data, tax_credits, penalties)
+    if form_type == "BIR_1601C":
+        return calculate_bir_1601c(kwargs.get("compensation_data", {}))
+    if form_type == "BIR_0619E":
+        return calculate_bir_0619e(kwargs.get("ewt_data", {}))
 
     raise ValueError(f"No calculator available for {form_type}")
 

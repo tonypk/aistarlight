@@ -118,6 +118,52 @@ def recalculate_bir_2550m(data: dict[str, str]) -> dict[str, str]:
     return result
 
 
+def recalculate_bir_1601c(data: dict[str, str]) -> dict[str, str]:
+    """Recalculate BIR 1601-C computed fields."""
+    result = dict(data)
+
+    result["line_7_total_nontaxable"] = str(
+        _d(result.get("line_2_statutory_minimum_wage"))
+        + _d(result.get("line_3_nontaxable_13th_month"))
+        + _d(result.get("line_4_nontaxable_deminimis"))
+        + _d(result.get("line_5_sss_gsis_phic_hdmf"))
+        + _d(result.get("line_6_other_nontaxable"))
+    )
+    result["line_8_taxable_compensation"] = str(
+        max(_d(result.get("line_1_total_compensation")) - _d(result["line_7_total_nontaxable"]), Decimal("0"))
+    )
+    result["line_11_total_tax_remitted"] = str(
+        _d(result.get("line_9_tax_withheld")) + _d(result.get("line_10_adjustment"))
+    )
+    result["line_15_total_penalties"] = str(
+        _d(result.get("line_12_surcharge"))
+        + _d(result.get("line_13_interest"))
+        + _d(result.get("line_14_compromise"))
+    )
+    result["line_16_total_amount_due"] = str(
+        _d(result["line_11_total_tax_remitted"]) + _d(result["line_15_total_penalties"])
+    )
+    return result
+
+
+def recalculate_bir_0619e(data: dict[str, str]) -> dict[str, str]:
+    """Recalculate BIR 0619-E computed fields."""
+    result = dict(data)
+
+    result["line_4_tax_still_due"] = str(
+        max(_d(result.get("line_2_total_taxes_withheld")) - _d(result.get("line_3_adjustment")), Decimal("0"))
+    )
+    result["line_8_total_penalties"] = str(
+        _d(result.get("line_5_surcharge"))
+        + _d(result.get("line_6_interest"))
+        + _d(result.get("line_7_compromise"))
+    )
+    result["line_9_total_amount_due"] = str(
+        _d(result["line_4_tax_still_due"]) + _d(result["line_8_total_penalties"])
+    )
+    return result
+
+
 class VersionConflictError(Exception):
     """Raised when optimistic lock version does not match."""
 
@@ -181,6 +227,10 @@ async def apply_field_overrides(
     # Recalculate dependent fields if requested
     if recalculate and report.report_type in ("BIR_2550M", "BIR_2550Q"):
         current_data = recalculate_bir_2550m(current_data)
+    elif recalculate and report.report_type == "BIR_1601C":
+        current_data = recalculate_bir_1601c(current_data)
+    elif recalculate and report.report_type == "BIR_0619E":
+        current_data = recalculate_bir_0619e(current_data)
 
     # Preserve period
     current_data["period"] = report.period
