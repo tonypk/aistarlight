@@ -1,8 +1,7 @@
 """Pydantic schemas for reconciliation endpoints."""
 
-from __future__ import annotations
-
-from datetime import date, datetime
+from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -80,7 +79,7 @@ class TransactionResponse(BaseModel):
     source_type: str
     source_file_id: str
     row_index: int
-    date: date | None = None
+    date: Optional[str] = None
     description: str | None = None
     amount: float
     vat_amount: float = 0
