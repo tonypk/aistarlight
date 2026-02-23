@@ -1,15 +1,19 @@
+import os
+import pathlib
 import uuid
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.config import settings
 from backend.deps import get_current_tenant, get_current_user, get_session
 from backend.models.tenant import Tenant, User
 from backend.repositories.report import ReportRepository
 from backend.schemas.common import ok
 from backend.schemas.report import ReportGenerateRequest
+from backend.services.data_processor import apply_column_mapping, extract_full_data
 from backend.services.report_generator import generate_pdf_report
 from backend.services.tax_engine import calculate_bir_2550m, get_supported_forms
 
@@ -22,6 +26,27 @@ async def list_supported_forms():
     return ok(get_supported_forms())
 
 
+def _find_uploaded_file(file_id: str) -> tuple[str, str]:
+    """Find an uploaded file by ID, returns (filepath, filename)."""
+    # Validate file_id is a safe UUID-like string
+    if not file_id.replace("-", "").isalnum():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file ID")
+
+    upload_root = pathlib.Path(settings.upload_dir).resolve()
+    for ext in ("csv", "xlsx", "xls"):
+        filepath = (upload_root / f"{file_id}.{ext}").resolve()
+        # Ensure path is still inside upload directory
+        if not str(filepath).startswith(str(upload_root)):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file ID")
+        if filepath.exists():
+            return str(filepath), f"{file_id}.{ext}"
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Uploaded file {file_id} not found",
+    )
+
+
 @router.post("/generate")
 async def generate_report(
     data: ReportGenerateRequest,
@@ -30,22 +55,43 @@ async def generate_report(
     db: AsyncSession = Depends(get_session),
 ):
     """Generate a BIR tax report."""
-    if data.report_type == "BIR_2550M":
-        if not data.manual_data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Provide manual_data with sales_data and purchases_data",
-            )
-        calculated = calculate_bir_2550m(
-            sales_data=data.manual_data.get("sales_data", []),
-            purchases_data=data.manual_data.get("purchases_data", []),
-        )
-    else:
+    if data.report_type != "BIR_2550M":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Report type {data.report_type} not yet supported",
         )
 
+    input_data = {}
+
+    if data.data_file_id and data.column_mappings:
+        # File-based flow: read file → apply mapping → calculate
+        filepath, filename = _find_uploaded_file(data.data_file_id)
+        with open(filepath, "rb") as f:
+            file_content = f.read()
+
+        rows = extract_full_data(file_content, filename)
+        sales_data, purchases_data = apply_column_mapping(rows, data.column_mappings)
+        input_data = {
+            "data_file_id": data.data_file_id,
+            "column_mappings": data.column_mappings,
+            "sales_count": len(sales_data),
+            "purchases_count": len(purchases_data),
+        }
+    elif data.manual_data:
+        # Manual data flow
+        sales_data = data.manual_data.get("sales_data", [])
+        purchases_data = data.manual_data.get("purchases_data", [])
+        input_data = data.manual_data
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Provide data_file_id with column_mappings, or manual_data",
+        )
+
+    calculated = calculate_bir_2550m(
+        sales_data=sales_data,
+        purchases_data=purchases_data,
+    )
     calculated["period"] = data.period
 
     tenant_info = {
@@ -61,7 +107,7 @@ async def generate_report(
         report_type=data.report_type,
         period=data.period,
         status="draft",
-        input_data=data.manual_data,
+        input_data=input_data,
         calculated_data=calculated,
         file_path=file_path,
     )
@@ -77,8 +123,8 @@ async def generate_report(
 
 @router.get("")
 async def list_reports(
-    page: int = 1,
-    limit: int = 20,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=100),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):

@@ -5,6 +5,7 @@ class ReportGenerateRequest(BaseModel):
     report_type: str = "BIR_2550M"
     period: str  # e.g. "2026-01"
     data_file_id: str | None = None
+    column_mappings: dict[str, str] | None = None  # {source_col: target_field}
     manual_data: dict | None = None
 
 

@@ -71,3 +71,62 @@ def extract_full_data(file_content: bytes, filename: str, sheet_name: str = "She
         df = pd.read_csv(io.BytesIO(file_content))
     df = _clean_dataframe(df)
     return df.to_dict(orient="records")
+
+
+def apply_column_mapping(
+    rows: list[dict],
+    column_mappings: dict[str, str],
+) -> tuple[list[dict], list[dict]]:
+    """Apply column mappings to raw data rows, separating into sales and purchases.
+
+    column_mappings: {source_column: target_field}
+    target fields: date, description, amount, vat_amount, vat_type, category, tin, _skip
+
+    Returns (sales_data, purchases_data).
+    Sales: rows where category is not in ('goods', 'services', 'capital') or no category.
+    Purchases: rows where category is in ('goods', 'services', 'capital').
+    """
+    # Build reverse mapping: target_field -> source_column
+    reverse_map = {target: source for source, target in column_mappings.items() if target != "_skip"}
+
+    mapped_rows = []
+    for row in rows:
+        mapped = {}
+        for target_field, source_col in reverse_map.items():
+            mapped[target_field] = row.get(source_col)
+        mapped_rows.append(mapped)
+
+    sales_data = []
+    purchases_data = []
+    purchase_categories = {"goods", "services", "capital"}
+
+    for row in mapped_rows:
+        category = str(row.get("category", "")).lower().strip()
+        amount_raw = row.get("amount")
+        try:
+            amount = float(str(amount_raw)) if amount_raw is not None else 0.0
+        except (ValueError, TypeError):
+            amount = 0.0
+
+        vat_amount_raw = row.get("vat_amount")
+        try:
+            vat_amount = float(str(vat_amount_raw)) if vat_amount_raw is not None else 0.0
+        except (ValueError, TypeError):
+            vat_amount = 0.0
+
+        entry = {
+            "date": row.get("date"),
+            "description": row.get("description"),
+            "amount": amount,
+            "vat_amount": vat_amount,
+            "vat_type": row.get("vat_type", "vatable"),
+            "category": category if category in purchase_categories else "goods",
+            "tin": row.get("tin"),
+        }
+
+        if category in purchase_categories:
+            purchases_data.append(entry)
+        else:
+            sales_data.append(entry)
+
+    return sales_data, purchases_data

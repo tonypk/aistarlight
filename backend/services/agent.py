@@ -1,7 +1,10 @@
 """LLM Agent orchestration: routes user requests to appropriate services."""
 
 import json
+import uuid
 from typing import Any
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.llm import chat_completion_with_tools
 
@@ -19,8 +22,8 @@ Currently supported BIR forms:
 - BIR 2550Q, 1701, 1702, 2316, 1601C, SAWT - planned
 
 When the user asks to generate a report, use the generate_report tool.
-When the user asks about tax rules, answer from your knowledge.
-When the user uploads data, guide them through the mapping process.
+When the user asks about tax rules, use the lookup_tax_rule tool.
+When the user asks about their settings or preferences, use the get_user_preferences tool.
 
 Always respond in a professional but friendly manner.
 Use the language the user writes in (English or Filipino).
@@ -80,12 +83,133 @@ AGENT_TOOLS = [
 ]
 
 
+async def execute_tool(
+    tool_name: str,
+    tool_input: dict,
+    tenant_id: uuid.UUID,
+    db: AsyncSession,
+) -> str:
+    """Execute a tool call and return the result as a string."""
+    if tool_name == "generate_report":
+        return await _execute_generate_report(tool_input, tenant_id, db)
+    elif tool_name == "lookup_tax_rule":
+        return await _execute_lookup_tax_rule(tool_input, db)
+    elif tool_name == "get_user_preferences":
+        return await _execute_get_preferences(tool_input, tenant_id, db)
+    else:
+        return json.dumps({"error": f"Unknown tool: {tool_name}"})
+
+
+async def _execute_generate_report(
+    tool_input: dict,
+    tenant_id: uuid.UUID,
+    db: AsyncSession,
+) -> str:
+    """Generate a report via the tax engine."""
+    from backend.models.tenant import Tenant
+    from backend.repositories.report import ReportRepository
+    from backend.services.report_generator import generate_pdf_report
+    from backend.services.tax_engine import calculate_bir_2550m
+
+    report_type = tool_input.get("report_type", "BIR_2550M")
+    period = tool_input.get("period", "")
+
+    if report_type != "BIR_2550M":
+        return json.dumps({"error": f"Report type {report_type} not yet supported"})
+
+    # Generate with empty data as a template (user will fill real data via upload flow)
+    calculated = calculate_bir_2550m(sales_data=[], purchases_data=[])
+    calculated["period"] = period
+
+    # Get tenant info
+    from sqlalchemy import select
+    result = await db.execute(select(Tenant).where(Tenant.id == tenant_id))
+    tenant = result.scalar_one_or_none()
+
+    tenant_info = {
+        "company_name": tenant.company_name if tenant else "",
+        "tin_number": tenant.tin_number if tenant else "",
+        "rdo_code": tenant.rdo_code if tenant else "",
+    }
+
+    file_path = generate_pdf_report(report_type, calculated, tenant_info)
+
+    repo = ReportRepository(db)
+    report = await repo.create(
+        tenant_id=tenant_id,
+        report_type=report_type,
+        period=period,
+        status="draft",
+        input_data={"source": "chat_agent"},
+        calculated_data=calculated,
+        file_path=file_path,
+    )
+
+    return json.dumps({
+        "report_id": str(report.id),
+        "report_type": report_type,
+        "period": period,
+        "status": "draft",
+        "message": f"Report generated for {period}. You can view and download it in the Reports page.",
+    })
+
+
+async def _execute_lookup_tax_rule(
+    tool_input: dict,
+    db: AsyncSession,
+) -> str:
+    """Look up tax rules from knowledge base."""
+    from backend.services.knowledge_retriever import retrieve_relevant_knowledge
+
+    query = tool_input.get("query", "")
+    category = tool_input.get("category")
+
+    chunks = await retrieve_relevant_knowledge(query, category=category, db=db, limit=3)
+
+    if not chunks:
+        return json.dumps({
+            "answer": "No specific regulation found in our knowledge base for this query. "
+            "Please consult the BIR website (www.bir.gov.ph) for the latest regulations.",
+            "sources": [],
+        })
+
+    return json.dumps({
+        "answer": "\n\n".join(c["content"] for c in chunks),
+        "sources": [c["source"] for c in chunks if c.get("source")],
+    })
+
+
+async def _execute_get_preferences(
+    tool_input: dict,
+    tenant_id: uuid.UUID,
+    db: AsyncSession,
+) -> str:
+    """Get user preferences for a report type."""
+    from backend.services.memory_manager import get_preference
+
+    report_type = tool_input.get("report_type", "BIR_2550M")
+    pref = await get_preference(tenant_id, report_type, db)
+
+    if not pref:
+        return json.dumps({"message": f"No saved preferences for {report_type}"})
+
+    return json.dumps({
+        "report_type": pref["report_type"],
+        "column_mappings": pref["column_mappings"],
+        "format_rules": pref["format_rules"],
+    })
+
+
 async def process_message(
     user_message: str,
     conversation_history: list[dict],
     tenant_context: dict[str, Any],
+    db: AsyncSession | None = None,
 ) -> dict[str, Any]:
-    """Process a user message through the agent, returning response and any tool calls."""
+    """Process a user message through the agent, executing any tool calls.
+
+    Returns response dict with 'response' and 'tool_calls' keys.
+    """
     messages = [*conversation_history, {"role": "user", "content": user_message}]
 
     response = await chat_completion_with_tools(
@@ -94,24 +218,63 @@ async def process_message(
         system=AGENT_SYSTEM_PROMPT,
     )
 
-    # Parse OpenAI response
-    tool_calls = []
-    text_response = ""
     choice = response.choices[0]
+    tool_calls_executed = []
 
-    if choice.message.content:
-        text_response = choice.message.content
+    # If the model wants to call tools, execute them and make a follow-up call
+    if choice.finish_reason == "tool_calls" and choice.message.tool_calls:
+        # Serialize the assistant message with tool calls into a plain dict
+        assistant_message = {
+            "role": "assistant",
+            "content": choice.message.content,
+            "tool_calls": [
+                {
+                    "id": tc.id,
+                    "type": "function",
+                    "function": {"name": tc.function.name, "arguments": tc.function.arguments},
+                }
+                for tc in choice.message.tool_calls
+            ],
+        }
+        follow_up_messages = [*messages, assistant_message]
 
-    if choice.message.tool_calls:
         for tc in choice.message.tool_calls:
-            tool_calls.append({
-                "tool_name": tc.function.name,
-                "tool_input": json.loads(tc.function.arguments),
+            tool_name = tc.function.name
+            tool_input = json.loads(tc.function.arguments)
+
+            # Execute the tool
+            if db is not None:
+                tenant_id = uuid.UUID(tenant_context.get("tenant_id", ""))
+                tool_result = await execute_tool(tool_name, tool_input, tenant_id, db)
+            else:
+                tool_result = json.dumps({"error": "Database session not available"})
+
+            tool_calls_executed.append({
+                "tool_name": tool_name,
+                "tool_input": tool_input,
                 "tool_id": tc.id,
+                "result": tool_result,
             })
+
+            # Add tool result message
+            follow_up_messages.append({
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": tool_result,
+            })
+
+        # Make follow-up LLM call with tool results
+        follow_up_response = await chat_completion_with_tools(
+            messages=follow_up_messages,
+            tools=AGENT_TOOLS,
+            system=AGENT_SYSTEM_PROMPT,
+        )
+        text_response = follow_up_response.choices[0].message.content or ""
+    else:
+        text_response = choice.message.content or ""
 
     return {
         "response": text_response,
-        "tool_calls": tool_calls,
+        "tool_calls": tool_calls_executed,
         "stop_reason": choice.finish_reason,
     }

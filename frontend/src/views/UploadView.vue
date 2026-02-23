@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { client } from '../api/client'
+import { useRouter } from 'vue-router'
+import { dataApi } from '../api/data'
 import FileUploader from '../components/upload/FileUploader.vue'
+import { useUploadStore } from '../stores/upload'
 
-interface SheetData {
-  columns: string[]
-  row_count: number
-  preview: Record<string, unknown>[]
-}
-
-const preview = ref<Record<string, SheetData> | null>(null)
+const router = useRouter()
+const uploadStore = useUploadStore()
 const uploading = ref(false)
 const error = ref('')
 
@@ -17,18 +14,18 @@ async function handleFileUploaded(file: File) {
   uploading.value = true
   error.value = ''
   try {
-    const formData = new FormData()
-    formData.append('file', file)
-    const res = await client.post('/data/preview', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-    preview.value = res.data.data.sheets
+    const res = await dataApi.upload(file)
+    uploadStore.setUploadResult(res.data.data)
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } }
-    error.value = err.response?.data?.error || 'Failed to parse file'
+    error.value = err.response?.data?.error || 'Failed to upload file'
   } finally {
     uploading.value = false
   }
+}
+
+function proceedToMapping() {
+  router.push('/mapping')
 }
 </script>
 
@@ -39,11 +36,15 @@ async function handleFileUploaded(file: File) {
 
     <FileUploader @uploaded="handleFileUploaded" />
 
-    <div v-if="uploading" class="loading">Parsing file...</div>
+    <div v-if="uploading" class="loading">Uploading and parsing file...</div>
     <p v-if="error" class="error">{{ error }}</p>
 
-    <div v-if="preview" class="preview-section">
-      <div v-for="(sheet, name) in preview" :key="name" class="sheet">
+    <div v-if="uploadStore.hasFile" class="preview-section">
+      <div class="file-info">
+        Uploaded: <strong>{{ uploadStore.filename }}</strong>
+      </div>
+
+      <div v-for="(sheet, name) in uploadStore.sheets" :key="name" class="sheet">
         <h3>Sheet: {{ name }} ({{ sheet.row_count }} rows)</h3>
         <div class="table-wrap">
           <table>
@@ -53,14 +54,17 @@ async function handleFileUploaded(file: File) {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(row, i) in sheet.preview" :key="i">
+              <tr v-for="(row, i) in sheet.preview.slice(0, 5)" :key="i">
                 <td v-for="col in sheet.columns" :key="col">{{ row[col] ?? '' }}</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <router-link to="/mapping" class="proceed-btn">Proceed to Mapping</router-link>
       </div>
+
+      <button class="proceed-btn" @click="proceedToMapping">
+        Proceed to Column Mapping
+      </button>
     </div>
   </div>
 </template>
@@ -71,6 +75,14 @@ async function handleFileUploaded(file: File) {
 .loading { text-align: center; padding: 24px; color: #4f46e5; }
 .error { color: #ef4444; margin-top: 12px; }
 .preview-section { margin-top: 24px; }
+.file-info {
+  padding: 12px 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  color: #166534;
+}
 .sheet {
   background: #fff;
   padding: 24px;
@@ -86,10 +98,14 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
 .proceed-btn {
   display: inline-block;
   margin-top: 16px;
-  padding: 10px 24px;
+  padding: 12px 28px;
   background: #4f46e5;
   color: #fff;
+  border: none;
   border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
   text-decoration: none;
 }
+.proceed-btn:hover { background: #4338ca; }
 </style>

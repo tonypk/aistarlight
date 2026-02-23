@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
 import ChatMessage from '../components/chat/ChatMessage.vue'
 import { useChatStore } from '../stores/chat'
 
@@ -7,15 +7,25 @@ const chat = useChatStore()
 const input = ref('')
 const messagesEl = ref<HTMLElement | null>(null)
 
+onMounted(async () => {
+  await chat.loadHistory()
+  await nextTick()
+  scrollToBottom()
+})
+
+function scrollToBottom() {
+  if (messagesEl.value) {
+    messagesEl.value.scrollTop = messagesEl.value.scrollHeight
+  }
+}
+
 async function handleSend() {
   const msg = input.value.trim()
   if (!msg) return
   input.value = ''
   await chat.sendMessage(msg)
   await nextTick()
-  if (messagesEl.value) {
-    messagesEl.value.scrollTop = messagesEl.value.scrollHeight
-  }
+  scrollToBottom()
 }
 </script>
 

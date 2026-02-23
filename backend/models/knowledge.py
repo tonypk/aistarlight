@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, Index, String, Text, func
+from sqlalchemy import DateTime, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -22,6 +22,6 @@ class KnowledgeChunk(Base, UUIDMixin):
         server_default=func.now(),
     )
 
-    __table_args__ = (
-        Index("ix_knowledge_chunks_embedding", embedding, postgresql_using="ivfflat"),
-    )
+    # Note: hnsw index will be created via migration when data exists
+    # ivfflat requires data to build, hnsw does not but is expensive on empty table
+    __table_args__: tuple = ()

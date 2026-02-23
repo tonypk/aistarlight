@@ -3,6 +3,8 @@ import { client } from './client'
 export interface ReportGenerateData {
   report_type: string
   period: string
+  data_file_id?: string
+  column_mappings?: Record<string, string>
   manual_data?: Record<string, unknown>
 }
 

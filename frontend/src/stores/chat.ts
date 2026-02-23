@@ -10,6 +10,24 @@ interface Message {
 export const useChatStore = defineStore('chat', () => {
   const messages = ref<Message[]>([])
   const loading = ref(false)
+  const historyLoaded = ref(false)
+
+  async function loadHistory() {
+    if (historyLoaded.value) return
+    try {
+      const res = await chatApi.history(1, 50)
+      const data = res.data.data
+      if (Array.isArray(data) && data.length > 0) {
+        messages.value = data.map((m: { role: string; content: string }) => ({
+          role: m.role as 'user' | 'assistant',
+          content: m.content,
+        }))
+      }
+      historyLoaded.value = true
+    } catch {
+      // Silently fail — empty history is fine
+    }
+  }
 
   async function sendMessage(content: string) {
     messages.value = [...messages.value, { role: 'user', content }]
@@ -30,7 +48,8 @@ export const useChatStore = defineStore('chat', () => {
 
   function clearMessages() {
     messages.value = []
+    historyLoaded.value = false
   }
 
-  return { messages, loading, sendMessage, clearMessages }
+  return { messages, loading, historyLoaded, loadHistory, sendMessage, clearMessages }
 })

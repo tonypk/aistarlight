@@ -1,4 +1,5 @@
 from openai import AsyncOpenAI
+from openai.types.chat import ChatCompletion
 
 from backend.config import settings
 
@@ -38,7 +39,7 @@ async def chat_completion_with_tools(
     system: str = "",
     model: str = "",
     max_tokens: int = 4096,
-) -> dict:
+) -> ChatCompletion:
     """Send a chat completion with tool use."""
     client = get_client()
     model = model or settings.openai_model
