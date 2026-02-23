@@ -47,6 +47,16 @@ onMounted(async () => {
         <h3>AI Assistant</h3>
         <p>Ask tax questions</p>
       </router-link>
+      <router-link to="/knowledge" class="card">
+        <span class="card-icon">📚</span>
+        <h3>Knowledge Base</h3>
+        <p>Tax rules & regulations</p>
+      </router-link>
+      <router-link to="/memory" class="card">
+        <span class="card-icon">🧠</span>
+        <h3>AI Memory</h3>
+        <p>Preferences & corrections</p>
+      </router-link>
       <router-link to="/settings" class="card">
         <span class="card-icon">⚙️</span>
         <h3>Settings</h3>

@@ -105,52 +105,39 @@ async def _execute_generate_report(
     tenant_id: uuid.UUID,
     db: AsyncSession,
 ) -> str:
-    """Generate a report via the tax engine."""
-    from backend.models.tenant import Tenant
-    from backend.repositories.report import ReportRepository
-    from backend.services.report_generator import generate_pdf_report
-    from backend.services.tax_engine import calculate_bir_2550m
-
+    """Guide user to the upload flow for report generation."""
     report_type = tool_input.get("report_type", "BIR_2550M")
     period = tool_input.get("period", "")
 
     if report_type != "BIR_2550M":
         return json.dumps({"error": f"Report type {report_type} not yet supported"})
 
-    # Generate with empty data as a template (user will fill real data via upload flow)
-    calculated = calculate_bir_2550m(sales_data=[], purchases_data=[])
-    calculated["period"] = period
-
-    # Get tenant info
-    from sqlalchemy import select
-    result = await db.execute(select(Tenant).where(Tenant.id == tenant_id))
-    tenant = result.scalar_one_or_none()
-
-    tenant_info = {
-        "company_name": tenant.company_name if tenant else "",
-        "tin_number": tenant.tin_number if tenant else "",
-        "rdo_code": tenant.rdo_code if tenant else "",
-    }
-
-    file_path = generate_pdf_report(report_type, calculated, tenant_info)
+    # Check if user has existing reports for this period
+    from backend.repositories.report import ReportRepository
 
     repo = ReportRepository(db)
-    report = await repo.create(
-        tenant_id=tenant_id,
-        report_type=report_type,
-        period=period,
-        status="draft",
-        input_data={"source": "chat_agent"},
-        calculated_data=calculated,
-        file_path=file_path,
-    )
+    existing = await repo.find_by_tenant(tenant_id, offset=0, limit=100)
+    matching = [r for r in existing if r.period == period and r.report_type == report_type]
+
+    if matching:
+        report = matching[0]
+        return json.dumps({
+            "existing_report_id": str(report.id),
+            "status": report.status,
+            "message": f"You already have a {report_type} report for {period} (status: {report.status}). "
+            "You can view it in the Reports page. To create a new one, go to Upload Data → Column Mapping → Generate Report.",
+        })
 
     return json.dumps({
-        "report_id": str(report.id),
+        "action": "guide_to_upload",
         "report_type": report_type,
         "period": period,
-        "status": "draft",
-        "message": f"Report generated for {period}. You can view and download it in the Reports page.",
+        "message": f"To generate a {report_type} report for {period}, please follow these steps:\n"
+        "1. Go to **Upload Data** and upload your sales/purchase CSV or Excel file\n"
+        "2. The system will auto-detect your columns and suggest mappings\n"
+        "3. Confirm the column mappings\n"
+        "4. Select the period and generate the report\n\n"
+        "This ensures your report has accurate data from your actual records.",
     })
 
 

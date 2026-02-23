@@ -62,11 +62,18 @@ def _clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def extract_full_data(file_content: bytes, filename: str, sheet_name: str = "Sheet1") -> list[dict]:
-    """Extract all rows from a specific sheet as a list of dicts."""
+def extract_full_data(file_content: bytes, filename: str, sheet_name: str | None = None) -> list[dict]:
+    """Extract all rows from a specific sheet as a list of dicts.
+
+    If sheet_name is None, reads the first sheet for Excel files.
+    """
     ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
     if ext in ("xlsx", "xls"):
-        df = pd.read_excel(io.BytesIO(file_content), sheet_name=sheet_name)
+        if sheet_name:
+            df = pd.read_excel(io.BytesIO(file_content), sheet_name=sheet_name)
+        else:
+            # Read the first sheet (index 0)
+            df = pd.read_excel(io.BytesIO(file_content), sheet_name=0)
     else:
         df = pd.read_csv(io.BytesIO(file_content))
     df = _clean_dataframe(df)

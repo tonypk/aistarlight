@@ -69,7 +69,7 @@ async def generate_report(
         with open(filepath, "rb") as f:
             file_content = f.read()
 
-        rows = extract_full_data(file_content, filename)
+        rows = extract_full_data(file_content, filename, sheet_name=data.sheet_name)
         sales_data, purchases_data = apply_column_mapping(rows, data.column_mappings)
         input_data = {
             "data_file_id": data.data_file_id,
