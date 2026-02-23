@@ -75,7 +75,11 @@ function handleLogout() {
 nav {
   flex: 1;
   padding: 12px 0;
+  overflow-y: auto;
 }
+nav::-webkit-scrollbar { width: 4px; }
+nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+nav::-webkit-scrollbar-track { background: transparent; }
 .nav-item {
   display: flex;
   align-items: center;
