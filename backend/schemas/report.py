@@ -10,6 +10,18 @@ class ReportGenerateRequest(BaseModel):
     manual_data: dict | None = None
 
 
+class ReportEditRequest(BaseModel):
+    field_overrides: dict[str, str]
+    recalculate: bool = True
+    notes: str | None = None
+    version: int  # optimistic lock — must match current report version
+
+
+class ReportTransitionRequest(BaseModel):
+    target_status: str
+    comment: str | None = None
+
+
 class ReportResponse(BaseModel):
     id: str
     report_type: str
@@ -18,6 +30,10 @@ class ReportResponse(BaseModel):
     calculated_data: dict | None
     created_at: str
     confirmed_at: str | None
+    version: int = 1
+    overrides: dict | None = None
+    original_calculated_data: dict | None = None
+    notes: str | None = None
 
     model_config = {"from_attributes": True}
 

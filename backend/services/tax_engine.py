@@ -203,6 +203,108 @@ def calculate_bir_2550m(
     }
 
 
+async def calculate_report(
+    form_type: str,
+    sales_data: list[dict],
+    purchases_data: list[dict],
+    db: Any = None,
+    tax_credits: Decimal | str | None = None,
+    penalties: Decimal | str | None = None,
+) -> dict[str, Any]:
+    """Generic entry point: try schema from DB first, fallback to hardcoded.
+
+    Args:
+        form_type: BIR form type (e.g. "BIR_2550M").
+        sales_data: List of sales records.
+        purchases_data: List of purchase records.
+        db: Optional AsyncSession — if provided, tries to load schema from DB.
+        tax_credits: Optional tax credits.
+        penalties: Optional penalties.
+
+    Returns:
+        Calculated report data dict.
+    """
+    # Try schema-based calculation if DB session provided
+    if db is not None:
+        try:
+            from backend.services.schema_registry import evaluate_formulas, get_form_schema
+
+            schema = await get_form_schema(form_type, db)
+            if schema:
+                # Aggregate raw data into base fields
+                base_fields = _aggregate_base_fields(
+                    form_type, sales_data, purchases_data, tax_credits, penalties
+                )
+                # Evaluate formulas from schema
+                return evaluate_formulas(schema, base_fields)
+        except Exception:
+            pass  # Fall through to hardcoded
+
+    # Fallback to hardcoded calculator
+    if form_type == "BIR_2550M":
+        return calculate_bir_2550m(sales_data, purchases_data, tax_credits, penalties)
+
+    raise ValueError(f"No calculator available for {form_type}")
+
+
+def _aggregate_base_fields(
+    form_type: str,
+    sales_data: list[dict],
+    purchases_data: list[dict],
+    tax_credits: Decimal | str | None = None,
+    penalties: Decimal | str | None = None,
+) -> dict[str, str]:
+    """Aggregate raw sales/purchase data into base (editable) fields for any VAT form."""
+    vatable_sales = Decimal("0")
+    sales_to_government = Decimal("0")
+    zero_rated_sales = Decimal("0")
+    vat_exempt_sales = Decimal("0")
+
+    for row in sales_data:
+        amount = Decimal(str(row.get("amount", 0)))
+        vat_type = str(row.get("vat_type", "vatable")).lower().strip()
+        if vat_type == "government":
+            sales_to_government += amount
+        elif vat_type == "zero_rated":
+            zero_rated_sales += amount
+        elif vat_type == "exempt":
+            vat_exempt_sales += amount
+        else:
+            vatable_sales += amount
+
+    input_vat_goods = Decimal("0")
+    input_vat_capital = Decimal("0")
+    input_vat_services = Decimal("0")
+    input_vat_imports = Decimal("0")
+
+    for row in purchases_data:
+        amount = Decimal(str(row.get("amount", 0)))
+        vat_amount = Decimal(str(row.get("vat_amount", 0)))
+        category = str(row.get("category", "goods")).lower().strip()
+        input_vat = vat_amount if vat_amount else amount * VAT_RATE
+        if category == "capital":
+            input_vat_capital += input_vat
+        elif category == "services":
+            input_vat_services += input_vat
+        elif category == "imports":
+            input_vat_imports += input_vat
+        else:
+            input_vat_goods += input_vat
+
+    return {
+        "line_1_vatable_sales": str(vatable_sales),
+        "line_2_sales_to_government": str(sales_to_government),
+        "line_3_zero_rated_sales": str(zero_rated_sales),
+        "line_4_exempt_sales": str(vat_exempt_sales),
+        "line_7_input_vat_goods": str(input_vat_goods),
+        "line_8_input_vat_capital": str(input_vat_capital),
+        "line_9_input_vat_services": str(input_vat_services),
+        "line_10_input_vat_imports": str(input_vat_imports),
+        "line_13_less_tax_credits": str(Decimal(str(tax_credits)) if tax_credits else Decimal("0")),
+        "line_15_add_penalties": str(Decimal(str(penalties)) if penalties else Decimal("0")),
+    }
+
+
 def get_supported_forms() -> dict:
     """Return all supported BIR form types."""
     return {k: {"name": v["name"], "frequency": v["frequency"]} for k, v in SUPPORTED_FORMS.items()}

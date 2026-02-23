@@ -1,8 +1,10 @@
 from fastapi import APIRouter
 
+from backend.api.audit import router as audit_router
 from backend.api.auth import router as auth_router
 from backend.api.chat import router as chat_router
 from backend.api.data import router as data_router
+from backend.api.forms import router as forms_router
 from backend.api.knowledge import router as knowledge_router
 from backend.api.memory import router as memory_router
 from backend.api.reports import router as reports_router
@@ -16,3 +18,5 @@ api_router.include_router(memory_router)
 api_router.include_router(chat_router)
 api_router.include_router(knowledge_router)
 api_router.include_router(settings_router)
+api_router.include_router(audit_router)
+api_router.include_router(forms_router)

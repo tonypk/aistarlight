@@ -1,4 +1,3 @@
-import os
 import pathlib
 import uuid
 from datetime import UTC, datetime
@@ -10,32 +9,50 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.config import settings
 from backend.deps import get_current_tenant, get_current_user, get_session
 from backend.models.tenant import Tenant, User
+from backend.models.workflow import is_editable, is_valid_transition
 from backend.repositories.report import ReportRepository
 from backend.schemas.common import ok
-from backend.schemas.report import ReportGenerateRequest
+from backend.schemas.report import ReportEditRequest, ReportGenerateRequest, ReportTransitionRequest
+from backend.services.audit_logger import log_action
 from backend.services.data_processor import apply_column_mapping, extract_full_data
+from backend.services.report_editor import (
+    NotEditableError,
+    VersionConflictError,
+    apply_field_overrides,
+)
 from backend.services.report_generator import generate_pdf_report
-from backend.services.tax_engine import calculate_bir_2550m, get_supported_forms
+from backend.services.tax_engine import calculate_bir_2550m, calculate_report, get_supported_forms
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 @router.get("/supported-forms")
-async def list_supported_forms():
-    """List all supported BIR form types."""
-    return ok(get_supported_forms())
+async def list_supported_forms(
+    db: AsyncSession = Depends(get_session),
+):
+    """List all supported BIR form types (hardcoded + schema-based)."""
+    from backend.services.schema_registry import list_active_schemas
+
+    forms = get_supported_forms()
+    # Merge in schema-based forms
+    try:
+        schemas = await list_active_schemas(db)
+        for s in schemas:
+            if s["form_type"] not in forms:
+                forms[s["form_type"]] = {"name": s["name"], "frequency": s["frequency"]}
+    except Exception:
+        pass  # Schema table may not exist yet
+    return ok(forms)
 
 
 def _find_uploaded_file(file_id: str) -> tuple[str, str]:
     """Find an uploaded file by ID, returns (filepath, filename)."""
-    # Validate file_id is a safe UUID-like string
     if not file_id.replace("-", "").isalnum():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file ID")
 
     upload_root = pathlib.Path(settings.upload_dir).resolve()
     for ext in ("csv", "xlsx", "xls"):
         filepath = (upload_root / f"{file_id}.{ext}").resolve()
-        # Ensure path is still inside upload directory
         if not str(filepath).startswith(str(upload_root)):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file ID")
         if filepath.exists():
@@ -47,6 +64,23 @@ def _find_uploaded_file(file_id: str) -> tuple[str, str]:
     )
 
 
+def _report_response(report) -> dict:
+    """Build a standard report response dict."""
+    return {
+        "id": str(report.id),
+        "report_type": report.report_type,
+        "period": report.period,
+        "status": report.status,
+        "calculated_data": report.calculated_data,
+        "created_at": report.created_at.isoformat(),
+        "confirmed_at": report.confirmed_at.isoformat() if report.confirmed_at else None,
+        "version": report.version,
+        "overrides": report.overrides,
+        "original_calculated_data": report.original_calculated_data,
+        "notes": report.notes,
+    }
+
+
 @router.post("/generate")
 async def generate_report(
     data: ReportGenerateRequest,
@@ -55,7 +89,11 @@ async def generate_report(
     db: AsyncSession = Depends(get_session),
 ):
     """Generate a BIR tax report."""
-    if data.report_type != "BIR_2550M":
+    # Check if form type is supported (via schema DB or hardcoded registry)
+    from backend.services.schema_registry import get_form_schema
+
+    schema = await get_form_schema(data.report_type, db)
+    if not schema and data.report_type not in ("BIR_2550M",):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Report type {data.report_type} not yet supported",
@@ -64,7 +102,6 @@ async def generate_report(
     input_data = {}
 
     if data.data_file_id and data.column_mappings:
-        # File-based flow: read file → apply mapping → calculate
         filepath, filename = _find_uploaded_file(data.data_file_id)
         with open(filepath, "rb") as f:
             file_content = f.read()
@@ -78,7 +115,6 @@ async def generate_report(
             "purchases_count": len(purchases_data),
         }
     elif data.manual_data:
-        # Manual data flow
         sales_data = data.manual_data.get("sales_data", [])
         purchases_data = data.manual_data.get("purchases_data", [])
         input_data = data.manual_data
@@ -88,9 +124,11 @@ async def generate_report(
             detail="Provide data_file_id with column_mappings, or manual_data",
         )
 
-    calculated = calculate_bir_2550m(
+    calculated = await calculate_report(
+        form_type=data.report_type,
         sales_data=sales_data,
         purchases_data=purchases_data,
+        db=db,
     )
     calculated["period"] = data.period
 
@@ -110,15 +148,20 @@ async def generate_report(
         input_data=input_data,
         calculated_data=calculated,
         file_path=file_path,
+        created_by=user.id,
     )
 
-    return ok({
-        "id": str(report.id),
-        "report_type": report.report_type,
-        "period": report.period,
-        "status": report.status,
-        "calculated_data": calculated,
-    })
+    await log_action(
+        db,
+        tenant_id=tenant.id,
+        user_id=user.id,
+        entity_type="report",
+        entity_id=report.id,
+        action="create",
+        changes={"report_type": data.report_type, "period": data.period},
+    )
+
+    return ok(_report_response(report))
 
 
 @router.get("")
@@ -141,6 +184,7 @@ async def list_reports(
                 "period": r.period,
                 "status": r.status,
                 "created_at": r.created_at.isoformat(),
+                "version": r.version,
             }
             for r in reports
         ],
@@ -159,15 +203,7 @@ async def get_report(
     report = await report_repo.get_by_id(uuid.UUID(report_id))
     if not report or report.tenant_id != user.tenant_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
-    return ok({
-        "id": str(report.id),
-        "report_type": report.report_type,
-        "period": report.period,
-        "status": report.status,
-        "calculated_data": report.calculated_data,
-        "created_at": report.created_at.isoformat(),
-        "confirmed_at": report.confirmed_at.isoformat() if report.confirmed_at else None,
-    })
+    return ok(_report_response(report))
 
 
 @router.get("/{report_id}/download")
@@ -183,6 +219,16 @@ async def download_report(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
     if not report.file_path:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="PDF not generated")
+
+    await log_action(
+        db,
+        tenant_id=user.tenant_id,
+        user_id=user.id,
+        entity_type="report",
+        entity_id=report.id,
+        action="download",
+    )
+
     return FileResponse(
         report.file_path,
         media_type="application/pdf",
@@ -196,10 +242,105 @@ async def confirm_report(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
-    """Confirm/finalize a report."""
+    """Confirm/finalize a report. Legacy endpoint — transitions draft → review."""
     report_repo = ReportRepository(db)
     report = await report_repo.get_by_id(uuid.UUID(report_id))
     if not report or report.tenant_id != user.tenant_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
+
+    old_status = report.status
     report = await report_repo.update(report, status="confirmed", confirmed_at=datetime.now(UTC))
+
+    await log_action(
+        db,
+        tenant_id=user.tenant_id,
+        user_id=user.id,
+        entity_type="report",
+        entity_id=report.id,
+        action="transition",
+        changes={"status": {"old": old_status, "new": "confirmed"}},
+    )
+
     return ok({"id": str(report.id), "status": report.status})
+
+
+@router.patch("/{report_id}/edit")
+async def edit_report(
+    report_id: str,
+    data: ReportEditRequest,
+    user: User = Depends(get_current_user),
+    tenant: Tenant = Depends(get_current_tenant),
+    db: AsyncSession = Depends(get_session),
+):
+    """Edit report fields with optional recalculation."""
+    report_repo = ReportRepository(db)
+    report = await report_repo.get_by_id(uuid.UUID(report_id))
+    if not report or report.tenant_id != user.tenant_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
+
+    tenant_info = {
+        "company_name": tenant.company_name,
+        "tin_number": tenant.tin_number,
+        "rdo_code": tenant.rdo_code,
+    }
+
+    try:
+        report = await apply_field_overrides(
+            db,
+            report=report,
+            field_overrides=data.field_overrides,
+            recalculate=data.recalculate,
+            notes=data.notes,
+            expected_version=data.version,
+            user_id=user.id,
+            tenant_id=user.tenant_id,
+            tenant_info=tenant_info,
+        )
+    except NotEditableError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except VersionConflictError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+
+    return ok(_report_response(report))
+
+
+@router.patch("/{report_id}/transition")
+async def transition_report(
+    report_id: str,
+    data: ReportTransitionRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_session),
+):
+    """Transition report status through the workflow."""
+    report_repo = ReportRepository(db)
+    report = await report_repo.get_by_id(uuid.UUID(report_id))
+    if not report or report.tenant_id != user.tenant_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
+
+    if not is_valid_transition(report.status, data.target_status):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot transition from '{report.status}' to '{data.target_status}'",
+        )
+
+    old_status = report.status
+    update_fields: dict = {"status": data.target_status}
+
+    # Set confirmed_at when moving to approved
+    if data.target_status == "approved" and not report.confirmed_at:
+        update_fields["confirmed_at"] = datetime.now(UTC)
+
+    report = await report_repo.update(report, **update_fields)
+
+    await log_action(
+        db,
+        tenant_id=user.tenant_id,
+        user_id=user.id,
+        entity_type="report",
+        entity_id=report.id,
+        action="transition",
+        changes={"status": {"old": old_status, "new": data.target_status}},
+        comment=data.comment,
+    )
+
+    return ok(_report_response(report))

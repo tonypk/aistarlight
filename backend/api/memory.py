@@ -6,6 +6,7 @@ from backend.models.tenant import User
 from backend.repositories.memory import CorrectionRepository
 from backend.schemas.common import ok
 from backend.schemas.memory import PreferenceUpdate
+from backend.services.audit_logger import log_action
 from backend.services.memory_manager import delete_preference, get_preference, get_preferences, upsert_preference
 
 router = APIRouter(prefix="/memory", tags=["memory"])
@@ -50,6 +51,17 @@ async def update_pref(
         auto_fill_rules=data.auto_fill_rules,
         db=db,
     )
+
+    await log_action(
+        db,
+        tenant_id=user.tenant_id,
+        user_id=user.id,
+        entity_type="preference",
+        entity_id=None,
+        action="upsert",
+        changes={"report_type": report_type},
+    )
+
     return ok(pref)
 
 
@@ -63,6 +75,17 @@ async def remove_pref(
     deleted = await delete_preference(user.tenant_id, report_type, db)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Preference not found")
+
+    await log_action(
+        db,
+        tenant_id=user.tenant_id,
+        user_id=user.id,
+        entity_type="preference",
+        entity_id=None,
+        action="delete",
+        changes={"report_type": report_type},
+    )
+
     return ok({"deleted": True})
 
 
