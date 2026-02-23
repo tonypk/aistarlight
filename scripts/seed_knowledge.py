@@ -206,14 +206,15 @@ def load_json_knowledge() -> list[dict]:
     return entries
 
 
-async def generate_embedding(text: str) -> list[float] | None:
+async def generate_embedding(text: str, client=None) -> list[float] | None:
     """Generate embedding using OpenAI API."""
     if not settings.openai_api_key:
         return None
 
     try:
-        from openai import AsyncOpenAI
-        client = AsyncOpenAI(api_key=settings.openai_api_key)
+        if client is None:
+            from openai import AsyncOpenAI
+            client = AsyncOpenAI(api_key=settings.openai_api_key)
         response = await client.embeddings.create(
             model="text-embedding-3-small",
             input=text,
@@ -223,6 +224,35 @@ async def generate_embedding(text: str) -> list[float] | None:
     except Exception as e:
         print(f"  Warning: embedding generation failed: {e}")
         return None
+
+
+async def generate_embeddings_batch(texts: list[str], client=None) -> list[list[float] | None]:
+    """Generate embeddings for multiple texts in a single API call (max 2048 inputs)."""
+    if not settings.openai_api_key:
+        return [None] * len(texts)
+
+    try:
+        if client is None:
+            from openai import AsyncOpenAI
+            client = AsyncOpenAI(api_key=settings.openai_api_key)
+
+        results: list[list[float] | None] = [None] * len(texts)
+        batch_size = 100  # OpenAI recommends batches of ~100 for efficiency
+
+        for start in range(0, len(texts), batch_size):
+            batch = texts[start:start + batch_size]
+            response = await client.embeddings.create(
+                model="text-embedding-3-small",
+                input=batch,
+                dimensions=1024,
+            )
+            for item in response.data:
+                results[start + item.index] = item.embedding
+
+        return results
+    except Exception as e:
+        print(f"  Warning: batch embedding generation failed: {e}")
+        return [None] * len(texts)
 
 
 async def seed():
@@ -242,23 +272,37 @@ async def seed():
     print(f"\nSeeding knowledge base with {len(unique_entries)} entries ({len(json_entries)} from JSON, {len(KNOWLEDGE_DATA)} core)...")
     print(f"Database: {settings.database_url.split('@')[-1] if '@' in settings.database_url else 'configured'}")
 
+    # Category breakdown
+    cat_counts: dict[str, int] = {}
+    for e in unique_entries:
+        cat_counts[e["category"]] = cat_counts.get(e["category"], 0) + 1
+    for cat, cnt in sorted(cat_counts.items()):
+        print(f"  {cat}: {cnt} entries")
+
+    # Generate embeddings in batch for efficiency
+    print("\nGenerating embeddings (batch mode)...")
+    openai_client = None
+    if settings.openai_api_key:
+        from openai import AsyncOpenAI
+        openai_client = AsyncOpenAI(api_key=settings.openai_api_key)
+
+    all_texts = [e["content"] for e in unique_entries]
+    embeddings = await generate_embeddings_batch(all_texts, openai_client)
+    embed_count = sum(1 for emb in embeddings if emb is not None)
+    print(f"  Generated {embed_count}/{len(unique_entries)} embeddings")
+
     async with async_session_factory() as session:
         # Clear existing data
         result = await session.execute(text("SELECT COUNT(*) FROM knowledge_chunks"))
         count = result.scalar()
         if count and count > 0:
-            print(f"Clearing {count} existing entries...")
+            print(f"\nClearing {count} existing entries...")
             await session.execute(text("DELETE FROM knowledge_chunks"))
 
+        print(f"\nInserting {len(unique_entries)} entries...")
         success = 0
-        embed_count = 0
         for i, entry in enumerate(unique_entries):
-            src = entry["source"][:60]
-            print(f"  [{i+1}/{len(unique_entries)}] {entry['category']}: {src}...")
-
-            embedding = await generate_embedding(entry["content"])
-            if embedding:
-                embed_count += 1
+            embedding = embeddings[i]
 
             if embedding:
                 await session.execute(
@@ -291,10 +335,13 @@ async def seed():
                 )
             success += 1
 
+            if (i + 1) % 25 == 0:
+                print(f"  [{i+1}/{len(unique_entries)}] inserted...")
+
         await session.commit()
         print(f"\nDone! Seeded {success} knowledge chunks.")
         print(f"Embeddings: {embed_count}/{success} generated")
-        print(f"Categories: {', '.join(sorted(set(e['category'] for e in unique_entries)))}")
+        print(f"Categories: {', '.join(sorted(cat_counts.keys()))}")
 
 
 if __name__ == "__main__":
