@@ -11,7 +11,7 @@ from backend.models.base import Base, UUIDMixin
 class KnowledgeChunk(Base, UUIDMixin):
     __tablename__ = "knowledge_chunks"
 
-    source: Mapped[str | None] = mapped_column(String(100))
+    source: Mapped[str | None] = mapped_column(String(500))
     category: Mapped[str | None] = mapped_column(String(50))
     content: Mapped[str] = mapped_column(Text)
     embedding = mapped_column(Vector(1024))  # Claude embedding dimension

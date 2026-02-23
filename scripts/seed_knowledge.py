@@ -299,10 +299,16 @@ async def seed():
             print(f"\nClearing {count} existing entries...")
             await session.execute(text("DELETE FROM knowledge_chunks"))
 
+        # Expand source column if needed (safe to run multiple times)
+        await session.execute(text("ALTER TABLE knowledge_chunks ALTER COLUMN source TYPE VARCHAR(500)"))
+        await session.commit()
+        print("  source column expanded to VARCHAR(500)")
+
         print(f"\nInserting {len(unique_entries)} entries...")
         success = 0
         for i, entry in enumerate(unique_entries):
             embedding = embeddings[i]
+            source = entry["source"][:500]  # Ensure within column limit
 
             if embedding:
                 await session.execute(
@@ -312,7 +318,7 @@ async def seed():
                     ),
                     {
                         "id": str(uuid.uuid4()),
-                        "source": entry["source"],
+                        "source": source,
                         "category": entry["category"],
                         "content": entry["content"],
                         "embedding": "[" + ",".join(str(x) for x in embedding) + "]",
@@ -327,7 +333,7 @@ async def seed():
                     ),
                     {
                         "id": str(uuid.uuid4()),
-                        "source": entry["source"],
+                        "source": source,
                         "category": entry["category"],
                         "content": entry["content"],
                         "metadata": json.dumps({}),
