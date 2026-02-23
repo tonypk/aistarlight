@@ -1,48 +1,69 @@
-import anthropic
+from openai import AsyncOpenAI
 
 from backend.config import settings
 
 
-def get_client() -> anthropic.AsyncAnthropic:
-    return anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+def get_client() -> AsyncOpenAI:
+    return AsyncOpenAI(api_key=settings.openai_api_key)
 
 
 async def chat_completion(
     messages: list[dict],
     system: str = "",
-    model: str = "claude-sonnet-4-20250514",
+    model: str = "",
     max_tokens: int = 4096,
     temperature: float = 0.3,
 ) -> str:
-    """Send a chat completion request to Claude."""
+    """Send a chat completion request to OpenAI."""
     client = get_client()
-    kwargs: dict = {
-        "model": model,
-        "max_tokens": max_tokens,
-        "temperature": temperature,
-        "messages": messages,
-    }
+    model = model or settings.openai_model
+
+    full_messages = []
     if system:
-        kwargs["system"] = system
-    response = await client.messages.create(**kwargs)
-    return response.content[0].text
+        full_messages.append({"role": "system", "content": system})
+    full_messages.extend(messages)
+
+    response = await client.chat.completions.create(
+        model=model,
+        messages=full_messages,
+        max_tokens=max_tokens,
+        temperature=temperature,
+    )
+    return response.choices[0].message.content or ""
 
 
 async def chat_completion_with_tools(
     messages: list[dict],
     tools: list[dict],
     system: str = "",
-    model: str = "claude-sonnet-4-20250514",
+    model: str = "",
     max_tokens: int = 4096,
-) -> anthropic.types.Message:
+) -> dict:
     """Send a chat completion with tool use."""
     client = get_client()
-    kwargs: dict = {
-        "model": model,
-        "max_tokens": max_tokens,
-        "messages": messages,
-        "tools": tools,
-    }
+    model = model or settings.openai_model
+
+    full_messages = []
     if system:
-        kwargs["system"] = system
-    return await client.messages.create(**kwargs)
+        full_messages.append({"role": "system", "content": system})
+    full_messages.extend(messages)
+
+    # Convert tools from Anthropic format to OpenAI format
+    openai_tools = []
+    for tool in tools:
+        openai_tools.append({
+            "type": "function",
+            "function": {
+                "name": tool["name"],
+                "description": tool.get("description", ""),
+                "parameters": tool.get("input_schema", {}),
+            },
+        })
+
+    response = await client.chat.completions.create(
+        model=model,
+        messages=full_messages,
+        tools=openai_tools if openai_tools else None,
+        max_tokens=max_tokens,
+    )
+    return response

@@ -94,22 +94,24 @@ async def process_message(
         system=AGENT_SYSTEM_PROMPT,
     )
 
-    # Check if agent wants to use tools
+    # Parse OpenAI response
     tool_calls = []
     text_response = ""
+    choice = response.choices[0]
 
-    for block in response.content:
-        if block.type == "text":
-            text_response += block.text
-        elif block.type == "tool_use":
+    if choice.message.content:
+        text_response = choice.message.content
+
+    if choice.message.tool_calls:
+        for tc in choice.message.tool_calls:
             tool_calls.append({
-                "tool_name": block.name,
-                "tool_input": block.input,
-                "tool_id": block.id,
+                "tool_name": tc.function.name,
+                "tool_input": json.loads(tc.function.arguments),
+                "tool_id": tc.id,
             })
 
     return {
         "response": text_response,
         "tool_calls": tool_calls,
-        "stop_reason": response.stop_reason,
+        "stop_reason": choice.finish_reason,
     }

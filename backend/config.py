@@ -11,8 +11,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
     refresh_token_expire_days: int = 30
 
-    # Claude API
-    anthropic_api_key: str = ""
+    # OpenAI API
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o"
 
     # API Key auth (for external API access)
     api_key_header: str = "X-API-Key"
