@@ -147,6 +147,7 @@ def get_income_type(atc_code: str) -> str:
 def find_atc_by_keywords(description: str, supplier_type: str = "corporation") -> str | None:
     """Find best matching ATC code by keyword matching in description.
 
+    Prefers codes matching the supplier type (WC for corporation, WI for individual).
     Returns the ATC code or None if no match.
     """
     desc_lower = description.lower()
@@ -154,17 +155,20 @@ def find_atc_by_keywords(description: str, supplier_type: str = "corporation") -
 
     best_match: str | None = None
     best_score = 0
+    best_is_preferred = False
 
     for code, info in EWT_RATES.items():
-        # Prefer codes matching supplier type
-        if not code.startswith(type_prefix) and not code.startswith("W"):
-            continue
         score = sum(1 for kw in info["keywords"] if kw in desc_lower)
-        if score > best_score:
+        if score == 0:
+            continue
+        is_preferred = code.startswith(type_prefix)
+        # Pick this code if: higher score, or same score but preferred type
+        if score > best_score or (score == best_score and is_preferred and not best_is_preferred):
             best_score = score
             best_match = code
+            best_is_preferred = is_preferred
 
-    return best_match if best_score > 0 else None
+    return best_match
 
 
 def list_rates() -> list[dict]:

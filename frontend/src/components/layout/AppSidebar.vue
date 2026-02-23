@@ -16,6 +16,7 @@ const menuItems = [
   { name: 'AI Chat', path: '/chat', icon: '💬' },
   { name: 'Knowledge', path: '/knowledge', icon: '📚' },
   { name: 'Memory', path: '/memory', icon: '🧠' },
+  { name: 'User Guide', path: '/guide', icon: '📖' },
   { name: 'Settings', path: '/settings', icon: '⚙️' },
 ]
 

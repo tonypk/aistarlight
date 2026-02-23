@@ -42,9 +42,11 @@ class TestFindATCByKeywords:
     """find_atc_by_keywords() tests."""
 
     def test_professional_services_corporation(self):
-        result = find_atc_by_keywords("audit fee for professional consulting", "corporation")
-        # "audit fee" keyword only exists in WC010
-        assert result == "WC010"
+        # "professional consulting" matches both WI010 (score 2) and WC010 (score 2)
+        # WC should win for corporation supplier type
+        result = find_atc_by_keywords("professional consulting", "corporation")
+        assert result is not None
+        assert result.startswith("WC")
 
     def test_professional_services_individual(self):
         result = find_atc_by_keywords("professional consulting fee", "individual")
@@ -57,8 +59,8 @@ class TestFindATCByKeywords:
 
     def test_contractor_keywords(self):
         result = find_atc_by_keywords("construction contractor payment", "corporation")
-        # Both WI050 and WC050 match; function returns highest score match
-        assert result in ("WI050", "WC050")
+        # WC050 preferred when supplier_type is corporation
+        assert result == "WC050"
 
     def test_transport_keywords(self):
         result = find_atc_by_keywords("delivery and freight charges", "individual")

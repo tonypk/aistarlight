@@ -83,6 +83,12 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "Withholding Tax" },
     },
     {
+      path: "/guide",
+      name: "guide",
+      component: () => import("../views/GuideView.vue"),
+      meta: { requiresAuth: true, title: "User Guide" },
+    },
+    {
       path: "/settings",
       name: "settings",
       component: () => import("../views/SettingsView.vue"),
