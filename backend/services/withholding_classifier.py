@@ -189,13 +189,17 @@ async def classify_ewt_transactions(
     transactions: list[dict],
     supplier_lookup: dict[str, dict] | None = None,
     tenant_context: dict | None = None,
+    tenant_id=None,
+    db=None,
 ) -> list[dict]:
-    """Classify transactions for EWT applicability using rule+LLM approach.
+    """Classify transactions for EWT applicability using rule+learned+LLM approach.
 
     Args:
         transactions: List of transaction dicts with description, amount, tin, etc.
         supplier_lookup: Optional {tin: supplier_info} for supplier defaults.
         tenant_context: Optional tenant context.
+        tenant_id: Optional tenant UUID for learned rules.
+        db: Optional AsyncSession for DB access.
 
     Returns:
         List of classification results, same length as transactions.
@@ -215,11 +219,47 @@ async def classify_ewt_transactions(
         else:
             unclassified_indices.append(i)
 
+    # Phase 1.5: Learned rules from corrections
+    still_unclassified = []
+    if tenant_id and db and unclassified_indices:
+        try:
+            from backend.repositories.correction_rule_repo import CorrectionRuleRepository
+            from backend.services.classifier_service import _apply_learned_rule
+            rule_repo = CorrectionRuleRepository(db)
+            learned_rules = await rule_repo.find_active(tenant_id)
+            for i in unclassified_indices:
+                txn = transactions[i]
+                matched = False
+                for rule in learned_rules:
+                    if rule.correction_field in ("atc_code", "ewt_rate", "ewt_applicable"):
+                        lr = _apply_learned_rule(txn, rule)
+                        if lr:
+                            results[i] = {
+                                "ewt_applicable": True,
+                                "atc_code": lr.get("atc_code"),
+                                "ewt_rate": lr.get("ewt_rate"),
+                                "income_type": None,
+                                "confidence": lr.get("confidence", 0.85),
+                                "classification_source": "learned",
+                            }
+                            matched = True
+                            break
+                if not matched:
+                    still_unclassified.append(i)
+        except Exception as e:
+            logger.warning("Failed to load learned rules for EWT: %s", e)
+            still_unclassified = list(unclassified_indices)
+    else:
+        still_unclassified = list(unclassified_indices)
+
     logger.info(
-        "EWT rule-based: %d classified, %d remaining for LLM",
+        "EWT classification: %d rule, %d learned, %d remaining for LLM",
         len(transactions) - len(unclassified_indices),
-        len(unclassified_indices),
+        len(unclassified_indices) - len(still_unclassified),
+        len(still_unclassified),
     )
+
+    unclassified_indices = still_unclassified
 
     # Phase 2: LLM classification for remaining
     if unclassified_indices:

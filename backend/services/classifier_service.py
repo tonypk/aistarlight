@@ -149,7 +149,9 @@ def apply_rule_based_classification(transaction: dict) -> dict | None:
 
 
 async def classify_batch(
-    transactions: list[dict], tenant_context: dict | None = None
+    transactions: list[dict],
+    tenant_context: dict | None = None,
+    prompt_supplement: str = "",
 ) -> list[dict]:
     """Classify a batch of transactions using LLM.
 
@@ -182,10 +184,14 @@ async def classify_batch(
 
     context_parts.append(json.dumps(items, default=str))
 
+    system_prompt = CLASSIFICATION_SYSTEM_PROMPT
+    if prompt_supplement:
+        system_prompt = system_prompt + "\n" + prompt_supplement
+
     try:
         response = await chat_completion(
             messages=[{"role": "user", "content": "\n".join(context_parts)}],
-            system=CLASSIFICATION_SYSTEM_PROMPT,
+            system=system_prompt,
             temperature=0.1,
             max_tokens=2048,
         )
@@ -222,19 +228,62 @@ async def classify_batch(
         ]
 
 
+def _apply_learned_rule(transaction: dict, rule) -> dict | None:
+    """Try to apply a learned correction rule to a transaction."""
+    criteria = rule.match_criteria or {}
+    field = criteria.get("field", "")
+    operator = criteria.get("operator", "")
+    value = criteria.get("value", "")
+
+    txn_value = str(transaction.get(field, "") or "").lower()
+
+    matched = False
+    if operator == "contains_any" and isinstance(value, list):
+        matched = any(kw.lower() in txn_value for kw in value)
+    elif operator == "contains" and isinstance(value, str):
+        matched = value.lower() in txn_value
+    elif operator == "in" and isinstance(value, list):
+        matched = txn_value in [str(v).lower() for v in value]
+    elif operator == "between" and isinstance(value, list) and len(value) == 2:
+        try:
+            amount = float(transaction.get("amount", 0))
+            matched = value[0] <= amount <= value[1]
+        except (ValueError, TypeError):
+            pass
+
+    if matched:
+        result = {
+            rule.correction_field: rule.correction_value,
+            "confidence": float(rule.confidence),
+            "classification_source": "learned",
+        }
+        # Fill defaults for missing fields
+        if "vat_type" not in result:
+            result["vat_type"] = transaction.get("vat_type", "vatable")
+        if "category" not in result:
+            result["category"] = transaction.get("category", "goods")
+        return result
+    return None
+
+
 async def classify_transactions(
-    transactions: list[dict], tenant_context: dict | None = None
+    transactions: list[dict],
+    tenant_context: dict | None = None,
+    tenant_id=None,
+    db=None,
 ) -> list[dict]:
-    """Classify all transactions: rules first, then LLM for the rest.
+    """Classify all transactions: rules → learned rules → LLM.
 
     Args:
         transactions: List of transaction dicts with date, description, amount, tin.
         tenant_context: Optional tenant context for LLM.
+        tenant_id: Optional tenant UUID for learned rules lookup.
+        db: Optional AsyncSession for DB access.
 
     Returns list of dicts with added vat_type, category, confidence, classification_source.
     """
     results = [None] * len(transactions)
-    needs_llm = []
+    needs_learned = []
 
     # Phase 1: Rule-based classification
     for i, txn in enumerate(transactions):
@@ -242,15 +291,57 @@ async def classify_transactions(
         if rule_result:
             results[i] = {**txn, **rule_result}
         else:
-            needs_llm.append({"index": i, **txn})
+            needs_learned.append(i)
 
-    # Phase 2: LLM batch classification for remaining
+    # Phase 1.5: Learned rules from corrections
+    learned_rules = []
+    if tenant_id and db:
+        try:
+            from backend.repositories.correction_rule_repo import CorrectionRuleRepository
+            rule_repo = CorrectionRuleRepository(db)
+            learned_rules = await rule_repo.find_active(tenant_id)
+        except Exception as e:
+            logger.warning("Failed to load learned rules: %s", e)
+
+    needs_llm = []
+    if learned_rules:
+        for i in needs_learned:
+            txn = transactions[i]
+            learned_result = None
+            for rule in learned_rules:
+                learned_result = _apply_learned_rule(txn, rule)
+                if learned_result:
+                    break
+            if learned_result:
+                results[i] = {**txn, **learned_result}
+            else:
+                needs_llm.append({"index": i, **txn})
+    else:
+        needs_llm = [{"index": i, **transactions[i]} for i in needs_learned]
+
+    logger.info(
+        "Classification: %d rule, %d learned, %d LLM",
+        len(transactions) - len(needs_learned),
+        len(needs_learned) - len(needs_llm),
+        len(needs_llm),
+    )
+
+    # Phase 2: LLM batch classification with prompt augmentation
+    prompt_supplement = ""
+    if tenant_id and db:
+        try:
+            from backend.services.prompt_augmenter import generate_prompt_supplement
+            prompt_supplement = await generate_prompt_supplement(db, tenant_id)
+        except Exception as e:
+            logger.warning("Failed to generate prompt supplement: %s", e)
+
     if needs_llm:
         for batch_start in range(0, len(needs_llm), BATCH_SIZE):
             batch = needs_llm[batch_start : batch_start + BATCH_SIZE]
-            llm_results = await classify_batch(batch, tenant_context)
+            llm_results = await classify_batch(
+                batch, tenant_context, prompt_supplement=prompt_supplement
+            )
 
-            # Build lookup by index
             llm_lookup = {r["index"]: r for r in llm_results}
 
             for item in batch:
@@ -264,7 +355,7 @@ async def classify_transactions(
                     "classification_source": "ai",
                 }
 
-    # Fill any remaining None entries (shouldn't happen, but safety)
+    # Fill any remaining None entries
     for i, r in enumerate(results):
         if r is None:
             results[i] = {

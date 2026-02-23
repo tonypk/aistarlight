@@ -189,6 +189,34 @@ def _generate_bir_2550m_pdf(filepath: str, data: dict, tenant_info: dict) -> Non
         c.drawString(60, y - 6, f"Excess Input VAT / Tax Credit Carried Forward to Next Period: PHP {_format_amount(tax_credit)}")
         y -= 20
 
+    # === Compliance Score (if available) ===
+    compliance_score = data.get("compliance_score")
+    if compliance_score is not None:
+        y -= 12
+        y = _draw_section_header(c, y, width, "Compliance Validation")
+        y -= 2
+        score = int(compliance_score)
+        if score >= 80:
+            score_color = HexColor("#065f46")
+            bg_color = HexColor("#d1fae5")
+            label = "Compliant"
+        elif score >= 60:
+            score_color = HexColor("#92400e")
+            bg_color = HexColor("#fef3c7")
+            label = "Needs Review"
+        else:
+            score_color = HexColor("#991b1b")
+            bg_color = HexColor("#fee2e2")
+            label = "Non-Compliant"
+        c.setFillColor(bg_color)
+        c.rect(54, y - 14, width - 108, 22, fill=1, stroke=0)
+        c.setFillColor(score_color)
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(60, y - 10, f"Score: {score}/100")
+        c.setFont("Helvetica", 9)
+        c.drawString(160, y - 10, f"— {label}")
+        y -= 28
+
     # === Notes ===
     y -= 16
     c.setFillColor(black)

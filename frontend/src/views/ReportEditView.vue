@@ -2,6 +2,8 @@
 import { computed, onMounted, ref, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuditTrail from '../components/report/AuditTrail.vue'
+import CorrectionHistory from '../components/correction/CorrectionHistory.vue'
+import ValidationResultsPanel from '../components/report/ValidationResultsPanel.vue'
 import { formsApi, type FormSection } from '../api/forms'
 import { useReportStore } from '../stores/report'
 
@@ -244,6 +246,8 @@ function handleBack() {
       </div>
     </div>
 
+    <ValidationResultsPanel :report-id="reportId" />
+    <CorrectionHistory entity-type="report_field" :entity-id="reportId" />
     <AuditTrail :report-id="reportId" />
   </div>
 </template>

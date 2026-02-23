@@ -33,3 +33,6 @@ class Report(Base, UUIDMixin):
     overrides: Mapped[dict | None] = mapped_column(JSONB)
     original_calculated_data: Mapped[dict | None] = mapped_column(JSONB)
     notes: Mapped[str | None] = mapped_column(Text)
+
+    # Phase 3 fields — compliance validation
+    compliance_score: Mapped[int | None] = mapped_column(Integer, nullable=True)

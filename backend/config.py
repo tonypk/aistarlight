@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     report_dir: str = "./generated_reports"
     max_upload_size_mb: int = 10
 
+    # OCR / Receipt processing
+    ocr_service_url: str = "http://ocr:8001"
+    ocr_llm_model: str = "gpt-4.1-mini"
+    max_receipt_batch_size: int = 50
+
     # Rate limiting
     rate_limit_per_minute: int = 60
 

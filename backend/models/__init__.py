@@ -2,9 +2,11 @@ from backend.models.anomaly import Anomaly
 from backend.models.audit import AuditLog
 from backend.models.base import Base
 from backend.models.chat import ChatMessage
+from backend.models.correction import Correction, CorrectionRule, ValidationResult
 from backend.models.form_schema import FormSchema
 from backend.models.knowledge import KnowledgeChunk
 from backend.models.memory import CorrectionHistory, UserPreference
+from backend.models.receipt import ReceiptBatch
 from backend.models.reconciliation import ReconciliationSession
 from backend.models.report import Report
 from backend.models.supplier import Supplier
@@ -18,9 +20,12 @@ __all__ = [
     "AuditLog",
     "Base",
     "ChatMessage",
+    "Correction",
     "CorrectionHistory",
+    "CorrectionRule",
     "FormSchema",
     "KnowledgeChunk",
+    "ReceiptBatch",
     "ReconciliationSession",
     "Report",
     "ReportStatus",
@@ -29,5 +34,6 @@ __all__ = [
     "Transaction",
     "User",
     "UserPreference",
+    "ValidationResult",
     "WithholdingCertificate",
 ]

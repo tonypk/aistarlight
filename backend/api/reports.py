@@ -63,6 +63,7 @@ def _report_response(report) -> dict:
         "overrides": report.overrides,
         "original_calculated_data": report.original_calculated_data,
         "notes": report.notes,
+        "compliance_score": report.compliance_score,
     }
 
 
@@ -216,6 +217,7 @@ async def list_reports(
                 "report_type": r.report_type,
                 "period": r.period,
                 "status": r.status,
+                "compliance_score": r.compliance_score,
                 "created_at": r.created_at.isoformat(),
                 "version": r.version,
             }

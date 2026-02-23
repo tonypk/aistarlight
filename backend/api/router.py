@@ -3,6 +3,9 @@ from fastapi import APIRouter
 from backend.api.audit import router as audit_router
 from backend.api.auth import router as auth_router
 from backend.api.chat import router as chat_router
+from backend.api.compliance import router as compliance_router
+from backend.api.corrections import router as corrections_router
+from backend.api.receipts import router as receipts_router
 from backend.api.data import router as data_router
 from backend.api.forms import router as forms_router
 from backend.api.knowledge import router as knowledge_router
@@ -24,3 +27,6 @@ api_router.include_router(audit_router)
 api_router.include_router(forms_router)
 api_router.include_router(reconciliation_router)
 api_router.include_router(withholding_router)
+api_router.include_router(corrections_router)
+api_router.include_router(compliance_router)
+api_router.include_router(receipts_router)

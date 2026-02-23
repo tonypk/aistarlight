@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import ComplianceScoreBadge from '../components/report/ComplianceScoreBadge.vue'
 import ReportPreview from '../components/report/ReportPreview.vue'
 import { formsApi, type FormSummary } from '../api/forms'
 import { useReportStore } from '../stores/report'
@@ -192,6 +193,7 @@ function formatFormType(type: string): string {
             <th>Type</th>
             <th>Period</th>
             <th>Status</th>
+            <th>Compliance</th>
             <th>Created</th>
             <th>Actions</th>
           </tr>
@@ -201,6 +203,7 @@ function formatFormType(type: string): string {
             <td>{{ formatFormType(r.report_type) }}</td>
             <td>{{ r.period }}</td>
             <td><span class="badge" :class="statusColor(r.status)">{{ r.status }}</span></td>
+            <td><ComplianceScoreBadge :score="r.compliance_score ?? null" /></td>
             <td>{{ new Date(r.created_at).toLocaleDateString() }}</td>
             <td class="actions-cell">
               <button class="dl-btn" @click="handleDownload(r.id)">PDF</button>

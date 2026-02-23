@@ -12,6 +12,7 @@ interface ReportSummary {
   report_type: string;
   period: string;
   status: string;
+  compliance_score?: number | null;
   created_at: string;
   version?: number;
 }
