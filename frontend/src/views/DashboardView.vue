@@ -52,6 +52,16 @@ onMounted(async () => {
         <h3>VAT Reconciliation</h3>
         <p>Classify & reconcile transactions</p>
       </router-link>
+      <router-link to="/suppliers" class="card">
+        <span class="card-icon">🏢</span>
+        <h3>Suppliers</h3>
+        <p>Manage supplier master data</p>
+      </router-link>
+      <router-link to="/withholding" class="card">
+        <span class="card-icon">📑</span>
+        <h3>Withholding Tax</h3>
+        <p>EWT, BIR 2307 & SAWT</p>
+      </router-link>
       <router-link to="/knowledge" class="card">
         <span class="card-icon">📚</span>
         <h3>Knowledge Base</h3>

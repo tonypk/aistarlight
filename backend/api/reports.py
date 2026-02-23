@@ -78,7 +78,7 @@ async def generate_report(
     from backend.services.schema_registry import get_form_schema
 
     schema = await get_form_schema(data.report_type, db)
-    if not schema and data.report_type not in ("BIR_2550M",):
+    if not schema and data.report_type not in ("BIR_2550M", "BIR_2550Q"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Report type {data.report_type} not yet supported",
@@ -86,7 +86,47 @@ async def generate_report(
 
     input_data = {}
 
-    if data.data_file_id and data.column_mappings:
+    if data.session_id:
+        # Auto-fill from reconciliation session transactions
+        from backend.repositories.reconciliation_repo import ReconciliationSessionRepository
+        from backend.repositories.transaction import TransactionRepository
+
+        sess_repo = ReconciliationSessionRepository(db)
+        session = await sess_repo.get_by_id(uuid.UUID(data.session_id))
+        if not session or session.tenant_id != tenant.id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+
+        txn_repo = TransactionRepository(db)
+        all_txns = await txn_repo.find_all_by_session(session.id)
+        if not all_txns:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Session has no transactions")
+
+        sales_data = [
+            {
+                "amount": float(t.amount),
+                "vat_amount": float(t.vat_amount),
+                "vat_type": t.vat_type,
+                "category": t.category,
+            }
+            for t in all_txns
+            if t.source_type == "sales_record"
+        ]
+        purchases_data = [
+            {
+                "amount": float(t.amount),
+                "vat_amount": float(t.vat_amount),
+                "vat_type": t.vat_type,
+                "category": t.category,
+            }
+            for t in all_txns
+            if t.source_type == "purchase_record"
+        ]
+        input_data = {
+            "session_id": data.session_id,
+            "sales_count": len(sales_data),
+            "purchases_count": len(purchases_data),
+        }
+    elif data.data_file_id and data.column_mappings:
         filepath, filename = _find_uploaded_file(data.data_file_id)
         with open(filepath, "rb") as f:
             file_content = f.read()
@@ -106,7 +146,7 @@ async def generate_report(
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Provide data_file_id with column_mappings, or manual_data",
+            detail="Provide session_id, data_file_id with column_mappings, or manual_data",
         )
 
     calculated = await calculate_report(

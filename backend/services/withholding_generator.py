@@ -1,0 +1,319 @@
+"""Generate BIR 2307 certificates and SAWT (Summary Alphalist of Withholding Taxes).
+
+BIR 2307: Certificate of Creditable Tax Withheld at Source — one per supplier per quarter.
+SAWT: Summary listing all withholding entries for a period.
+"""
+
+import csv
+import io
+import os
+from decimal import Decimal
+from typing import Any
+
+from reportlab.lib.colors import HexColor, black, white
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+from backend.config import settings
+from backend.services.ewt_rates import get_income_type
+
+
+# Colors (consistent with report_generator.py)
+_HEADER_BG = HexColor("#1e3a5f")
+_SECTION_BG = HexColor("#e8edf2")
+_LINE_GRAY = HexColor("#cccccc")
+_ACCENT = HexColor("#2563eb")
+
+
+def generate_bir_2307_pdf(
+    certificate: dict[str, Any],
+    supplier_info: dict[str, Any],
+    tenant_info: dict[str, Any],
+) -> str:
+    """Generate a BIR 2307 certificate PDF.
+
+    Args:
+        certificate: Certificate data (atc_code, income_amount, ewt_rate, tax_withheld, quarter, period).
+        supplier_info: Supplier data (tin, name, address).
+        tenant_info: Tenant/withholding agent data (company_name, tin_number, rdo_code).
+
+    Returns:
+        File path of generated PDF.
+    """
+    quarter = certificate.get("quarter", "unknown")
+    supplier_tin = supplier_info.get("tin", "no_tin")
+    filename = f"BIR2307_{quarter}_{supplier_tin}.pdf"
+    filepath = os.path.join(settings.report_dir, filename)
+
+    c = canvas.Canvas(filepath, pagesize=letter)
+    width, height = letter
+
+    # === Title Banner ===
+    c.setFillColor(_HEADER_BG)
+    c.rect(0, height - 70, width, 70, fill=1, stroke=0)
+    c.setFillColor(white)
+    c.setFont("Helvetica-Bold", 16)
+    c.drawCentredString(width / 2, height - 28, "BIR Form No. 2307")
+    c.setFont("Helvetica", 9)
+    c.drawCentredString(width / 2, height - 44, "Certificate of Creditable Tax Withheld at Source")
+    c.setFont("Helvetica", 7)
+    c.drawCentredString(width / 2, height - 58, "Republic of the Philippines - Bureau of Internal Revenue")
+
+    y = height - 90
+
+    # === Part I: Payee (Supplier) Information ===
+    y = _section_header(c, y, width, "Part I - Payee Information")
+    y = _info_row(c, y, "TIN", supplier_info.get("tin", ""))
+    y = _info_row(c, y, "Payee's Name", supplier_info.get("name", ""))
+    y = _info_row(c, y, "Address", supplier_info.get("address", ""))
+    y = _info_row(c, y, "Type", supplier_info.get("supplier_type", "").title())
+
+    # === Part II: Payor (Withholding Agent) Information ===
+    y -= 12
+    y = _section_header(c, y, width, "Part II - Payor / Withholding Agent")
+    y = _info_row(c, y, "TIN", tenant_info.get("tin_number", ""))
+    y = _info_row(c, y, "Company Name", tenant_info.get("company_name", ""))
+    y = _info_row(c, y, "RDO Code", tenant_info.get("rdo_code", ""))
+
+    # === Part III: Details of Tax Withheld ===
+    y -= 12
+    y = _section_header(c, y, width, "Part III - Details of Tax Withheld")
+    y = _info_row(c, y, "Period", certificate.get("period", ""))
+    y = _info_row(c, y, "Quarter", certificate.get("quarter", ""))
+
+    # Table header
+    y -= 16
+    c.setFillColor(_SECTION_BG)
+    c.rect(54, y - 4, width - 108, 18, fill=1, stroke=0)
+    c.setFillColor(black)
+    c.setFont("Helvetica-Bold", 7)
+    c.drawString(60, y, "ATC Code")
+    c.drawString(130, y, "Income Type")
+    c.drawRightString(350, y, "Income Amount")
+    c.drawRightString(430, y, "Tax Rate")
+    c.drawRightString(width - 60, y, "Tax Withheld")
+    y -= 18
+
+    # Table row
+    c.setFont("Helvetica", 8)
+    c.drawString(60, y, certificate.get("atc_code", ""))
+    income_type = certificate.get("income_type", get_income_type(certificate.get("atc_code", "")))
+    c.drawString(130, y, income_type[:40])
+    c.drawRightString(350, y, _fmt(certificate.get("income_amount", 0)))
+    rate = certificate.get("ewt_rate", 0)
+    c.drawRightString(430, y, f"{float(rate) * 100:.1f}%")
+    c.drawRightString(width - 60, y, _fmt(certificate.get("tax_withheld", 0)))
+
+    # Separator
+    y -= 8
+    c.setStrokeColor(_LINE_GRAY)
+    c.line(54, y, width - 54, y)
+
+    # Total
+    y -= 16
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(130, y, "TOTAL TAX WITHHELD")
+    c.setFillColor(_ACCENT)
+    c.drawRightString(width - 60, y, f"PHP {_fmt(certificate.get('tax_withheld', 0))}")
+
+    # === Certification ===
+    y -= 40
+    c.setFillColor(black)
+    c.setFont("Helvetica", 7)
+    c.drawString(60, y, "I declare under penalties of perjury that the information herein stated are true and correct.")
+    y -= 30
+    c.setFont("Helvetica", 8)
+    c.drawString(60, y, "Authorized Signature: ____________________________")
+    c.drawString(350, y, "Date: ____________________")
+
+    # Footer
+    c.setFont("Helvetica", 6)
+    c.setFillColor(HexColor("#888888"))
+    c.drawCentredString(width / 2, 30, "Generated by AIStarlight | Draft BIR 2307 — for review purposes")
+
+    c.save()
+    return filepath
+
+
+def generate_sawt_csv(
+    certificates: list[dict[str, Any]],
+    tenant_info: dict[str, Any],
+    period: str,
+) -> str:
+    """Generate SAWT (Summary Alphalist of Withholding Taxes) as CSV.
+
+    Args:
+        certificates: List of certificate dicts with supplier info.
+        tenant_info: Tenant data.
+        period: Reporting period.
+
+    Returns:
+        CSV content as string.
+    """
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Header
+    writer.writerow([
+        "Seq No",
+        "Payee TIN",
+        "Payee Name",
+        "ATC Code",
+        "Income Type",
+        "Income Amount",
+        "EWT Rate (%)",
+        "Tax Withheld",
+        "Quarter",
+        "Period",
+    ])
+
+    total_income = Decimal("0")
+    total_tax = Decimal("0")
+
+    for i, cert in enumerate(certificates, 1):
+        income = Decimal(str(cert.get("income_amount", 0)))
+        tax = Decimal(str(cert.get("tax_withheld", 0)))
+        total_income += income
+        total_tax += tax
+
+        writer.writerow([
+            i,
+            cert.get("supplier_tin", ""),
+            cert.get("supplier_name", ""),
+            cert.get("atc_code", ""),
+            cert.get("income_type", ""),
+            f"{income:.2f}",
+            f"{float(cert.get('ewt_rate', 0)) * 100:.1f}",
+            f"{tax:.2f}",
+            cert.get("quarter", ""),
+            cert.get("period", period),
+        ])
+
+    # Total row
+    writer.writerow([
+        "",
+        "",
+        "TOTAL",
+        "",
+        "",
+        f"{total_income:.2f}",
+        "",
+        f"{total_tax:.2f}",
+        "",
+        "",
+    ])
+
+    return output.getvalue()
+
+
+def generate_sawt_pdf(
+    certificates: list[dict[str, Any]],
+    tenant_info: dict[str, Any],
+    period: str,
+) -> str:
+    """Generate SAWT as PDF.
+
+    Returns file path of generated PDF.
+    """
+    tin = tenant_info.get("tin_number", "no_tin")
+    filename = f"SAWT_{period}_{tin}.pdf"
+    filepath = os.path.join(settings.report_dir, filename)
+
+    c = canvas.Canvas(filepath, pagesize=letter)
+    width, height = letter
+
+    # Title
+    c.setFillColor(_HEADER_BG)
+    c.rect(0, height - 60, width, 60, fill=1, stroke=0)
+    c.setFillColor(white)
+    c.setFont("Helvetica-Bold", 16)
+    c.drawCentredString(width / 2, height - 28, "Summary Alphalist of Withholding Taxes")
+    c.setFont("Helvetica", 8)
+    c.drawCentredString(width / 2, height - 44, f"Period: {period} | TIN: {tin} | {tenant_info.get('company_name', '')}")
+
+    y = height - 80
+
+    # Table header
+    c.setFillColor(_SECTION_BG)
+    c.rect(30, y - 4, width - 60, 16, fill=1, stroke=0)
+    c.setFillColor(black)
+    c.setFont("Helvetica-Bold", 6)
+    headers = [
+        (35, "No."),
+        (55, "Payee TIN"),
+        (120, "Payee Name"),
+        (260, "ATC"),
+        (295, "Income Type"),
+        (390, "Amount"),
+        (440, "Rate"),
+        (480, "Tax Withheld"),
+    ]
+    for x, label in headers:
+        c.drawString(x, y, label)
+    y -= 18
+
+    total_income = Decimal("0")
+    total_tax = Decimal("0")
+
+    c.setFont("Helvetica", 6)
+    for i, cert in enumerate(certificates, 1):
+        if y < 60:
+            c.showPage()
+            y = height - 50
+
+        income = Decimal(str(cert.get("income_amount", 0)))
+        tax = Decimal(str(cert.get("tax_withheld", 0)))
+        total_income += income
+        total_tax += tax
+
+        c.drawString(35, y, str(i))
+        c.drawString(55, y, cert.get("supplier_tin", "")[:15])
+        c.drawString(120, y, (cert.get("supplier_name", "") or "")[:25])
+        c.drawString(260, y, cert.get("atc_code", ""))
+        c.drawString(295, y, (cert.get("income_type", "") or "")[:20])
+        c.drawRightString(430, y, _fmt(income))
+        rate = cert.get("ewt_rate", 0)
+        c.drawRightString(460, y, f"{float(rate) * 100:.0f}%")
+        c.drawRightString(width - 35, y, _fmt(tax))
+        y -= 11
+
+    # Total
+    y -= 4
+    c.setStrokeColor(_LINE_GRAY)
+    c.line(30, y + 4, width - 30, y + 4)
+    c.setFont("Helvetica-Bold", 7)
+    c.drawString(120, y, "TOTAL")
+    c.drawRightString(430, y, f"PHP {_fmt(total_income)}")
+    c.drawRightString(width - 35, y, f"PHP {_fmt(total_tax)}")
+
+    # Footer
+    c.setFont("Helvetica", 6)
+    c.setFillColor(HexColor("#888888"))
+    c.drawCentredString(width / 2, 30, "Generated by AIStarlight | SAWT — for review purposes")
+    c.save()
+    return filepath
+
+
+def _section_header(c: canvas.Canvas, y: float, width: float, text: str) -> float:
+    c.setFillColor(_SECTION_BG)
+    c.rect(54, y - 14, width - 108, 18, fill=1, stroke=0)
+    c.setFillColor(black)
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(60, y - 10, text)
+    return y - 22
+
+
+def _info_row(c: canvas.Canvas, y: float, label: str, value: str) -> float:
+    y -= 14
+    c.setFont("Helvetica", 8)
+    c.drawString(60, y, f"{label}:")
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(200, y, str(value))
+    return y
+
+
+def _fmt(value) -> str:
+    try:
+        return f"{float(value):,.2f}"
+    except (ValueError, TypeError):
+        return str(value)

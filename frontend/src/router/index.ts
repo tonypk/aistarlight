@@ -71,6 +71,18 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "Memory & Preferences" },
     },
     {
+      path: "/suppliers",
+      name: "suppliers",
+      component: () => import("../views/SupplierView.vue"),
+      meta: { requiresAuth: true, title: "Suppliers" },
+    },
+    {
+      path: "/withholding",
+      name: "withholding",
+      component: () => import("../views/WithholdingView.vue"),
+      meta: { requiresAuth: true, title: "Withholding Tax" },
+    },
+    {
       path: "/settings",
       name: "settings",
       component: () => import("../views/SettingsView.vue"),

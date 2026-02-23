@@ -72,6 +72,10 @@ def _txn_response(txn) -> dict:
         "classification_source": txn.classification_source,
         "match_group_id": str(txn.match_group_id) if txn.match_group_id else None,
         "match_status": txn.match_status,
+        "ewt_rate": float(txn.ewt_rate) if txn.ewt_rate is not None else None,
+        "ewt_amount": float(txn.ewt_amount) if txn.ewt_amount is not None else None,
+        "atc_code": txn.atc_code,
+        "supplier_id": str(txn.supplier_id) if txn.supplier_id else None,
     }
 
 
@@ -628,7 +632,143 @@ async def run_reconciliation(
     return ok(result)
 
 
+# ---- Report Generation ----
+
+@router.post("/sessions/{session_id}/generate-report")
+async def generate_report_from_session(
+    session_id: str,
+    report_type: str = "BIR_2550M",
+    user: User = Depends(get_current_user),
+    tenant: Tenant = Depends(get_current_tenant),
+    db: AsyncSession = Depends(get_session),
+):
+    """Generate a BIR report directly from reconciliation session data."""
+    from backend.repositories.report import ReportRepository
+    from backend.services.report_generator import generate_pdf_report
+    from backend.services.tax_engine import calculate_report
+
+    sess_repo = ReconciliationSessionRepository(db)
+    session = await sess_repo.get_by_id(uuid.UUID(session_id))
+    if not session or session.tenant_id != user.tenant_id:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    txn_repo = TransactionRepository(db)
+    all_txns = await txn_repo.find_all_by_session(session.id)
+    if not all_txns:
+        raise HTTPException(status_code=400, detail="Session has no transactions")
+
+    sales_data = [
+        {
+            "amount": float(t.amount),
+            "vat_amount": float(t.vat_amount),
+            "vat_type": t.vat_type,
+            "category": t.category,
+        }
+        for t in all_txns
+        if t.source_type == "sales_record"
+    ]
+    purchases_data = [
+        {
+            "amount": float(t.amount),
+            "vat_amount": float(t.vat_amount),
+            "vat_type": t.vat_type,
+            "category": t.category,
+        }
+        for t in all_txns
+        if t.source_type == "purchase_record"
+    ]
+
+    calculated = await calculate_report(
+        form_type=report_type,
+        sales_data=sales_data,
+        purchases_data=purchases_data,
+        db=db,
+    )
+    calculated["period"] = session.period
+
+    tenant_info = {
+        "company_name": tenant.company_name,
+        "tin_number": tenant.tin_number,
+        "rdo_code": tenant.rdo_code,
+    }
+    file_path = generate_pdf_report(report_type, calculated, tenant_info)
+
+    report_repo = ReportRepository(db)
+    report = await report_repo.create(
+        tenant_id=tenant.id,
+        report_type=report_type,
+        period=session.period,
+        status="draft",
+        input_data={"session_id": session_id, "sales_count": len(sales_data), "purchases_count": len(purchases_data)},
+        calculated_data=calculated,
+        file_path=file_path,
+        created_by=user.id,
+    )
+
+    await log_action(
+        db, tenant_id=tenant.id, user_id=user.id,
+        entity_type="report", entity_id=report.id,
+        action="create",
+        changes={"report_type": report_type, "period": session.period, "source": "reconciliation"},
+    )
+
+    return ok({
+        "id": str(report.id),
+        "report_type": report.report_type,
+        "period": report.period,
+        "status": report.status,
+    })
+
+
 # ---- Export ----
+
+@router.get("/sessions/{session_id}/export-pdf")
+async def export_reconciliation_pdf(
+    session_id: str,
+    user: User = Depends(get_current_user),
+    tenant: Tenant = Depends(get_current_tenant),
+    db: AsyncSession = Depends(get_session),
+):
+    """Export reconciliation results as a professional PDF report."""
+    from fastapi.responses import FileResponse
+
+    from backend.services.report_generator import generate_reconciliation_pdf
+
+    sess_repo = ReconciliationSessionRepository(db)
+    session = await sess_repo.get_by_id(uuid.UUID(session_id))
+    if not session or session.tenant_id != user.tenant_id:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    summary = session.summary
+    if not summary:
+        raise HTTPException(status_code=400, detail="No summary available — run reconciliation first")
+
+    # Fetch anomalies
+    anomaly_repo = AnomalyRepository(db)
+    anomalies_raw = await anomaly_repo.find_by_session(session.id, offset=0, limit=100)
+    anomalies = [_anomaly_response(a) for a in anomalies_raw]
+
+    tenant_info = {
+        "company_name": tenant.company_name,
+        "tin_number": tenant.tin_number,
+        "rdo_code": tenant.rdo_code,
+    }
+
+    session_data = _session_response(session)
+    filepath = generate_reconciliation_pdf(session_data, summary, anomalies, tenant_info)
+
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id,
+        entity_type="reconciliation_session", entity_id=session.id,
+        action="export_pdf",
+    )
+
+    return FileResponse(
+        filepath,
+        media_type="application/pdf",
+        filename=f"reconciliation_{session.period}.pdf",
+    )
+
 
 @router.get("/sessions/{session_id}/export")
 async def export_transactions(

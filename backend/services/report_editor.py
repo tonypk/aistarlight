@@ -179,7 +179,7 @@ async def apply_field_overrides(
         current_data[field] = new_value
 
     # Recalculate dependent fields if requested
-    if recalculate and report.report_type == "BIR_2550M":
+    if recalculate and report.report_type in ("BIR_2550M", "BIR_2550Q"):
         current_data = recalculate_bir_2550m(current_data)
 
     # Preserve period

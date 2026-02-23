@@ -3,11 +3,12 @@ from pydantic import BaseModel
 
 class ReportGenerateRequest(BaseModel):
     report_type: str = "BIR_2550M"
-    period: str  # e.g. "2026-01"
+    period: str  # e.g. "2026-01" or "2026Q1" for quarterly
     data_file_id: str | None = None
     column_mappings: dict[str, str] | None = None  # {source_col: target_field}
     sheet_name: str | None = None  # Excel sheet name, defaults to first sheet
     manual_data: dict | None = None
+    session_id: str | None = None  # Reconciliation session ID — auto-fill from session data
 
 
 class ReportEditRequest(BaseModel):

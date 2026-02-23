@@ -7,8 +7,10 @@ from backend.models.knowledge import KnowledgeChunk
 from backend.models.memory import CorrectionHistory, UserPreference
 from backend.models.reconciliation import ReconciliationSession
 from backend.models.report import Report
+from backend.models.supplier import Supplier
 from backend.models.tenant import Tenant, User
 from backend.models.transaction import Transaction
+from backend.models.withholding import WithholdingCertificate
 from backend.models.workflow import ReportStatus
 
 __all__ = [
@@ -22,8 +24,10 @@ __all__ = [
     "ReconciliationSession",
     "Report",
     "ReportStatus",
+    "Supplier",
     "Tenant",
     "Transaction",
     "User",
     "UserPreference",
+    "WithholdingCertificate",
 ]

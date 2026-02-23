@@ -36,3 +36,11 @@ class Transaction(Base, UUIDMixin, TimestampMixin):
         UUID(as_uuid=True), nullable=True
     )
     match_status: Mapped[str] = mapped_column(String(20), default="unmatched")
+
+    # Withholding tax fields
+    ewt_rate: Mapped[float | None] = mapped_column(Numeric(5, 4), nullable=True)
+    ewt_amount: Mapped[float | None] = mapped_column(Numeric(15, 2), nullable=True)
+    atc_code: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    supplier_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("suppliers.id"), nullable=True
+    )

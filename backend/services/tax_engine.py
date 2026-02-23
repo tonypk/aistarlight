@@ -47,7 +47,27 @@ SUPPORTED_FORMS = {
     "BIR_2550Q": {
         "name": "Quarterly Value-Added Tax Return",
         "frequency": "quarterly",
-        "fields": [],  # TODO: Phase 2
+        "fields": [
+            "vatable_sales",
+            "sales_to_government",
+            "zero_rated_sales",
+            "vat_exempt_sales",
+            "total_sales",
+            "output_vat",
+            "output_vat_government",
+            "total_output_vat",
+            "input_vat_goods",
+            "input_vat_capital",
+            "input_vat_services",
+            "input_vat_imports",
+            "total_input_vat",
+            "vat_payable",
+            "less_tax_credits",
+            "net_vat_payable",
+            "add_penalties",
+            "total_amount_due",
+            "tax_credit_carried_forward",
+        ],
     },
     "BIR_1701": {
         "name": "Annual Income Tax Return (Individual)",
@@ -203,6 +223,22 @@ def calculate_bir_2550m(
     }
 
 
+def calculate_bir_2550q(
+    sales_data: list[dict],
+    purchases_data: list[dict],
+    tax_credits: Decimal | str | None = None,
+    penalties: Decimal | str | None = None,
+) -> dict[str, Any]:
+    """Calculate BIR 2550Q (Quarterly VAT) from sales and purchase records.
+
+    The 2550Q structure is nearly identical to 2550M but aggregates quarterly data.
+    The calculation logic is the same — only the form metadata and period differ.
+    """
+    result = calculate_bir_2550m(sales_data, purchases_data, tax_credits, penalties)
+    result["form_type"] = "BIR_2550Q"
+    return result
+
+
 async def calculate_report(
     form_type: str,
     sales_data: list[dict],
@@ -240,9 +276,11 @@ async def calculate_report(
         except Exception:
             pass  # Fall through to hardcoded
 
-    # Fallback to hardcoded calculator
+    # Fallback to hardcoded calculators
     if form_type == "BIR_2550M":
         return calculate_bir_2550m(sales_data, purchases_data, tax_credits, penalties)
+    if form_type == "BIR_2550Q":
+        return calculate_bir_2550q(sales_data, purchases_data, tax_credits, penalties)
 
     raise ValueError(f"No calculator available for {form_type}")
 

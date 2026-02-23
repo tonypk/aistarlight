@@ -10,6 +10,7 @@ from backend.api.reconciliation import router as reconciliation_router
 from backend.api.memory import router as memory_router
 from backend.api.reports import router as reports_router
 from backend.api.settings import router as settings_router
+from backend.api.withholding import router as withholding_router
 
 api_router = APIRouter()
 api_router.include_router(auth_router)
@@ -22,3 +23,4 @@ api_router.include_router(settings_router)
 api_router.include_router(audit_router)
 api_router.include_router(forms_router)
 api_router.include_router(reconciliation_router)
+api_router.include_router(withholding_router)

@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTransactionStore } from '../stores/transaction'
 import { useReportStore } from '../stores/report'
+import { reconciliationApi } from '../api/transactions'
 import VATSummarySheet from '../components/reconciliation/VATSummarySheet.vue'
 import ReconciliationSummary from '../components/reconciliation/ReconciliationSummary.vue'
 import AnomalyList from '../components/reconciliation/AnomalyList.vue'
@@ -84,6 +85,47 @@ async function runReconciliation() {
 
 async function onResolveAnomaly(id: string, status: string, note?: string) {
   await store.resolveAnomaly(sessionId.value, id, status, note)
+}
+
+const generateReportType = ref('BIR_2550M')
+const generatingReport = ref(false)
+const exportingPdf = ref(false)
+
+async function generateReportFromSession() {
+  if (!sessionId.value) return
+  generatingReport.value = true
+  reconError.value = ''
+  try {
+    const res = await reconciliationApi.generateReport(sessionId.value, generateReportType.value)
+    const report = res.data.data
+    if (report?.id) {
+      router.push(`/reports/${report.id}/edit`)
+    }
+  } catch (e: any) {
+    reconError.value = e?.response?.data?.error ?? 'Report generation failed'
+  } finally {
+    generatingReport.value = false
+  }
+}
+
+async function exportPdf() {
+  if (!sessionId.value) return
+  exportingPdf.value = true
+  try {
+    const res = await reconciliationApi.exportPdf(sessionId.value)
+    const url = window.URL.createObjectURL(new Blob([res.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `reconciliation_${store.currentSession?.period || 'report'}.pdf`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+  } catch (e: any) {
+    reconError.value = e?.response?.data?.error ?? 'PDF export failed'
+  } finally {
+    exportingPdf.value = false
+  }
 }
 
 async function exportCsv() {
@@ -184,6 +226,13 @@ const statusTextColors: Record<string, string> = {
           <button class="btn ghost" @click="listMode = true; store.reset()">All Sessions</button>
           <button class="btn ghost" @click="goBack">Back to Classification</button>
           <button class="btn ghost" @click="exportCsv">Export CSV</button>
+          <button
+            class="btn secondary"
+            @click="exportPdf"
+            :disabled="exportingPdf || !store.summary"
+          >
+            {{ exportingPdf ? 'Exporting...' : 'Export PDF' }}
+          </button>
           <button class="btn" @click="goToReports">View Reports</button>
         </div>
       </div>
@@ -214,6 +263,20 @@ const statusTextColors: Record<string, string> = {
           </button>
           <button class="btn primary" @click="runReconciliation" :disabled="reconRunning">
             {{ reconRunning ? 'Running...' : 'Run Reconciliation' }}
+          </button>
+        </div>
+        <div class="control-row" v-if="store.currentSession?.status === 'completed'">
+          <label>Generate BIR Report:</label>
+          <select v-model="generateReportType">
+            <option value="BIR_2550M">BIR 2550M (Monthly)</option>
+            <option value="BIR_2550Q">BIR 2550Q (Quarterly)</option>
+          </select>
+          <button
+            class="btn primary"
+            @click="generateReportFromSession"
+            :disabled="generatingReport"
+          >
+            {{ generatingReport ? 'Generating...' : 'Generate Report' }}
           </button>
         </div>
       </div>
