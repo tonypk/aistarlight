@@ -11,6 +11,7 @@ const sections = [
   { id: 'mapping', title: 'Column Mapping' },
   { id: 'classification', title: 'Classification' },
   { id: 'reconciliation', title: 'VAT Reconciliation' },
+  { id: 'bank-recon', title: 'Bank Reconciliation' },
   { id: 'reports', title: 'Report Generation' },
   { id: 'edit-report', title: 'Edit Reports' },
   { id: 'corrections', title: 'Corrections & Learning' },
@@ -95,6 +96,13 @@ function scrollTo(id: string) {
               <div>
                 <strong>Withholding Tax</strong>
                 <p>EWT classification, BIR 2307 certificate generation, SAWT summary</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <span class="fi">🏦</span>
+              <div>
+                <strong>Bank Reconciliation</strong>
+                <p>Auto-match bank statements, PayPal/Stripe/GCash exports with AI analysis</p>
               </div>
             </div>
           </div>
@@ -321,9 +329,92 @@ function scrollTo(id: string) {
           </ul>
         </section>
 
-        <!-- 8. Reports -->
+        <!-- 8. Bank Reconciliation -->
+        <section id="bank-recon">
+          <h3>8. Bank &amp; Billing Reconciliation</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Bank Recon</strong></p>
+
+          <p>Automatically match your bank statements, payment platform exports (PayPal, Stripe, GCash), and POS sales against your accounting records. AI identifies fuzzy matches and explains discrepancies.</p>
+
+          <h4>Supported File Formats</h4>
+          <ul>
+            <li><strong>CSV / Excel</strong> (.csv, .xlsx, .xls) &mdash; Bank exports, PayPal/Stripe/GCash downloads</li>
+            <li><strong>PDF</strong> (.pdf) &mdash; Bank statements with tables (auto-extracted via pdfplumber)</li>
+            <li><strong>Images</strong> (.jpg, .png, .bmp, .tiff, .webp) &mdash; Scanned bank statements (OCR extraction)</li>
+          </ul>
+
+          <h4>Auto-Detected Bank Formats</h4>
+          <table class="ref-table">
+            <thead>
+              <tr><th>Format</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>BDO</td><td>Banco de Oro bank statements</td></tr>
+              <tr><td>BPI</td><td>Bank of the Philippine Islands</td></tr>
+              <tr><td>Metrobank</td><td>Metropolitan Bank statements</td></tr>
+              <tr><td>PayPal</td><td>PayPal transaction history exports</td></tr>
+              <tr><td>Stripe</td><td>Stripe payment exports</td></tr>
+              <tr><td>GCash</td><td>GCash transaction history</td></tr>
+              <tr><td>Generic</td><td>Any CSV with date/amount/description columns</td></tr>
+            </tbody>
+          </table>
+
+          <h4>How to Use</h4>
+          <div class="steps">
+            <div class="step">
+              <span class="step-num">1</span>
+              <div>
+                <strong>Upload Files</strong>
+                <p>Drag &amp; drop bank statements, billing exports, or POS files. You can upload multiple files at once (e.g., bank CSV + PayPal export + GCash statement).</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">2</span>
+              <div>
+                <strong>Configure Settings</strong>
+                <p>Select the filing period, set amount tolerance (default PHP 0.01) and date tolerance (default 3 days). Optionally link to an existing reconciliation session to match against your accounting records.</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">3</span>
+              <div>
+                <strong>Review Matching Results</strong>
+                <p>The system auto-detects bank formats and matches entries. View matched pairs, unmatched bank entries, and unmatched records with match rate statistics.</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">4</span>
+              <div>
+                <strong>AI Analysis</strong>
+                <p>For unmatched entries, AI suggests fuzzy matches (with confidence scores) and explains why entries didn't match &mdash; e.g., bank fees, timing differences, internal transfers. Accept or reject each suggestion.</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">5</span>
+              <div>
+                <strong>Summary &amp; Export</strong>
+                <p>View the final reconciliation summary. Export the full results as CSV for your records.</p>
+              </div>
+            </div>
+          </div>
+
+          <h4>AI Suggestion Categories</h4>
+          <ul>
+            <li><strong style="color: #22c55e;">Likely Match</strong> &mdash; High confidence fuzzy match (amount &amp; date close)</li>
+            <li><strong style="color: #eab308;">Possible Match</strong> &mdash; May be a match, needs manual review</li>
+            <li><strong style="color: #3b82f6;">Internal Transfer</strong> &mdash; Entry appears to be a transfer between accounts</li>
+            <li><strong style="color: #8b5cf6;">Bank Fee</strong> &mdash; Service charges, interest, or bank-specific deductions</li>
+            <li><strong style="color: #ef4444;">No Match</strong> &mdash; No corresponding record found</li>
+          </ul>
+
+          <div class="tip-box">
+            <strong>Tip:</strong> Link a reconciliation session to match bank entries against your classified sales/purchase records. Without a session, the system parses and analyzes bank files only (format detection, entry extraction, AI explanations).
+          </div>
+        </section>
+
+        <!-- 9. Reports -->
         <section id="reports">
-          <h3>8. Report Generation</h3>
+          <h3>9. Report Generation</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Reports</strong></p>
 
           <h4>Generating a Report</h4>
@@ -361,9 +452,9 @@ function scrollTo(id: string) {
           </ul>
         </section>
 
-        <!-- 9. Edit Report -->
+        <!-- 10. Edit Report -->
         <section id="edit-report">
-          <h3>9. Editing Reports</h3>
+          <h3>10. Editing Reports</h3>
           <p>Click the "Edit" button in the report list to open the editing page.</p>
 
           <h4>Editing Features</h4>
@@ -380,9 +471,9 @@ function scrollTo(id: string) {
           </div>
         </section>
 
-        <!-- 10. Corrections & Learning -->
+        <!-- 11. Corrections & Learning -->
         <section id="corrections">
-          <h3>10. Corrections &amp; Learning</h3>
+          <h3>11. Corrections &amp; Learning</h3>
           <p>Navigate to: Any report or transaction view &rarr; <strong>Edit / Correct</strong></p>
 
           <p>When you correct a transaction's classification or report field, the system doesn't just update the value &mdash; it learns from your correction to improve future accuracy.</p>
@@ -425,9 +516,9 @@ function scrollTo(id: string) {
           </div>
         </section>
 
-        <!-- 11. Suppliers -->
+        <!-- 12. Suppliers -->
         <section id="suppliers">
-          <h3>11. Supplier Management</h3>
+          <h3>12. Supplier Management</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Suppliers</strong></p>
 
           <h4>Managing Suppliers</h4>
@@ -453,9 +544,9 @@ function scrollTo(id: string) {
           </table>
         </section>
 
-        <!-- 12. Withholding Tax -->
+        <!-- 13. Withholding Tax -->
         <section id="withholding">
-          <h3>12. Withholding Tax (EWT) Management</h3>
+          <h3>13. Withholding Tax (EWT) Management</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Withholding Tax</strong></p>
 
           <h4>EWT Workflow</h4>
@@ -507,9 +598,9 @@ function scrollTo(id: string) {
           </table>
         </section>
 
-        <!-- 13. AI Chat -->
+        <!-- 14. AI Chat -->
         <section id="chat">
-          <h3>13. AI Tax Assistant</h3>
+          <h3>14. AI Tax Assistant</h3>
           <p>Navigate to: Sidebar &rarr; <strong>AI Chat</strong></p>
 
           <p>You can ask the AI assistant any Philippine tax-related question in English or Chinese. For example:</p>
@@ -526,9 +617,9 @@ function scrollTo(id: string) {
           </div>
         </section>
 
-        <!-- 14. Knowledge -->
+        <!-- 15. Knowledge -->
         <section id="knowledge">
-          <h3>14. Knowledge Base</h3>
+          <h3>15. Knowledge Base</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Knowledge</strong></p>
 
           <p>The knowledge base contains structured data on Philippine tax laws and regulations, used to enhance the AI assistant's accuracy.</p>
@@ -546,9 +637,9 @@ function scrollTo(id: string) {
           <p>You can search the knowledge base for specific provisions and regulations on the Knowledge page.</p>
         </section>
 
-        <!-- 15. FAQ -->
+        <!-- 16. FAQ -->
         <section id="faq">
-          <h3>15. Frequently Asked Questions</h3>
+          <h3>16. Frequently Asked Questions</h3>
 
           <div class="faq-item">
             <h4>Q: What if the report calculations are incorrect?</h4>
@@ -578,6 +669,16 @@ function scrollTo(id: string) {
           <div class="faq-item">
             <h4>Q: What is the difference between BIR 2550M and 2550Q?</h4>
             <p>A: BIR 2550M is the monthly VAT declaration and 2550Q is the quarterly VAT return. The calculation logic is the same; the difference is the filing period and data scope.</p>
+          </div>
+
+          <div class="faq-item">
+            <h4>Q: What bank statement formats are supported for Bank Reconciliation?</h4>
+            <p>A: The system auto-detects BDO, BPI, Metrobank, PayPal, Stripe, and GCash formats. You can also upload generic CSV/Excel files with date, amount, and description columns. PDF bank statements and scanned images (via OCR) are also supported.</p>
+          </div>
+
+          <div class="faq-item">
+            <h4>Q: How does the AI match analysis work?</h4>
+            <p>A: After standard matching (by amount and date), unmatched entries are sent to AI in batches. The AI suggests fuzzy matches, identifies bank fees and internal transfers, and explains why entries don't match. You can accept or reject each suggestion.</p>
           </div>
         </section>
 
