@@ -1,4 +1,3 @@
-import pathlib
 import uuid
 from datetime import UTC, datetime
 
@@ -6,7 +5,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.config import settings
 from backend.deps import get_current_tenant, get_current_user, get_session
 from backend.models.tenant import Tenant, User
 from backend.models.workflow import is_editable, is_valid_transition
@@ -15,6 +13,7 @@ from backend.schemas.common import ok
 from backend.schemas.report import ReportEditRequest, ReportGenerateRequest, ReportTransitionRequest
 from backend.services.audit_logger import log_action
 from backend.services.data_processor import apply_column_mapping, extract_full_data
+from backend.services.file_utils import find_uploaded_file
 from backend.services.report_editor import (
     NotEditableError,
     VersionConflictError,
@@ -47,21 +46,7 @@ async def list_supported_forms(
 
 def _find_uploaded_file(file_id: str) -> tuple[str, str]:
     """Find an uploaded file by ID, returns (filepath, filename)."""
-    if not file_id.replace("-", "").isalnum():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file ID")
-
-    upload_root = pathlib.Path(settings.upload_dir).resolve()
-    for ext in ("csv", "xlsx", "xls"):
-        filepath = (upload_root / f"{file_id}.{ext}").resolve()
-        if not str(filepath).startswith(str(upload_root)):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file ID")
-        if filepath.exists():
-            return str(filepath), f"{file_id}.{ext}"
-
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Uploaded file {file_id} not found",
-    )
+    return find_uploaded_file(file_id)
 
 
 def _report_response(report) -> dict:

@@ -29,6 +29,18 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "Column Mapping" },
     },
     {
+      path: "/classification",
+      name: "classification",
+      component: () => import("../views/TransactionClassificationView.vue"),
+      meta: { requiresAuth: true, title: "Transaction Classification" },
+    },
+    {
+      path: "/reconciliation",
+      name: "reconciliation",
+      component: () => import("../views/ReconciliationView.vue"),
+      meta: { requiresAuth: true, title: "VAT Reconciliation" },
+    },
+    {
       path: "/reports",
       name: "reports",
       component: () => import("../views/ReportView.vue"),

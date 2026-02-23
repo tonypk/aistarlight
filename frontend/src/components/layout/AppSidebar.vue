@@ -8,6 +8,8 @@ const auth = useAuthStore()
 const menuItems = [
   { name: 'Dashboard', path: '/', icon: '📊' },
   { name: 'Upload Data', path: '/upload', icon: '📤' },
+  { name: 'Classification', path: '/classification', icon: '🏷️' },
+  { name: 'Reconciliation', path: '/reconciliation', icon: '🔍' },
   { name: 'Reports', path: '/reports', icon: '📋' },
   { name: 'AI Chat', path: '/chat', icon: '💬' },
   { name: 'Knowledge', path: '/knowledge', icon: '📚' },

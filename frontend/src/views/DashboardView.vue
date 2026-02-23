@@ -47,6 +47,11 @@ onMounted(async () => {
         <h3>AI Assistant</h3>
         <p>Ask tax questions</p>
       </router-link>
+      <router-link to="/classification" class="card">
+        <span class="card-icon">🔍</span>
+        <h3>VAT Reconciliation</h3>
+        <p>Classify & reconcile transactions</p>
+      </router-link>
       <router-link to="/knowledge" class="card">
         <span class="card-icon">📚</span>
         <h3>Knowledge Base</h3>

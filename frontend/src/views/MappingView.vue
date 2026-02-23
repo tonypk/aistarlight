@@ -71,7 +71,7 @@ function confirmMapping() {
     return
   }
   uploadStore.setMappings(finalMappings)
-  router.push('/reports')
+  router.push('/classification')
 }
 </script>
 
