@@ -11,6 +11,7 @@ const menuItems = [
   { name: 'Receipt Scanner', path: '/receipts', icon: '🧾' },
   { name: 'Classification', path: '/classification', icon: '🏷️' },
   { name: 'Reconciliation', path: '/reconciliation', icon: '🔍' },
+  { name: 'Bank Recon', path: '/bank-reconciliation', icon: '🏦' },
   { name: 'Reports', path: '/reports', icon: '📋' },
   { name: 'Suppliers', path: '/suppliers', icon: '🏢' },
   { name: 'Withholding Tax', path: '/withholding', icon: '📑' },

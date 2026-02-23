@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from backend.api.audit import router as audit_router
 from backend.api.auth import router as auth_router
+from backend.api.bank_recon import router as bank_recon_router
 from backend.api.chat import router as chat_router
 from backend.api.compliance import router as compliance_router
 from backend.api.corrections import router as corrections_router
@@ -30,3 +31,4 @@ api_router.include_router(withholding_router)
 api_router.include_router(corrections_router)
 api_router.include_router(compliance_router)
 api_router.include_router(receipts_router)
+api_router.include_router(bank_recon_router)

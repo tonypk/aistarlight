@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     ocr_llm_model: str = "gpt-4.1-mini"
     max_receipt_batch_size: int = 50
 
+    # Bank reconciliation AI
+    match_analyzer_model: str = "gpt-4.1-mini"
+    max_ai_suggestions: int = 20
+
     # Rate limiting
     rate_limit_per_minute: int = 60
 

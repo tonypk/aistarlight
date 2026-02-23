@@ -47,6 +47,12 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "VAT Reconciliation" },
     },
     {
+      path: "/bank-reconciliation",
+      name: "bank-reconciliation",
+      component: () => import("../views/BankReconciliationView.vue"),
+      meta: { requiresAuth: true, title: "Bank Reconciliation" },
+    },
+    {
       path: "/reports",
       name: "reports",
       component: () => import("../views/ReportView.vue"),
