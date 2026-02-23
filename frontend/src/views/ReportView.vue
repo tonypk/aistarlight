@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ReportPreview from '../components/report/ReportPreview.vue'
+import { formsApi, type FormSummary } from '../api/forms'
 import { useReportStore } from '../stores/report'
 import { useUploadStore } from '../stores/upload'
 
@@ -13,8 +14,23 @@ const generating = ref(false)
 const transitioning = ref<string | null>(null)
 const error = ref('')
 
-onMounted(() => {
+// Dynamic form type selection
+const availableForms = ref<FormSummary[]>([])
+const selectedFormType = ref('BIR_2550M')
+
+onMounted(async () => {
   reportStore.fetchReports()
+  // Load available form types from schema registry + supported forms
+  try {
+    const res = await formsApi.list()
+    availableForms.value = res.data.data || []
+    if (availableForms.value.length > 0 && !availableForms.value.find(f => f.form_type === selectedFormType.value)) {
+      selectedFormType.value = availableForms.value[0].form_type
+    }
+  } catch {
+    // Fallback: at minimum show BIR_2550M
+    availableForms.value = [{ form_type: 'BIR_2550M', name: 'Monthly Value-Added Tax Declaration', frequency: 'monthly' }]
+  }
 })
 
 async function handleGenerate() {
@@ -23,14 +39,14 @@ async function handleGenerate() {
   try {
     if (uploadStore.hasFile && uploadStore.hasMappings) {
       await reportStore.generateReport({
-        report_type: 'BIR_2550M',
+        report_type: selectedFormType.value,
         period: period.value,
         data_file_id: uploadStore.fileId!,
         column_mappings: uploadStore.confirmedMappings,
       })
     } else {
       await reportStore.generateReport({
-        report_type: 'BIR_2550M',
+        report_type: selectedFormType.value,
         period: period.value,
         manual_data: {
           sales_data: [
@@ -75,7 +91,6 @@ async function handleTransition(id: string, targetStatus: string) {
   }
 }
 
-// Status workflow buttons
 function getWorkflowActions(status: string): { label: string; target: string; color: string }[] {
   const map: Record<string, { label: string; target: string; color: string }[]> = {
     draft: [{ label: 'Submit for Review', target: 'review', color: '#3b82f6' }],
@@ -111,6 +126,10 @@ function statusColor(status: string): string {
   }
   return colors[status] || 'draft'
 }
+
+function formatFormType(type: string): string {
+  return type.replace(/_/g, ' ')
+}
 </script>
 
 <template>
@@ -121,7 +140,16 @@ function statusColor(status: string): string {
 
     <!-- Generation form -->
     <div class="gen-card">
-      <h3>Generate BIR 2550M</h3>
+      <h3>Generate Report</h3>
+
+      <div class="form-row">
+        <label>Form Type:</label>
+        <select v-model="selectedFormType" class="form-select">
+          <option v-for="form in availableForms" :key="form.form_type" :value="form.form_type">
+            {{ formatFormType(form.form_type) }} — {{ form.name }}
+          </option>
+        </select>
+      </div>
 
       <div v-if="uploadStore.hasFile && uploadStore.hasMappings" class="data-source">
         Using uploaded file: <strong>{{ uploadStore.filename }}</strong>
@@ -150,8 +178,9 @@ function statusColor(status: string): string {
     <ReportPreview
       v-if="reportStore.currentReport"
       :data="(reportStore.currentReport.calculated_data as Record<string, string>)"
-      report-type="BIR 2550M"
+      :report-type="formatFormType((reportStore.currentReport.report_type as string) || selectedFormType)"
       :status="(reportStore.currentReport.status as string)"
+      :form-type="(reportStore.currentReport.report_type as string) || selectedFormType"
     />
 
     <!-- Report history -->
@@ -169,7 +198,7 @@ function statusColor(status: string): string {
         </thead>
         <tbody>
           <tr v-for="r in reportStore.reports" :key="r.id">
-            <td>{{ r.report_type }}</td>
+            <td>{{ formatFormType(r.report_type) }}</td>
             <td>{{ r.period }}</td>
             <td><span class="badge" :class="statusColor(r.status)">{{ r.status }}</span></td>
             <td>{{ new Date(r.created_at).toLocaleDateString() }}</td>
@@ -206,12 +235,20 @@ function statusColor(status: string): string {
   margin-bottom: 24px;
 }
 .gen-card h3 { margin-bottom: 16px; }
+.form-select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 320px;
+  background: #fff;
+}
 .data-source {
   padding: 10px 14px;
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
   border-radius: 6px;
-  margin-bottom: 16px;
+  margin: 16px 0;
   font-size: 14px;
   color: #166534;
 }
@@ -225,8 +262,9 @@ function statusColor(status: string): string {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 8px;
 }
-.form-row label { font-weight: 500; }
+.form-row label { font-weight: 500; white-space: nowrap; }
 .form-row input[type="month"] {
   padding: 8px 12px;
   border: 1px solid #d1d5db;

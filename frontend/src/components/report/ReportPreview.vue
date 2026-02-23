@@ -1,31 +1,63 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { formsApi, type FormSection } from '../../api/forms'
 
 const props = defineProps<{
   data: Record<string, string> | null
   reportType: string
   status?: string
+  formType?: string // e.g. "BIR_2550M" — used to fetch schema
 }>()
 
+// Schema-driven sections (loaded from API)
+const schemaSections = ref<FormSection[]>([])
+const schemaLoaded = ref(false)
+
+// Total field IDs from schema (editable=false and line includes "total" or is a summary line)
+const totalFieldIds = ref<Set<string>>(new Set())
+
+async function loadSchema(formType: string) {
+  try {
+    const res = await formsApi.getSchema(formType)
+    const schema = res.data.data
+    schemaSections.value = schema.schema_def.sections
+    schemaLoaded.value = true
+
+    // Build set of total/computed fields
+    const totals = new Set<string>()
+    for (const section of schemaSections.value) {
+      for (const field of section.fields) {
+        if (!field.editable) {
+          totals.add(field.id)
+        }
+      }
+    }
+    totalFieldIds.value = totals
+  } catch {
+    schemaLoaded.value = false
+  }
+}
+
+onMounted(() => {
+  if (props.formType) {
+    loadSchema(props.formType)
+  }
+})
+
+watch(() => props.formType, (newType) => {
+  if (newType) loadSchema(newType)
+})
+
+// Fallback: infer sections from data keys (for reports without schema)
 interface LineItem {
   key: string
   lineNo: string
   label: string
   value: string
-  section: string
 }
 
-const workflowSteps = ['draft', 'review', 'approved', 'filed', 'archived']
-
-const currentStepIndex = computed(() => {
-  if (!props.status) return -1
-  // Map rejected back to draft position
-  if (props.status === 'rejected') return 0
-  return workflowSteps.indexOf(props.status)
-})
-
-const sections = computed(() => {
-  if (!props.data) return []
+const fallbackSections = computed(() => {
+  if (!props.data || schemaLoaded.value) return []
 
   const sectionDefs = [
     { prefix: 'line_1_', section: 'Sales / Receipts', through: 'line_5_' },
@@ -34,10 +66,9 @@ const sections = computed(() => {
     { prefix: 'line_12_', section: 'Tax Due', through: 'line_16_' },
   ]
 
-  const items: LineItem[] = []
+  const items: (LineItem & { section: string })[] = []
   for (const [key, value] of Object.entries(props.data)) {
     if (!key.startsWith('line_')) continue
-
     const parts = key.split('_')
     const lineNo = (parts[1] || '').toUpperCase()
     const label = parts.slice(2).join(' ')
@@ -52,7 +83,6 @@ const sections = computed(() => {
         break
       }
     }
-
     items.push({ key, lineNo, label, value, section })
   }
 
@@ -65,8 +95,15 @@ const sections = computed(() => {
     }
     grouped[grouped.length - 1].items.push(item)
   }
-
   return grouped
+})
+
+const workflowSteps = ['draft', 'review', 'approved', 'filed', 'archived']
+
+const currentStepIndex = computed(() => {
+  if (!props.status) return -1
+  if (props.status === 'rejected') return 0
+  return workflowSteps.indexOf(props.status)
 })
 
 const taxCredit = computed(() => props.data?.tax_credit_carried_forward || '0')
@@ -80,8 +117,12 @@ function formatAmount(val: string): string {
   }
 }
 
-function isTotal(key: string): boolean {
-  return key.includes('total') || key.includes('line_16') || key.includes('line_5_') || key.includes('line_6b_') || key.includes('line_11_')
+function isTotalField(fieldId: string): boolean {
+  if (totalFieldIds.value.size > 0) {
+    return totalFieldIds.value.has(fieldId)
+  }
+  // Fallback heuristic
+  return fieldId.includes('total') || fieldId.includes('line_16') || fieldId.includes('line_5_') || fieldId.includes('line_6b_') || fieldId.includes('line_11_')
 }
 
 function statusBadgeClass(status: string): string {
@@ -120,18 +161,41 @@ function statusBadgeClass(status: string): string {
       </div>
     </div>
 
-    <div v-for="section in sections" :key="section.name" class="section">
-      <div class="section-header">{{ section.name }}</div>
-      <table>
-        <tbody>
-          <tr v-for="item in section.items" :key="item.key" :class="{ total: isTotal(item.key) }">
-            <td class="line-no">{{ item.lineNo }}</td>
-            <td class="label">{{ item.label }}</td>
-            <td class="value">PHP {{ formatAmount(item.value) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <!-- Schema-driven rendering -->
+    <template v-if="schemaLoaded">
+      <div v-for="section in schemaSections" :key="section.id" class="section">
+        <div class="section-header">{{ section.name }}</div>
+        <table>
+          <tbody>
+            <tr
+              v-for="field in section.fields"
+              :key="field.id"
+              :class="{ total: isTotalField(field.id) }"
+            >
+              <td class="line-no">{{ field.line }}</td>
+              <td class="label">{{ field.label }}</td>
+              <td class="value">PHP {{ formatAmount(data[field.id] || '0') }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
+
+    <!-- Fallback rendering (no schema) -->
+    <template v-else>
+      <div v-for="section in fallbackSections" :key="section.name" class="section">
+        <div class="section-header">{{ section.name }}</div>
+        <table>
+          <tbody>
+            <tr v-for="item in section.items" :key="item.key" :class="{ total: isTotalField(item.key) }">
+              <td class="line-no">{{ item.lineNo }}</td>
+              <td class="label">{{ item.label }}</td>
+              <td class="value">PHP {{ formatAmount(item.value) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
 
     <div v-if="parseFloat(taxCredit) > 0" class="credit-note">
       Excess Input VAT / Tax Credit Carried Forward: PHP {{ formatAmount(taxCredit) }}
@@ -168,7 +232,6 @@ h3 { margin: 0; }
 .badge-filed { background: #ede9fe; color: #5b21b6; }
 .badge-archived { background: #f3f4f6; color: #6b7280; }
 
-/* Workflow progress bar */
 .workflow-progress {
   display: flex;
   justify-content: space-between;
@@ -224,7 +287,7 @@ h3 { margin: 0; }
 table { width: 100%; }
 td { padding: 6px 12px; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
 .line-no { width: 40px; color: #94a3b8; font-weight: 500; }
-.label { text-transform: capitalize; color: #555; }
+.label { color: #555; }
 .value { text-align: right; font-family: monospace; white-space: nowrap; }
 tr.total { background: #f8fafc; }
 tr.total .label, tr.total .value { font-weight: 700; }

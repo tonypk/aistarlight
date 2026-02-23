@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuditTrail from '../components/report/AuditTrail.vue'
+import { formsApi, type FormSection } from '../api/forms'
 import { useReportStore } from '../stores/report'
 
 const route = useRoute()
@@ -13,59 +14,80 @@ const saving = ref(false)
 const error = ref('')
 const recalculate = ref(true)
 const notes = ref('')
+const schemaLoaded = ref(false)
 
-// Editable fields state — populated from report data
-const editableFields = reactive<Record<string, string>>({})
-const originalFields = ref<Record<string, string>>({})
+// Dynamic sections from schema API
+const sections = ref<FormSection[]>([])
 
-// BIR 2550M field definitions
-const sections = [
+// Fallback hardcoded sections (in case schema API fails)
+const fallbackSections: FormSection[] = [
   {
+    id: 'part2_sales',
     name: 'Part II - Sales / Receipts',
     fields: [
-      { key: 'line_1_vatable_sales', line: '1', label: 'Vatable Sales / Receipts', editable: true },
-      { key: 'line_2_sales_to_government', line: '2', label: 'Sales to Government (5% VAT)', editable: true },
-      { key: 'line_3_zero_rated_sales', line: '3', label: 'Zero-Rated Sales', editable: true },
-      { key: 'line_4_exempt_sales', line: '4', label: 'Exempt Sales', editable: true },
-      { key: 'line_5_total_sales', line: '5', label: 'Total Sales (Lines 1-4)', editable: false },
+      { id: 'line_1_vatable_sales', line: '1', label: 'Vatable Sales / Receipts', editable: true },
+      { id: 'line_2_sales_to_government', line: '2', label: 'Sales to Government (5% VAT)', editable: true },
+      { id: 'line_3_zero_rated_sales', line: '3', label: 'Zero-Rated Sales', editable: true },
+      { id: 'line_4_exempt_sales', line: '4', label: 'Exempt Sales', editable: true },
+      { id: 'line_5_total_sales', line: '5', label: 'Total Sales (Lines 1-4)', editable: false },
     ],
   },
   {
+    id: 'part3_output_tax',
     name: 'Part III - Output Tax',
     fields: [
-      { key: 'line_6_output_vat', line: '6', label: 'Output VAT (Line 1 x 12%)', editable: false },
-      { key: 'line_6a_output_vat_government', line: '6A', label: 'Output VAT Government (Line 2 x 5%)', editable: false },
-      { key: 'line_6b_total_output_vat', line: '6B', label: 'Total Output Tax', editable: false },
+      { id: 'line_6_output_vat', line: '6', label: 'Output VAT (Line 1 x 12%)', editable: false },
+      { id: 'line_6a_output_vat_government', line: '6A', label: 'Output VAT Government (Line 2 x 5%)', editable: false },
+      { id: 'line_6b_total_output_vat', line: '6B', label: 'Total Output Tax', editable: false },
     ],
   },
   {
+    id: 'part4_input_tax',
     name: 'Part IV - Allowable Input Tax',
     fields: [
-      { key: 'line_7_input_vat_goods', line: '7', label: 'Input VAT - Goods', editable: true },
-      { key: 'line_8_input_vat_capital', line: '8', label: 'Input VAT - Capital Goods', editable: true },
-      { key: 'line_9_input_vat_services', line: '9', label: 'Input VAT - Services', editable: true },
-      { key: 'line_10_input_vat_imports', line: '10', label: 'Input VAT - Imports', editable: true },
-      { key: 'line_11_total_input_vat', line: '11', label: 'Total Input Tax (Lines 7-10)', editable: false },
+      { id: 'line_7_input_vat_goods', line: '7', label: 'Input VAT - Goods', editable: true },
+      { id: 'line_8_input_vat_capital', line: '8', label: 'Input VAT - Capital Goods', editable: true },
+      { id: 'line_9_input_vat_services', line: '9', label: 'Input VAT - Services', editable: true },
+      { id: 'line_10_input_vat_imports', line: '10', label: 'Input VAT - Imports', editable: true },
+      { id: 'line_11_total_input_vat', line: '11', label: 'Total Input Tax (Lines 7-10)', editable: false },
     ],
   },
   {
+    id: 'part5_tax_due',
     name: 'Part V - Tax Due',
     fields: [
-      { key: 'line_12_vat_payable', line: '12', label: 'VAT Payable (6B - 11)', editable: false },
-      { key: 'line_13_less_tax_credits', line: '13', label: 'Less: Tax Credits', editable: true },
-      { key: 'line_14_net_vat_payable', line: '14', label: 'Net VAT Payable', editable: false },
-      { key: 'line_15_add_penalties', line: '15', label: 'Add: Penalties', editable: true },
-      { key: 'line_16_total_amount_due', line: '16', label: 'TOTAL AMOUNT DUE', editable: false },
+      { id: 'line_12_vat_payable', line: '12', label: 'VAT Payable (6B - 11)', editable: false },
+      { id: 'line_13_less_tax_credits', line: '13', label: 'Less: Tax Credits', editable: true },
+      { id: 'line_14_net_vat_payable', line: '14', label: 'Net VAT Payable', editable: false },
+      { id: 'line_15_add_penalties', line: '15', label: 'Add: Penalties', editable: true },
+      { id: 'line_16_total_amount_due', line: '16', label: 'TOTAL AMOUNT DUE', editable: false },
     ],
   },
 ]
 
+// Editable fields state
+const editableFields = reactive<Record<string, string>>({})
+const originalFields = ref<Record<string, string>>({})
+
 onMounted(async () => {
   const report = await reportStore.fetchReport(reportId)
+  const reportType = report.report_type as string
+
+  // Try to load schema from API
+  try {
+    const res = await formsApi.getSchema(reportType)
+    sections.value = res.data.data.schema_def.sections
+    schemaLoaded.value = true
+  } catch {
+    // Fallback to hardcoded sections
+    sections.value = fallbackSections
+  }
+
+  // Populate editable fields from report data
   const data = (report.calculated_data || {}) as Record<string, string>
-  for (const section of sections) {
+  for (const section of sections.value) {
     for (const field of section.fields) {
-      editableFields[field.key] = data[field.key] || '0'
+      editableFields[field.id] = data[field.id] || '0'
     }
   }
   originalFields.value = { ...editableFields }
@@ -123,7 +145,6 @@ async function handleSave() {
     }
     originalFields.value = { ...editableFields }
     notes.value = ''
-    // Refresh audit logs
     reportStore.fetchAuditLogs(reportId)
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } }
@@ -155,6 +176,7 @@ function handleBack() {
             {{ reportStore.currentReport.status }}
           </span>
         </span>
+        <span v-if="schemaLoaded" class="schema-badge">Schema-driven</span>
       </div>
 
       <div class="options-row">
@@ -164,15 +186,15 @@ function handleBack() {
         </label>
       </div>
 
-      <div v-for="section in sections" :key="section.name" class="section">
+      <div v-for="section in sections" :key="section.id" class="section">
         <div class="section-header">{{ section.name }}</div>
         <div
           v-for="field in section.fields"
-          :key="field.key"
+          :key="field.id"
           class="field-row"
           :class="{
-            modified: isModified(field.key),
-            overridden: isOverridden(field.key),
+            modified: isModified(field.id),
+            overridden: isOverridden(field.id),
             computed: !field.editable,
           }"
         >
@@ -182,17 +204,17 @@ function handleBack() {
             <template v-if="field.editable">
               <input
                 type="text"
-                v-model="editableFields[field.key]"
+                v-model="editableFields[field.id]"
                 class="field-input"
-                :class="{ changed: isModified(field.key) }"
+                :class="{ changed: isModified(field.id) }"
               />
             </template>
             <template v-else>
-              <span class="computed-value">PHP {{ formatAmount(editableFields[field.key]) }}</span>
+              <span class="computed-value">PHP {{ formatAmount(editableFields[field.id]) }}</span>
             </template>
           </div>
-          <span v-if="isModified(field.key)" class="change-indicator" title="Modified">*</span>
-          <span v-if="isOverridden(field.key) && !isModified(field.key)" class="override-indicator" title="Previously overridden">!</span>
+          <span v-if="isModified(field.id)" class="change-indicator" title="Modified">*</span>
+          <span v-if="isOverridden(field.id) && !isModified(field.id)" class="override-indicator" title="Previously overridden">!</span>
         </div>
       </div>
 
@@ -263,6 +285,7 @@ function handleBack() {
   gap: 24px;
   margin-bottom: 16px;
   font-size: 14px;
+  align-items: center;
 }
 .badge {
   padding: 2px 8px;
@@ -273,6 +296,15 @@ function handleBack() {
 .badge.draft { background: #fef3c7; color: #92400e; }
 .badge.review { background: #dbeafe; color: #1e40af; }
 .badge.rejected { background: #fee2e2; color: #991b1b; }
+.schema-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
 .options-row {
   margin-bottom: 16px;
   padding: 8px 12px;
