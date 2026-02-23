@@ -1,7 +1,7 @@
 """receipt batches table
 
-Revision ID: 007
-Revises: 006
+Revision ID: 007_receipt_batches
+Revises: 006_corrections_and_validation
 Create Date: 2026-02-24
 """
 
@@ -9,8 +9,8 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 
-revision = "007"
-down_revision = "006"
+revision = "007_receipt_batches"
+down_revision = "006_corrections_and_validation"
 branch_labels = None
 depends_on = None
 
