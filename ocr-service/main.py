@@ -25,8 +25,7 @@ def get_ocr() -> PaddleOCR:
         _ocr_engine = PaddleOCR(
             ocr_version="PP-OCRv5",
             lang="en",
-            use_gpu=False,
-            show_log=False,
+            device="cpu",
         )
         logger.info("PaddleOCR engine ready.")
     return _ocr_engine
