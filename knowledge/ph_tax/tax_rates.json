@@ -1,0 +1,26 @@
+{
+  "category": "general",
+  "source": "ph_tax_rates",
+  "chunks": [
+    {
+      "title": "VAT Rates",
+      "content": "Standard VAT: 12%. Zero-Rated: 0%. VAT-Exempt: N/A. Percentage Tax for non-VAT registered: 3%."
+    },
+    {
+      "title": "Individual Income Tax (TRAIN Law)",
+      "content": "Up to PHP 250,000: 0%. PHP 250,001-400,000: 15% of excess over 250,000. PHP 400,001-800,000: 22,500 + 20% of excess over 400,000. PHP 800,001-2,000,000: 102,500 + 25% of excess over 800,000. PHP 2,000,001-8,000,000: 402,500 + 30% of excess over 2,000,000. Over PHP 8,000,000: 2,202,500 + 35% of excess over 8,000,000."
+    },
+    {
+      "title": "Corporate Income Tax (CREATE Law)",
+      "content": "Regular Corporation (RCIT): 25%. Domestic Corporation (net taxable income ≤ PHP 5M AND total assets ≤ PHP 100M): 20%. Minimum Corporate Income Tax (MCIT): 2% of gross income. Proprietary educational institutions and non-profit hospitals: 10%."
+    },
+    {
+      "title": "Expanded Withholding Tax (EWT) Common Rates",
+      "content": "Professional fees (individual): 5%/10%/15%. Professional fees (corporation): 10%/15%. Rental of real property: 5%. Rental of personal property: 5%. Commissions: 10%/15%. Advertising: 2%. Income payments to contractors/subcontractors: 2%."
+    },
+    {
+      "title": "Withholding Tax on Compensation",
+      "content": "Monthly up to PHP 20,833: 0%. PHP 20,834-33,332: 15% of excess over 20,833. PHP 33,333-66,666: 1,875 + 20% of excess over 33,332. PHP 66,667-166,666: 8,541.80 + 25% of excess over 66,666. PHP 166,667-666,666: 33,541.80 + 30% of excess over 166,666. Over PHP 666,666: 183,541.80 + 35% of excess over 666,666."
+    }
+  ]
+}

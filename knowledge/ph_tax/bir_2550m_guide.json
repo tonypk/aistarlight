@@ -1,0 +1,42 @@
+{
+  "category": "vat",
+  "source": "bir_2550m_guide",
+  "chunks": [
+    {
+      "title": "BIR 2550M Purpose and Who Must File",
+      "content": "BIR Form 2550M is used by VAT-registered taxpayers to declare and pay their monthly Value-Added Tax. All persons or entities registered as VAT taxpayers with annual gross sales/receipts exceeding PHP 3,000,000 must file."
+    },
+    {
+      "title": "BIR 2550M Filing Deadline",
+      "content": "Filing deadline: Within 20 days after the end of each month. Example: January VAT due on February 20. Payment options: eFPS, eBIRForms, Authorized Agent Banks (AABs), Revenue Collection Officers (RCOs)."
+    },
+    {
+      "title": "BIR 2550M Part I - Background Information",
+      "content": "Part I requires: TIN (Tax Identification Number), RDO Code, Taxpayer's Name, Registered Address, Filing Period."
+    },
+    {
+      "title": "BIR 2550M Part II - Sales Computation",
+      "content": "Line 1: Total Vatable Sales (all sales subject to 12% VAT). Line 2: Sales to Government (subject to 5% Final Withholding VAT). Line 3: Zero-Rated Sales (export and qualified zero-rated). Line 4: Exempt Sales (VAT-exempt transactions). Line 5: Total Sales (Sum of Lines 1-4)."
+    },
+    {
+      "title": "BIR 2550M Part III - Output Tax",
+      "content": "Line 6: Output VAT = Line 1 (Vatable Sales) × 12%."
+    },
+    {
+      "title": "BIR 2550M Part IV - Input Tax",
+      "content": "Line 7: Input VAT on Domestic Purchases of Goods (other than capital goods). Line 8: Input VAT on Domestic Purchases of Capital Goods. Line 9: Input VAT on Domestic Purchases of Services. Line 10: Input VAT on Importation of Goods. Line 11: Total Input VAT (Sum of Lines 7-10)."
+    },
+    {
+      "title": "BIR 2550M Part V - Tax Due",
+      "content": "Line 12: VAT Payable = Line 6 - Line 11. Line 13: Less Tax Credits/Payments. Line 14: Net VAT Payable = Line 12 - Line 13. Line 15: Add Penalties (if any). Line 16: Total Amount Due = Line 14 + Line 15."
+    },
+    {
+      "title": "BIR 2550M Required Attachments",
+      "content": "Required attachments: Summary List of Sales (SLS), Summary List of Purchases (SLP), Summary Alphalist of Withholding Taxes (SAWT) if applicable, Previously filed return if amended."
+    },
+    {
+      "title": "BIR 2550M Late Filing Penalties",
+      "content": "Penalties for late filing: 25% surcharge, 12% annual interest, compromise penalty."
+    }
+  ]
+}

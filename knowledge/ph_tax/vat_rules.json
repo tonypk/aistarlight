@@ -1,0 +1,38 @@
+{
+  "category": "vat",
+  "source": "ph_vat_regulations",
+  "chunks": [
+    {
+      "title": "VAT Overview",
+      "content": "Value-Added Tax (VAT) is a consumption tax imposed on the sale, barter, exchange, or lease of goods or properties and services in the Philippines, as well as on the importation of goods. Standard rate: 12% (since 2006). Zero-rated: 0% (export sales, services to non-residents). VAT-exempt: Not subject to VAT."
+    },
+    {
+      "title": "VAT Registration Threshold",
+      "content": "Businesses with annual gross sales/receipts exceeding PHP 3,000,000 must register as VAT taxpayers. Below threshold: Optional VAT registration or Percentage Tax (3%)."
+    },
+    {
+      "title": "Output VAT",
+      "content": "Output VAT is collected from buyers on sale of goods/services. Computed as: Selling Price x 12%. Must be separately indicated in invoices/receipts."
+    },
+    {
+      "title": "Input VAT",
+      "content": "Input VAT is paid to suppliers on purchases of goods/services/capital goods. Creditable against Output VAT. Must be supported by VAT invoices/receipts."
+    },
+    {
+      "title": "VAT Payable Formula",
+      "content": "VAT Payable = Output VAT - Input VAT. If Input VAT > Output VAT: Excess carried forward to next period. Excess input VAT can be applied for refund after 2 years (for zero-rated sales)."
+    },
+    {
+      "title": "Filing Deadlines",
+      "content": "Monthly VAT (BIR 2550M): Within 20 days after end of each month. Quarterly VAT (BIR 2550Q): Within 25 days after end of each quarter."
+    },
+    {
+      "title": "Zero-Rated Sales",
+      "content": "Zero-rated sales include: Export sales; Sales to PEZA registered enterprises; Services rendered to non-resident foreign persons; Transport of passengers and cargo by domestic air or sea vessels from Philippines to abroad."
+    },
+    {
+      "title": "VAT-Exempt Transactions",
+      "content": "VAT-exempt transactions include: Agricultural and marine food products in original state; Educational services; Medical, dental, hospital, veterinary services; Employment services; Residential lot (PHP 1,919,500 or below); Residential dwelling (PHP 3,199,200 or below); Sale of drugs and medicines for diabetes, hypertension, cholesterol."
+    }
+  ]
+}
