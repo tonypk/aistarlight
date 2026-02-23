@@ -1,40 +1,41 @@
-import { client } from './client'
+import { client } from "./client";
 
 export interface FormField {
-  id: string
-  line: string
-  label: string
-  editable: boolean
-  required?: boolean
+  id: string;
+  line: string;
+  label: string;
+  editable: boolean;
+  required?: boolean;
 }
 
 export interface FormSection {
-  id: string
-  name: string
-  fields: FormField[]
+  id: string;
+  name: string;
+  fields: FormField[];
 }
 
 export interface FormSchemaDef {
-  sections: FormSection[]
+  sections: FormSection[];
 }
 
 export interface FormSchemaDetail {
-  form_type: string
-  name: string
-  frequency: string
-  version: number
-  schema_def: FormSchemaDef
-  calculation_rules: Record<string, string>
+  form_type: string;
+  name: string;
+  frequency: string;
+  version: number;
+  schema_def: FormSchemaDef;
+  calculation_rules: Record<string, string>;
 }
 
 export interface FormSummary {
-  form_type: string
-  name: string
-  frequency: string
-  version?: number
+  form_type: string;
+  name: string;
+  frequency: string;
+  version?: number;
+  status?: "active" | "coming_soon";
 }
 
 export const formsApi = {
-  list: () => client.get('/forms'),
+  list: () => client.get("/forms"),
   getSchema: (formType: string) => client.get(`/forms/${formType}`),
-}
+};

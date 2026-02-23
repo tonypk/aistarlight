@@ -109,22 +109,26 @@ SUPPORTED_FORMS = {
     "BIR_1701": {
         "name": "Annual Income Tax Return (Individual)",
         "frequency": "annual",
-        "fields": [],  # Future phase
+        "fields": [],
+        "status": "coming_soon",
     },
     "BIR_1702": {
         "name": "Annual Income Tax Return (Corporate)",
         "frequency": "annual",
-        "fields": [],  # Future phase
+        "fields": [],
+        "status": "coming_soon",
     },
     "BIR_2316": {
         "name": "Certificate of Compensation Payment/Tax Withheld",
         "frequency": "annual",
-        "fields": [],  # Future phase
+        "fields": [],
+        "status": "coming_soon",
     },
     "SAWT": {
         "name": "Summary Alphalist of Withholding Taxes",
         "frequency": "attachment",
-        "fields": [],  # Generated via withholding module
+        "fields": [],
+        "status": "coming_soon",
     },
 }
 
@@ -459,5 +463,12 @@ def _aggregate_base_fields(
 
 
 def get_supported_forms() -> dict:
-    """Return all supported BIR form types."""
-    return {k: {"name": v["name"], "frequency": v["frequency"]} for k, v in SUPPORTED_FORMS.items()}
+    """Return all supported BIR form types with availability status."""
+    return {
+        k: {
+            "name": v["name"],
+            "frequency": v["frequency"],
+            "status": v.get("status", "active"),
+        }
+        for k, v in SUPPORTED_FORMS.items()
+    }
