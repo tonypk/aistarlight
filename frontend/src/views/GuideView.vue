@@ -4,19 +4,19 @@ import { ref } from 'vue'
 const activeSection = ref('overview')
 
 const sections = [
-  { id: 'overview', title: '系统概览' },
-  { id: 'quickstart', title: '快速入门' },
-  { id: 'upload', title: '上传数据' },
-  { id: 'mapping', title: '列映射' },
-  { id: 'classification', title: '交易分类' },
-  { id: 'reconciliation', title: 'VAT 对账' },
-  { id: 'reports', title: '报表生成' },
-  { id: 'edit-report', title: '编辑报表' },
-  { id: 'suppliers', title: '供应商管理' },
-  { id: 'withholding', title: '扣缴税（EWT）' },
-  { id: 'chat', title: 'AI 税务助手' },
-  { id: 'knowledge', title: '知识库' },
-  { id: 'faq', title: '常见问题' },
+  { id: 'overview', title: 'Overview' },
+  { id: 'quickstart', title: 'Quick Start' },
+  { id: 'upload', title: 'Upload Data' },
+  { id: 'mapping', title: 'Column Mapping' },
+  { id: 'classification', title: 'Classification' },
+  { id: 'reconciliation', title: 'VAT Reconciliation' },
+  { id: 'reports', title: 'Report Generation' },
+  { id: 'edit-report', title: 'Edit Reports' },
+  { id: 'suppliers', title: 'Suppliers' },
+  { id: 'withholding', title: 'Withholding Tax' },
+  { id: 'chat', title: 'AI Tax Assistant' },
+  { id: 'knowledge', title: 'Knowledge Base' },
+  { id: 'faq', title: 'FAQ' },
 ]
 
 function scrollTo(id: string) {
@@ -28,14 +28,14 @@ function scrollTo(id: string) {
 <template>
   <div class="guide-view">
     <div class="guide-header">
-      <h2>操作指南</h2>
-      <p class="subtitle">AIStarlight 菲律宾税务助手 — 完整使用教程</p>
+      <h2>User Guide</h2>
+      <p class="subtitle">AIStarlight Philippine Tax Filing Assistant &mdash; Complete User Manual</p>
     </div>
 
     <div class="guide-layout">
       <!-- Table of Contents -->
       <nav class="toc">
-        <h4>目录</h4>
+        <h4>Contents</h4>
         <a
           v-for="s in sections"
           :key="s.id"
@@ -50,104 +50,104 @@ function scrollTo(id: string) {
 
         <!-- 1. Overview -->
         <section id="overview">
-          <h3>1. 系统概览</h3>
-          <p>AIStarlight 是一款 AI 驱动的菲律宾税务申报助手，帮助您完成以下工作：</p>
+          <h3>1. System Overview</h3>
+          <p>AIStarlight is an AI-powered Philippine tax filing assistant that helps you with the following:</p>
           <div class="feature-grid">
             <div class="feature-item">
               <span class="fi">📤</span>
               <div>
-                <strong>数据上传</strong>
-                <p>支持 Excel、CSV 格式的销售和采购数据</p>
+                <strong>Data Upload</strong>
+                <p>Upload sales and purchase records in Excel or CSV format</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">🤖</span>
               <div>
-                <strong>AI 智能映射</strong>
-                <p>自动识别列名，将数据映射到 BIR 表单字段</p>
+                <strong>AI Column Mapping</strong>
+                <p>Automatically recognize column names and map them to BIR form fields</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">🏷️</span>
               <div>
-                <strong>交易分类</strong>
-                <p>AI 自动分类 VAT 类型（Vatable / Exempt / Zero-rated）</p>
+                <strong>Transaction Classification</strong>
+                <p>AI-powered VAT type classification (Vatable / Exempt / Zero-rated)</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">🔍</span>
               <div>
-                <strong>VAT 对账</strong>
-                <p>销售与采购交叉核对，发现异常</p>
+                <strong>VAT Reconciliation</strong>
+                <p>Cross-check sales and purchase records, detect anomalies</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">📋</span>
               <div>
-                <strong>BIR 报表</strong>
-                <p>自动计算并生成 BIR 2550M / 2550Q / 1601C / 0619E PDF</p>
+                <strong>BIR Reports</strong>
+                <p>Auto-calculate and generate BIR 2550M / 2550Q / 1601C / 0619E PDFs</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">📑</span>
               <div>
-                <strong>扣缴税管理</strong>
-                <p>EWT 分类、BIR 2307 证书生成、SAWT 汇总</p>
+                <strong>Withholding Tax</strong>
+                <p>EWT classification, BIR 2307 certificate generation, SAWT summary</p>
               </div>
             </div>
           </div>
 
           <div class="info-box">
-            <strong>支持的 BIR 表单：</strong>
+            <strong>Supported BIR Forms:</strong>
             <ul>
-              <li><strong>BIR 2550M</strong> — 月度增值税申报</li>
-              <li><strong>BIR 2550Q</strong> — 季度增值税申报</li>
-              <li><strong>BIR 1601-C</strong> — 月度薪资扣缴税汇缴</li>
-              <li><strong>BIR 0619-E</strong> — 月度扩展扣缴税汇缴</li>
-              <li><strong>BIR 2307</strong> — 扣缴税证书</li>
-              <li><strong>SAWT</strong> — 扣缴税汇总附表</li>
+              <li><strong>BIR 2550M</strong> &mdash; Monthly Value-Added Tax Declaration</li>
+              <li><strong>BIR 2550Q</strong> &mdash; Quarterly Value-Added Tax Return</li>
+              <li><strong>BIR 1601-C</strong> &mdash; Monthly Remittance of Withholding Tax on Compensation</li>
+              <li><strong>BIR 0619-E</strong> &mdash; Monthly Remittance of Expanded Withholding Tax</li>
+              <li><strong>BIR 2307</strong> &mdash; Certificate of Creditable Tax Withheld at Source</li>
+              <li><strong>SAWT</strong> &mdash; Summary Alphalist of Withholding Taxes</li>
             </ul>
           </div>
         </section>
 
         <!-- 2. Quick Start -->
         <section id="quickstart">
-          <h3>2. 快速入门</h3>
-          <p>第一次使用？按以下步骤操作：</p>
+          <h3>2. Quick Start</h3>
+          <p>First time using the system? Follow these steps:</p>
           <div class="steps">
             <div class="step">
               <span class="step-num">1</span>
               <div>
-                <strong>设置公司信息</strong>
-                <p>进入 <router-link to="/settings">Settings</router-link>，填写公司名称、TIN 号码和 RDO 代码。这些信息会打印在 PDF 报表上。</p>
+                <strong>Set Up Company Info</strong>
+                <p>Go to <router-link to="/settings">Settings</router-link> and fill in your company name, TIN number, and RDO code. This information will appear on your PDF reports.</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">2</span>
               <div>
-                <strong>上传数据文件</strong>
-                <p>进入 <router-link to="/upload">Upload Data</router-link>，上传包含销售和采购记录的 Excel 或 CSV 文件。</p>
+                <strong>Upload Your Data</strong>
+                <p>Go to <router-link to="/upload">Upload Data</router-link> and upload your Excel or CSV file containing sales and purchase records.</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">3</span>
               <div>
-                <strong>确认列映射</strong>
-                <p>系统 AI 会自动识别您的列名。审查并确认映射结果。</p>
+                <strong>Confirm Column Mapping</strong>
+                <p>The AI will automatically recognize your column names. Review and confirm the mapping results.</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">4</span>
               <div>
-                <strong>生成报表</strong>
-                <p>进入 <router-link to="/reports">Reports</router-link>，选择表单类型和期间，点击 "Generate Report"。</p>
+                <strong>Generate Report</strong>
+                <p>Go to <router-link to="/reports">Reports</router-link>, select the form type and period, then click "Generate Report".</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">5</span>
               <div>
-                <strong>审查并下载 PDF</strong>
-                <p>检查计算结果，如需修改可编辑字段。确认无误后下载 PDF 用于申报。</p>
+                <strong>Review and Download PDF</strong>
+                <p>Check the calculated results. Edit any fields if needed. Once verified, download the PDF for filing.</p>
               </div>
             </div>
           </div>
@@ -155,123 +155,123 @@ function scrollTo(id: string) {
 
         <!-- 3. Upload -->
         <section id="upload">
-          <h3>3. 上传数据</h3>
-          <p>路径：侧边栏 → <strong>Upload Data</strong></p>
+          <h3>3. Upload Data</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Upload Data</strong></p>
 
-          <h4>支持的文件格式</h4>
+          <h4>Supported File Formats</h4>
           <ul>
-            <li>Excel 文件（.xlsx, .xls）</li>
-            <li>CSV 文件（.csv）</li>
-            <li>PDF 文件（.pdf）— 系统会尝试提取表格数据</li>
+            <li>Excel files (.xlsx, .xls)</li>
+            <li>CSV files (.csv)</li>
+            <li>PDF files (.pdf) &mdash; the system will attempt to extract table data</li>
           </ul>
 
-          <h4>数据要求</h4>
+          <h4>Data Requirements</h4>
           <ul>
-            <li>文件需包含 <strong>金额</strong>（Amount）列</li>
-            <li>建议包含：日期、描述/备注、增值税金额、增值税类型</li>
-            <li>销售数据和采购数据可以在同一文件的不同 Sheet 中</li>
+            <li>The file must contain an <strong>Amount</strong> column</li>
+            <li>Recommended columns: Date, Description, VAT Amount, VAT Type</li>
+            <li>Sales and purchase data can be in different sheets within the same file</li>
           </ul>
 
           <div class="tip-box">
-            <strong>提示：</strong>上传后可选择 Sheet 名称（多 Sheet 文件），系统会预览前几行数据供确认。
+            <strong>Tip:</strong> After uploading, you can select a specific sheet name (for multi-sheet files). The system will preview the first few rows for confirmation.
           </div>
         </section>
 
         <!-- 4. Mapping -->
         <section id="mapping">
-          <h3>4. 列映射</h3>
-          <p>路径：上传文件后自动跳转，或侧边栏 → <strong>Upload Data</strong> → 选择文件</p>
+          <h3>4. Column Mapping</h3>
+          <p>Navigate to: Auto-redirected after upload, or Sidebar &rarr; <strong>Upload Data</strong> &rarr; select file</p>
 
-          <h4>工作原理</h4>
+          <h4>How It Works</h4>
           <ol>
-            <li>上传文件后，AI 会分析您的列名（如 "Sales Amount"、"VAT"、"Date" 等）</li>
-            <li>AI 自动推荐映射方案，将您的列名对应到系统字段</li>
-            <li>您可以手动调整映射结果</li>
-            <li>确认映射后，数据将被解析并用于后续计算</li>
+            <li>After uploading, the AI analyzes your column names (e.g., "Sales Amount", "VAT", "Date")</li>
+            <li>The AI recommends a mapping from your columns to system fields</li>
+            <li>You can manually adjust any mapping</li>
+            <li>Once confirmed, the data is parsed and used for subsequent calculations</li>
           </ol>
 
-          <h4>系统字段说明</h4>
+          <h4>System Field Reference</h4>
           <table class="ref-table">
             <thead>
-              <tr><th>字段</th><th>说明</th><th>必填</th></tr>
+              <tr><th>Field</th><th>Description</th><th>Required</th></tr>
             </thead>
             <tbody>
-              <tr><td>amount</td><td>交易金额</td><td>是</td></tr>
-              <tr><td>vat_amount</td><td>增值税金额</td><td>否（系统可按 12% 计算）</td></tr>
-              <tr><td>vat_type</td><td>VAT 类型：vatable / exempt / zero_rated / government</td><td>否（AI 可自动分类）</td></tr>
-              <tr><td>date</td><td>交易日期</td><td>否</td></tr>
-              <tr><td>description</td><td>交易描述</td><td>否（用于 AI 分类）</td></tr>
-              <tr><td>category</td><td>采购类别：goods / services / capital / imports</td><td>否</td></tr>
+              <tr><td>amount</td><td>Transaction amount</td><td>Yes</td></tr>
+              <tr><td>vat_amount</td><td>VAT amount</td><td>No (system can calculate at 12%)</td></tr>
+              <tr><td>vat_type</td><td>VAT type: vatable / exempt / zero_rated / government</td><td>No (AI can auto-classify)</td></tr>
+              <tr><td>date</td><td>Transaction date</td><td>No</td></tr>
+              <tr><td>description</td><td>Transaction description</td><td>No (used for AI classification)</td></tr>
+              <tr><td>category</td><td>Purchase category: goods / services / capital / imports</td><td>No</td></tr>
             </tbody>
           </table>
         </section>
 
         <!-- 5. Classification -->
         <section id="classification">
-          <h3>5. 交易分类</h3>
-          <p>路径：侧边栏 → <strong>Classification</strong></p>
+          <h3>5. Transaction Classification</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Classification</strong></p>
 
-          <h4>创建对账会话</h4>
+          <h4>Create a Reconciliation Session</h4>
           <ol>
-            <li>点击 "New Session"，输入会话名称和期间</li>
-            <li>上传销售数据文件和采购数据文件</li>
-            <li>系统解析文件后生成交易列表</li>
+            <li>Click "New Session" and enter a session name and period</li>
+            <li>Upload your sales data file and purchase data file</li>
+            <li>The system parses the files and generates a transaction list</li>
           </ol>
 
-          <h4>AI 自动分类</h4>
-          <p>点击 "Classify" 按钮，AI 会自动：</p>
+          <h4>AI Auto-Classification</h4>
+          <p>Click the "Classify" button and the AI will automatically:</p>
           <ul>
-            <li>识别每笔交易的 VAT 类型（Vatable / Exempt / Zero-rated / Government）</li>
-            <li>分类采购类别（Goods / Services / Capital / Imports）</li>
-            <li>标记低置信度的分类供人工审查</li>
+            <li>Identify the VAT type for each transaction (Vatable / Exempt / Zero-rated / Government)</li>
+            <li>Classify purchase categories (Goods / Services / Capital / Imports)</li>
+            <li>Flag low-confidence classifications for manual review</li>
           </ul>
 
           <div class="tip-box">
-            <strong>提示：</strong>您可以手动修改任何一笔交易的分类结果。系统会学习您的修改模式。
+            <strong>Tip:</strong> You can manually override any transaction's classification. The system learns from your corrections to improve future accuracy.
           </div>
         </section>
 
         <!-- 6. Reconciliation -->
         <section id="reconciliation">
-          <h3>6. VAT 对账</h3>
-          <p>路径：侧边栏 → <strong>Reconciliation</strong></p>
+          <h3>6. VAT Reconciliation</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Reconciliation</strong></p>
 
-          <h4>对账流程</h4>
+          <h4>Reconciliation Process</h4>
           <ol>
-            <li>交易分类完成后，点击 "Reconcile" 开始对账</li>
-            <li>系统会交叉核对销售和采购记录</li>
-            <li>生成 VAT 汇总：Output VAT、Input VAT、Net VAT Payable</li>
-            <li>检测异常：金额不匹配、缺失交易、重复记录</li>
+            <li>After classification is complete, click "Reconcile" to start</li>
+            <li>The system cross-checks sales and purchase records</li>
+            <li>Generates a VAT summary: Output VAT, Input VAT, Net VAT Payable</li>
+            <li>Detects anomalies: amount mismatches, missing transactions, duplicate records</li>
           </ol>
 
-          <h4>对账完成后可以：</h4>
+          <h4>After Reconciliation, You Can:</h4>
           <ul>
-            <li><strong>Generate BIR Report</strong> — 直接从对账数据生成 BIR 2550M/2550Q 报表</li>
-            <li><strong>Export PDF</strong> — 导出完整对账报告 PDF（包含 VAT 汇总、匹配统计、异常清单）</li>
-            <li><strong>Export CSV</strong> — 导出交易数据 CSV</li>
+            <li><strong>Generate BIR Report</strong> &mdash; Create a BIR 2550M/2550Q report directly from reconciliation data</li>
+            <li><strong>Export PDF</strong> &mdash; Download a full reconciliation report PDF (VAT summary, match statistics, anomaly list)</li>
+            <li><strong>Export CSV</strong> &mdash; Download transaction data as CSV</li>
           </ul>
         </section>
 
         <!-- 7. Reports -->
         <section id="reports">
-          <h3>7. 报表生成</h3>
-          <p>路径：侧边栏 → <strong>Reports</strong></p>
+          <h3>7. Report Generation</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Reports</strong></p>
 
-          <h4>生成报表</h4>
+          <h4>Generating a Report</h4>
           <ol>
-            <li>选择 <strong>表单类型</strong>（BIR 2550M / 2550Q / 1601C / 0619E）</li>
-            <li>选择 <strong>申报期间</strong>（月份或季度）</li>
-            <li>数据来源：
+            <li>Select the <strong>Form Type</strong> (BIR 2550M / 2550Q / 1601C / 0619E)</li>
+            <li>Select the <strong>Filing Period</strong> (month or quarter)</li>
+            <li>Data source options:
               <ul>
-                <li>从已上传的文件（自动使用列映射结果）</li>
-                <li>从对账会话（Reconciliation → Generate Report）</li>
-                <li>手动输入数据</li>
+                <li>From an uploaded file (uses column mapping results)</li>
+                <li>From a reconciliation session (Reconciliation &rarr; Generate Report)</li>
+                <li>Manual data entry</li>
               </ul>
             </li>
-            <li>点击 "Generate Report" — 系统自动计算所有字段并生成 PDF</li>
+            <li>Click "Generate Report" &mdash; the system auto-calculates all fields and generates a PDF</li>
           </ol>
 
-          <h4>报表工作流</h4>
+          <h4>Report Workflow</h4>
           <div class="workflow">
             <span class="wf-step">Draft</span>
             <span class="wf-arrow">&rarr;</span>
@@ -284,186 +284,186 @@ function scrollTo(id: string) {
             <span class="wf-step">Archived</span>
           </div>
           <ul>
-            <li><strong>Draft</strong> — 可编辑，可修改字段值</li>
-            <li><strong>Review</strong> — 提交审核，仍可编辑</li>
-            <li><strong>Approved</strong> — 审核通过，准备申报</li>
-            <li><strong>Filed</strong> — 已向 BIR 提交</li>
-            <li><strong>Archived</strong> — 归档保存</li>
+            <li><strong>Draft</strong> &mdash; Editable, fields can be modified</li>
+            <li><strong>Review</strong> &mdash; Submitted for review, still editable</li>
+            <li><strong>Approved</strong> &mdash; Approved for filing</li>
+            <li><strong>Filed</strong> &mdash; Submitted to BIR</li>
+            <li><strong>Archived</strong> &mdash; Stored for record-keeping</li>
           </ul>
         </section>
 
         <!-- 8. Edit Report -->
         <section id="edit-report">
-          <h3>8. 编辑报表</h3>
-          <p>在报表列表中点击 "Edit" 按钮进入编辑页面。</p>
+          <h3>8. Editing Reports</h3>
+          <p>Click the "Edit" button in the report list to open the editing page.</p>
 
-          <h4>编辑功能</h4>
+          <h4>Editing Features</h4>
           <ul>
-            <li>可修改任何可编辑字段（如销售额、输入税等）</li>
-            <li>系统自动重算所有关联字段（如修改 Vatable Sales 会自动更新 Output VAT、Total Sales、VAT Payable 等）</li>
-            <li>每次编辑自动记录审计日志</li>
-            <li>使用乐观锁（版本号）防止并发冲突</li>
-            <li>首次编辑时自动保存原始计算数据，方便对比</li>
+            <li>Modify any editable field (e.g., sales amounts, input tax, etc.)</li>
+            <li>The system automatically recalculates all dependent fields (e.g., changing Vatable Sales updates Output VAT, Total Sales, VAT Payable, etc.)</li>
+            <li>Every edit is logged in the audit trail</li>
+            <li>Optimistic locking (version numbers) prevents concurrent edit conflicts</li>
+            <li>On first edit, the original calculated data is preserved for comparison</li>
           </ul>
 
           <div class="warning-box">
-            <strong>注意：</strong>编辑后 PDF 会自动重新生成。已经进入 "Filed" 或 "Archived" 状态的报表不可编辑。
+            <strong>Note:</strong> After editing, the PDF is automatically regenerated. Reports in "Filed" or "Archived" status cannot be edited.
           </div>
         </section>
 
         <!-- 9. Suppliers -->
         <section id="suppliers">
-          <h3>9. 供应商管理</h3>
-          <p>路径：侧边栏 → <strong>Suppliers</strong></p>
+          <h3>9. Supplier Management</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Suppliers</strong></p>
 
-          <h4>管理供应商</h4>
+          <h4>Managing Suppliers</h4>
           <ul>
-            <li><strong>添加供应商</strong> — 填写 TIN、名称、地址、类型（个人/公司）</li>
-            <li><strong>设置默认 EWT</strong> — 为供应商设置默认扣缴税率和 ATC 代码</li>
-            <li><strong>批量匹配</strong> — 在 EWT 分类时，系统会自动匹配已有供应商</li>
+            <li><strong>Add Supplier</strong> &mdash; Enter TIN, name, address, and type (Individual / Corporation)</li>
+            <li><strong>Set Default EWT</strong> &mdash; Assign a default withholding tax rate and ATC code per supplier</li>
+            <li><strong>Auto-Matching</strong> &mdash; During EWT classification, the system automatically matches existing suppliers</li>
           </ul>
 
-          <h4>供应商字段说明</h4>
+          <h4>Supplier Field Reference</h4>
           <table class="ref-table">
             <thead>
-              <tr><th>字段</th><th>说明</th></tr>
+              <tr><th>Field</th><th>Description</th></tr>
             </thead>
             <tbody>
-              <tr><td>TIN</td><td>供应商税号（Tax Identification Number）</td></tr>
-              <tr><td>Name</td><td>供应商全名</td></tr>
-              <tr><td>Type</td><td>Individual（个人）或 Corporation（公司）</td></tr>
-              <tr><td>Default EWT Rate</td><td>默认扣缴税率（如 0.02 = 2%）</td></tr>
-              <tr><td>Default ATC Code</td><td>默认 ATC 代码（如 WC050）</td></tr>
-              <tr><td>VAT Registered</td><td>是否注册增值税</td></tr>
+              <tr><td>TIN</td><td>Tax Identification Number</td></tr>
+              <tr><td>Name</td><td>Full supplier name</td></tr>
+              <tr><td>Type</td><td>Individual or Corporation</td></tr>
+              <tr><td>Default EWT Rate</td><td>Default withholding tax rate (e.g., 0.02 = 2%)</td></tr>
+              <tr><td>Default ATC Code</td><td>Default Alphanumeric Tax Code (e.g., WC050)</td></tr>
+              <tr><td>VAT Registered</td><td>Whether the supplier is VAT-registered</td></tr>
             </tbody>
           </table>
         </section>
 
         <!-- 10. Withholding Tax -->
         <section id="withholding">
-          <h3>10. 扣缴税（EWT）管理</h3>
-          <p>路径：侧边栏 → <strong>Withholding Tax</strong></p>
+          <h3>10. Withholding Tax (EWT) Management</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Withholding Tax</strong></p>
 
-          <h4>EWT 工作流程</h4>
+          <h4>EWT Workflow</h4>
           <div class="steps">
             <div class="step">
               <span class="step-num">1</span>
               <div>
-                <strong>分类 EWT</strong>
-                <p>在对账会话中，点击 "Classify EWT" 对采购交易自动识别 ATC 代码和扣缴税率</p>
+                <strong>Classify EWT</strong>
+                <p>In a reconciliation session, click "Classify EWT" to automatically identify ATC codes and withholding tax rates for purchase transactions</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">2</span>
               <div>
-                <strong>生成 BIR 2307</strong>
-                <p>点击 "Generate Certificates"，系统自动按供应商和期间汇总，生成 BIR 2307 扣缴税证书 PDF</p>
+                <strong>Generate BIR 2307</strong>
+                <p>Click "Generate Certificates" to auto-group by supplier and period, generating BIR 2307 withholding tax certificate PDFs</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">3</span>
               <div>
-                <strong>下载 SAWT</strong>
-                <p>在 Withholding Tax 页面选择期间，下载 SAWT 汇总附表（CSV 或 PDF 格式）</p>
+                <strong>Download SAWT</strong>
+                <p>On the Withholding Tax page, select a period and download the SAWT summary (CSV or PDF format)</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">4</span>
               <div>
-                <strong>生成 0619-E</strong>
-                <p>在 Reports 页面选择 BIR 0619-E，系统自动汇总月度 EWT 金额</p>
+                <strong>Generate BIR 0619-E</strong>
+                <p>On the Reports page, select BIR 0619-E to auto-summarize monthly EWT amounts</p>
               </div>
             </div>
           </div>
 
-          <h4>常用 ATC 代码参考</h4>
+          <h4>Common ATC Code Reference</h4>
           <table class="ref-table">
             <thead>
-              <tr><th>ATC 代码</th><th>说明</th><th>税率</th></tr>
+              <tr><th>ATC Code</th><th>Description</th><th>Rate</th></tr>
             </thead>
             <tbody>
-              <tr><td>WC010</td><td>专业费用 — 公司</td><td>10%</td></tr>
-              <tr><td>WI010</td><td>专业费用 — 个人 (&lt;3M)</td><td>5%</td></tr>
-              <tr><td>WI050 / WC050</td><td>承包商 / 分包商</td><td>2%</td></tr>
-              <tr><td>WI030</td><td>租金 — 不动产</td><td>5%</td></tr>
-              <tr><td>WC060</td><td>广告 / 推广</td><td>2%</td></tr>
-              <tr><td>WI100 / WC100</td><td>采购商品 (&gt;3M/年)</td><td>1%</td></tr>
-              <tr><td>WI120 / WC120</td><td>服务费</td><td>2%</td></tr>
+              <tr><td>WC010</td><td>Professional fees &mdash; Corporation</td><td>10%</td></tr>
+              <tr><td>WI010</td><td>Professional fees &mdash; Individual (&lt;3M)</td><td>5%</td></tr>
+              <tr><td>WI050 / WC050</td><td>Contractors / Subcontractors</td><td>2%</td></tr>
+              <tr><td>WI030</td><td>Rent &mdash; Real property</td><td>5%</td></tr>
+              <tr><td>WC060</td><td>Advertising / Promotions</td><td>2%</td></tr>
+              <tr><td>WI100 / WC100</td><td>Purchase of goods (&gt;3M/year)</td><td>1%</td></tr>
+              <tr><td>WI120 / WC120</td><td>Service payments</td><td>2%</td></tr>
             </tbody>
           </table>
         </section>
 
         <!-- 11. AI Chat -->
         <section id="chat">
-          <h3>11. AI 税务助手</h3>
-          <p>路径：侧边栏 → <strong>AI Chat</strong></p>
+          <h3>11. AI Tax Assistant</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>AI Chat</strong></p>
 
-          <p>您可以用中文或英文向 AI 助手提问任何菲律宾税务相关问题，例如：</p>
+          <p>You can ask the AI assistant any Philippine tax-related question in English or Chinese. For example:</p>
           <ul>
-            <li>"BIR 2550M 的申报截止日期是什么时候？"</li>
-            <li>"什么情况下可以申请 VAT 退税？"</li>
-            <li>"专业服务费的扣缴税率是多少？"</li>
-            <li>"TRAIN Law 对个人所得税有什么影响？"</li>
-            <li>"BIR 2307 和 SAWT 的区别是什么？"</li>
+            <li>"What is the deadline for filing BIR 2550M?"</li>
+            <li>"Under what circumstances can I apply for a VAT refund?"</li>
+            <li>"What is the withholding tax rate for professional service fees?"</li>
+            <li>"How does the TRAIN Law affect individual income tax?"</li>
+            <li>"What is the difference between BIR 2307 and SAWT?"</li>
           </ul>
 
           <div class="tip-box">
-            <strong>提示：</strong>AI 助手的回答基于菲律宾 NIRC、TRAIN Law、CREATE Act 和 BIR 官方法规。系统支持长期记忆——您可以在 Memory 页面管理 AI 的记忆。
+            <strong>Tip:</strong> The AI assistant's answers are based on the Philippine NIRC, TRAIN Law, CREATE Act, and official BIR regulations. The system supports long-term memory &mdash; you can manage the AI's memory on the Memory page.
           </div>
         </section>
 
         <!-- 12. Knowledge -->
         <section id="knowledge">
-          <h3>12. 知识库</h3>
-          <p>路径：侧边栏 → <strong>Knowledge</strong></p>
+          <h3>12. Knowledge Base</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Knowledge</strong></p>
 
-          <p>知识库包含菲律宾税务法律法规的结构化数据，用于增强 AI 助手的回答准确性。</p>
+          <p>The knowledge base contains structured data on Philippine tax laws and regulations, used to enhance the AI assistant's accuracy.</p>
 
-          <h4>内置知识</h4>
+          <h4>Built-in Knowledge</h4>
           <ul>
-            <li>NIRC（菲律宾国内税收法典）— VAT 相关章节</li>
-            <li>TRAIN Law (RA 10963) — 税制改革要点</li>
-            <li>CREATE Act (RA 11534) — 企业所得税优惠</li>
-            <li>BIR Revenue Regulations — EWT、申报规则等</li>
-            <li>BIR 各类表单填写指南</li>
-            <li>罚款与补救措施</li>
+            <li>NIRC (National Internal Revenue Code) &mdash; VAT-related sections</li>
+            <li>TRAIN Law (RA 10963) &mdash; Tax Reform highlights</li>
+            <li>CREATE Act (RA 11534) &mdash; Corporate income tax incentives</li>
+            <li>BIR Revenue Regulations &mdash; EWT, filing rules, etc.</li>
+            <li>BIR form filling guides for all supported forms</li>
+            <li>Penalties, surcharges, and remedies</li>
           </ul>
 
-          <p>您可以在知识库页面搜索相关内容，查看具体条文和规定。</p>
+          <p>You can search the knowledge base for specific provisions and regulations on the Knowledge page.</p>
         </section>
 
         <!-- 13. FAQ -->
         <section id="faq">
-          <h3>13. 常见问题</h3>
+          <h3>13. Frequently Asked Questions</h3>
 
           <div class="faq-item">
-            <h4>Q: 报表数据计算错误怎么办？</h4>
-            <p>A: 在报表列表中点击 "Edit" 进入编辑页面，修改相应字段。系统会自动重算所有关联字段并重新生成 PDF。</p>
+            <h4>Q: What if the report calculations are incorrect?</h4>
+            <p>A: Click "Edit" on the report list to open the editing page and modify the relevant fields. The system will automatically recalculate all dependent fields and regenerate the PDF.</p>
           </div>
 
           <div class="faq-item">
-            <h4>Q: 可以修改已提交的报表吗？</h4>
-            <p>A: Draft 和 Review 状态的报表可以编辑。Approved 及之后状态的报表不可修改。如需修改，请先将状态退回到 Draft。</p>
+            <h4>Q: Can I modify a report that has already been submitted?</h4>
+            <p>A: Reports in Draft and Review status can be edited. Reports in Approved or later statuses cannot be modified. To make changes, first transition the report back to Draft.</p>
           </div>
 
           <div class="faq-item">
-            <h4>Q: 文件上传失败怎么办？</h4>
-            <p>A: 请确认文件格式为 .xlsx、.xls、.csv 或 .pdf，文件大小不超过 10MB。如果是 Excel 文件，确保数据在第一个 Sheet 或指定的 Sheet 名称中。</p>
+            <h4>Q: What should I do if file upload fails?</h4>
+            <p>A: Please ensure the file format is .xlsx, .xls, .csv, or .pdf, and the file size does not exceed 10MB. For Excel files, make sure the data is in the first sheet or the specified sheet name.</p>
           </div>
 
           <div class="faq-item">
-            <h4>Q: AI 分类结果不准确怎么办？</h4>
-            <p>A: 手动修改分类结果。系统会学习您的修改模式，后续分类会更准确。您也可以为供应商设置默认的 EWT 税率和 ATC 代码。</p>
+            <h4>Q: What if the AI classification results are inaccurate?</h4>
+            <p>A: Manually override the classification. The system learns from your corrections and improves future accuracy. You can also set default EWT rates and ATC codes for suppliers.</p>
           </div>
 
           <div class="faq-item">
-            <h4>Q: 如何更改公司信息（TIN、RDO）？</h4>
-            <p>A: 进入 Settings 页面修改。更改后生成的新报表会使用新的公司信息，已生成的报表不受影响。</p>
+            <h4>Q: How do I change company information (TIN, RDO)?</h4>
+            <p>A: Go to the Settings page. New reports will use the updated information; previously generated reports are not affected.</p>
           </div>
 
           <div class="faq-item">
-            <h4>Q: BIR 2550M 和 2550Q 有什么区别？</h4>
-            <p>A: 2550M 是月度 VAT 申报，2550Q 是季度 VAT 申报。计算逻辑相同，区别在于申报期间和数据范围。</p>
+            <h4>Q: What is the difference between BIR 2550M and 2550Q?</h4>
+            <p>A: BIR 2550M is the monthly VAT declaration and 2550Q is the quarterly VAT return. The calculation logic is the same; the difference is the filing period and data scope.</p>
           </div>
         </section>
 
