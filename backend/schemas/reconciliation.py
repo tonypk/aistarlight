@@ -1,5 +1,7 @@
 """Pydantic schemas for reconciliation endpoints."""
 
+from __future__ import annotations
+
 from datetime import date, datetime
 from uuid import UUID
 
