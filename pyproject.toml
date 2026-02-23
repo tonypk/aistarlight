@@ -32,6 +32,9 @@ dev = [
     "httpx==0.28.1",
 ]
 
+[tool.setuptools.packages.find]
+include = ["backend*"]
+
 [build-system]
 requires = ["setuptools>=75.0"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
