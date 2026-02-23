@@ -6,12 +6,14 @@ const activeSection = ref('overview')
 const sections = [
   { id: 'overview', title: 'Overview' },
   { id: 'quickstart', title: 'Quick Start' },
+  { id: 'receipts', title: 'Receipt Scanner' },
   { id: 'upload', title: 'Upload Data' },
   { id: 'mapping', title: 'Column Mapping' },
   { id: 'classification', title: 'Classification' },
   { id: 'reconciliation', title: 'VAT Reconciliation' },
   { id: 'reports', title: 'Report Generation' },
   { id: 'edit-report', title: 'Edit Reports' },
+  { id: 'corrections', title: 'Corrections & Learning' },
   { id: 'suppliers', title: 'Suppliers' },
   { id: 'withholding', title: 'Withholding Tax' },
   { id: 'chat', title: 'AI Tax Assistant' },
@@ -153,9 +155,76 @@ function scrollTo(id: string) {
           </div>
         </section>
 
-        <!-- 3. Upload -->
+        <!-- 3. Receipt Scanner -->
+        <section id="receipts">
+          <h3>3. Receipt Scanner</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Receipt Scanner</strong></p>
+
+          <p>The Receipt Scanner lets you upload receipt photos and automatically extract transaction data using OCR. No manual data entry needed &mdash; just snap photos and let the system do the rest.</p>
+
+          <h4>Supported Image Formats</h4>
+          <ul>
+            <li>JPEG (.jpg, .jpeg)</li>
+            <li>PNG (.png)</li>
+            <li>BMP (.bmp)</li>
+            <li>TIFF (.tiff, .tif)</li>
+            <li>WebP (.webp)</li>
+          </ul>
+
+          <h4>How to Use</h4>
+          <div class="steps">
+            <div class="step">
+              <span class="step-num">1</span>
+              <div>
+                <strong>Upload Receipt Photos</strong>
+                <p>Drag &amp; drop receipt images into the upload area, or click to browse. You can upload up to 50 images at once.</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">2</span>
+              <div>
+                <strong>Select Period &amp; Report Type</strong>
+                <p>Choose the filing period (e.g., 2026-01) and report type (e.g., BIR 2550M). These determine how transactions are grouped.</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">3</span>
+              <div>
+                <strong>Click "Start Processing"</strong>
+                <p>The system processes all images automatically: OCR &rarr; field extraction &rarr; transaction creation &rarr; report generation.</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">4</span>
+              <div>
+                <strong>Review Results</strong>
+                <p>View extracted data for each receipt: vendor name, TIN, amounts, VAT type, and confidence scores. Navigate to the generated report or transaction list.</p>
+              </div>
+            </div>
+          </div>
+
+          <h4>How OCR Parsing Works</h4>
+          <p>The system uses a two-layer approach to maximize accuracy while minimizing cost:</p>
+          <ol>
+            <li><strong>Layer 1: Rule-based parsing (free, instant)</strong> &mdash; Regex patterns extract TIN numbers, dates, amounts (&#8369; / PHP), VAT type keywords, and receipt numbers. Cross-validates that vatable sales + VAT amount &asymp; total. Fields with confidence &ge; 85% are used directly.</li>
+            <li><strong>Layer 2: AI assist (only when needed)</strong> &mdash; Fields with low confidence (e.g., ambiguous vendor category, unclear VAT type) are sent to an AI model for resolution. Typically, standard BIR receipts require zero AI calls.</li>
+          </ol>
+
+          <h4>Confidence Scores</h4>
+          <ul>
+            <li><strong style="color: #16a34a;">&ge; 85%</strong> &mdash; High confidence, auto-accepted</li>
+            <li><strong style="color: #ca8a04;">60&ndash;84%</strong> &mdash; Medium confidence, AI-assisted</li>
+            <li><strong style="color: #dc2626;">&lt; 60%</strong> &mdash; Low confidence, may need manual review</li>
+          </ul>
+
+          <div class="tip-box">
+            <strong>Tip:</strong> For best OCR results, ensure receipt photos are well-lit, flat, and in focus. Avoid shadows and wrinkles. The system handles rotated images automatically.
+          </div>
+        </section>
+
+        <!-- 4. Upload -->
         <section id="upload">
-          <h3>3. Upload Data</h3>
+          <h3>4. Upload Data</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Upload Data</strong></p>
 
           <h4>Supported File Formats</h4>
@@ -177,9 +246,9 @@ function scrollTo(id: string) {
           </div>
         </section>
 
-        <!-- 4. Mapping -->
+        <!-- 5. Mapping -->
         <section id="mapping">
-          <h3>4. Column Mapping</h3>
+          <h3>5. Column Mapping</h3>
           <p>Navigate to: Auto-redirected after upload, or Sidebar &rarr; <strong>Upload Data</strong> &rarr; select file</p>
 
           <h4>How It Works</h4>
@@ -206,9 +275,9 @@ function scrollTo(id: string) {
           </table>
         </section>
 
-        <!-- 5. Classification -->
+        <!-- 6. Classification -->
         <section id="classification">
-          <h3>5. Transaction Classification</h3>
+          <h3>6. Transaction Classification</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Classification</strong></p>
 
           <h4>Create a Reconciliation Session</h4>
@@ -231,9 +300,9 @@ function scrollTo(id: string) {
           </div>
         </section>
 
-        <!-- 6. Reconciliation -->
+        <!-- 7. Reconciliation -->
         <section id="reconciliation">
-          <h3>6. VAT Reconciliation</h3>
+          <h3>7. VAT Reconciliation</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Reconciliation</strong></p>
 
           <h4>Reconciliation Process</h4>
@@ -252,9 +321,9 @@ function scrollTo(id: string) {
           </ul>
         </section>
 
-        <!-- 7. Reports -->
+        <!-- 8. Reports -->
         <section id="reports">
-          <h3>7. Report Generation</h3>
+          <h3>8. Report Generation</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Reports</strong></p>
 
           <h4>Generating a Report</h4>
@@ -292,9 +361,9 @@ function scrollTo(id: string) {
           </ul>
         </section>
 
-        <!-- 8. Edit Report -->
+        <!-- 9. Edit Report -->
         <section id="edit-report">
-          <h3>8. Editing Reports</h3>
+          <h3>9. Editing Reports</h3>
           <p>Click the "Edit" button in the report list to open the editing page.</p>
 
           <h4>Editing Features</h4>
@@ -311,9 +380,54 @@ function scrollTo(id: string) {
           </div>
         </section>
 
-        <!-- 9. Suppliers -->
+        <!-- 10. Corrections & Learning -->
+        <section id="corrections">
+          <h3>10. Corrections &amp; Learning</h3>
+          <p>Navigate to: Any report or transaction view &rarr; <strong>Edit / Correct</strong></p>
+
+          <p>When you correct a transaction's classification or report field, the system doesn't just update the value &mdash; it learns from your correction to improve future accuracy.</p>
+
+          <h4>How Corrections Work</h4>
+          <div class="steps">
+            <div class="step">
+              <span class="step-num">1</span>
+              <div>
+                <strong>Make a Correction</strong>
+                <p>Change a transaction's VAT type, category, or amount. The system records what changed and why.</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">2</span>
+              <div>
+                <strong>Rule Auto-Generated</strong>
+                <p>If a pattern is detected (e.g., "PLDT" always classified as "services"), the system creates a learned rule for future transactions.</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">3</span>
+              <div>
+                <strong>Compliance Validation</strong>
+                <p>Each correction is checked against BIR regulations. The system flags if a correction might cause compliance issues.</p>
+              </div>
+            </div>
+          </div>
+
+          <h4>Learning Insights</h4>
+          <ul>
+            <li><strong>Correction History</strong> &mdash; View all corrections made across sessions, with before/after values</li>
+            <li><strong>Auto-Learned Rules</strong> &mdash; Rules generated from repeated corrections (e.g., vendor &rarr; category mappings)</li>
+            <li><strong>Confidence Improvement</strong> &mdash; Over time, the AI's classification accuracy improves as it learns from your corrections</li>
+            <li><strong>Compliance Score</strong> &mdash; Each report gets a compliance score based on validation rules and correction history</li>
+          </ul>
+
+          <div class="info-box">
+            <strong>How it improves accuracy:</strong> When you correct a classification, the system stores the pattern. Next time a similar transaction appears, the AI uses your previous corrections to make a more accurate initial classification.
+          </div>
+        </section>
+
+        <!-- 11. Suppliers -->
         <section id="suppliers">
-          <h3>9. Supplier Management</h3>
+          <h3>11. Supplier Management</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Suppliers</strong></p>
 
           <h4>Managing Suppliers</h4>
@@ -339,9 +453,9 @@ function scrollTo(id: string) {
           </table>
         </section>
 
-        <!-- 10. Withholding Tax -->
+        <!-- 12. Withholding Tax -->
         <section id="withholding">
-          <h3>10. Withholding Tax (EWT) Management</h3>
+          <h3>12. Withholding Tax (EWT) Management</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Withholding Tax</strong></p>
 
           <h4>EWT Workflow</h4>
@@ -393,9 +507,9 @@ function scrollTo(id: string) {
           </table>
         </section>
 
-        <!-- 11. AI Chat -->
+        <!-- 13. AI Chat -->
         <section id="chat">
-          <h3>11. AI Tax Assistant</h3>
+          <h3>13. AI Tax Assistant</h3>
           <p>Navigate to: Sidebar &rarr; <strong>AI Chat</strong></p>
 
           <p>You can ask the AI assistant any Philippine tax-related question in English or Chinese. For example:</p>
@@ -412,9 +526,9 @@ function scrollTo(id: string) {
           </div>
         </section>
 
-        <!-- 12. Knowledge -->
+        <!-- 14. Knowledge -->
         <section id="knowledge">
-          <h3>12. Knowledge Base</h3>
+          <h3>14. Knowledge Base</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Knowledge</strong></p>
 
           <p>The knowledge base contains structured data on Philippine tax laws and regulations, used to enhance the AI assistant's accuracy.</p>
@@ -432,9 +546,9 @@ function scrollTo(id: string) {
           <p>You can search the knowledge base for specific provisions and regulations on the Knowledge page.</p>
         </section>
 
-        <!-- 13. FAQ -->
+        <!-- 15. FAQ -->
         <section id="faq">
-          <h3>13. Frequently Asked Questions</h3>
+          <h3>15. Frequently Asked Questions</h3>
 
           <div class="faq-item">
             <h4>Q: What if the report calculations are incorrect?</h4>
