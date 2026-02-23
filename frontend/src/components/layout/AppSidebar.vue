@@ -10,6 +10,7 @@ const menuItems = [
   { name: 'Upload Data', path: '/upload', icon: '📤' },
   { name: 'Reports', path: '/reports', icon: '📋' },
   { name: 'AI Chat', path: '/chat', icon: '💬' },
+  { name: 'Knowledge', path: '/knowledge', icon: '📚' },
   { name: 'Memory', path: '/memory', icon: '🧠' },
   { name: 'Settings', path: '/settings', icon: '⚙️' },
 ]
