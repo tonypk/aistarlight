@@ -20,6 +20,7 @@ interface Stats {
 const entries = ref<KnowledgeEntry[]>([])
 const stats = ref<Stats | null>(null)
 const loading = ref(false)
+const error = ref('')
 const activeCategory = ref<string | null>(null)
 
 onMounted(async () => {
@@ -31,6 +32,8 @@ onMounted(async () => {
     ])
     entries.value = entriesRes.data.data
     stats.value = statsRes.data.data
+  } catch {
+    error.value = 'Failed to load knowledge base.'
   } finally {
     loading.value = false
   }
@@ -90,6 +93,9 @@ function formatDate(iso: string) {
         {{ cat }} ({{ count }})
       </button>
     </div>
+
+    <!-- Error -->
+    <div v-if="error" class="error-msg">{{ error }}</div>
 
     <!-- Loading -->
     <div v-if="loading" class="loading">Loading...</div>
@@ -207,4 +213,5 @@ function formatDate(iso: string) {
   color: #aaa;
 }
 .empty { text-align: center; padding: 48px; color: #888; }
+.error-msg { color: #ef4444; text-align: center; padding: 24px; }
 </style>

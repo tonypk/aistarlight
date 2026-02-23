@@ -42,8 +42,12 @@ onMounted(async () => {
 
 async function deletePreference(reportType: string) {
   if (!confirm(`Delete preferences for ${reportType}?`)) return
-  await client.delete(`/memory/preferences/${reportType}`)
-  preferences.value = preferences.value.filter(p => p.report_type !== reportType)
+  try {
+    await client.delete(`/memory/preferences/${reportType}`)
+    preferences.value = preferences.value.filter(p => p.report_type !== reportType)
+  } catch {
+    alert('Failed to delete preference. Please try again.')
+  }
 }
 
 function formatDate(iso: string) {

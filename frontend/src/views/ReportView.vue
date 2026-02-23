@@ -26,8 +26,6 @@ async function handleGenerate() {
         data_file_id: uploadStore.fileId!,
         column_mappings: uploadStore.confirmedMappings,
       })
-      // Clear upload state after successful generation
-      uploadStore.clear()
     } else {
       // Manual data fallback (demo)
       await reportStore.generateReport({

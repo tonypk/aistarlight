@@ -57,12 +57,18 @@ async function requestAiMapping() {
 }
 
 function confirmMapping() {
-  // Filter out empty/skip mappings for storage, but keep _skip in confirmedMappings
+  // Keep all mapped columns (including _skip), filter out unselected ones
   const finalMappings: Record<string, string> = {}
+  let hasMeaningfulMapping = false
   for (const [col, target] of Object.entries(mappings.value)) {
     if (target && target !== '') {
       finalMappings[col] = target
+      if (target !== '_skip') hasMeaningfulMapping = true
     }
+  }
+  if (!hasMeaningfulMapping) {
+    aiError.value = 'Please map at least one column to a target field.'
+    return
   }
   uploadStore.setMappings(finalMappings)
   router.push('/reports')
