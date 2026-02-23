@@ -8,11 +8,13 @@ const auth = useAuthStore()
 const menuItems = [
   { name: 'Dashboard', path: '/', icon: '📊' },
   { name: 'Upload Data', path: '/upload', icon: '📤' },
+  { name: 'Receipt Scanner', path: '/receipts', icon: '🧾' },
   { name: 'Classification', path: '/classification', icon: '🏷️' },
   { name: 'Reconciliation', path: '/reconciliation', icon: '🔍' },
   { name: 'Reports', path: '/reports', icon: '📋' },
   { name: 'Suppliers', path: '/suppliers', icon: '🏢' },
   { name: 'Withholding Tax', path: '/withholding', icon: '📑' },
+  { name: 'Learning Insights', path: '/learning', icon: '🎓' },
   { name: 'AI Chat', path: '/chat', icon: '💬' },
   { name: 'Knowledge', path: '/knowledge', icon: '📚' },
   { name: 'Memory', path: '/memory', icon: '🧠' },

@@ -23,6 +23,12 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "Upload Data" },
     },
     {
+      path: "/receipts",
+      name: "receipts",
+      component: () => import("../views/ReceiptUploadView.vue"),
+      meta: { requiresAuth: true, title: "Receipt Scanner" },
+    },
+    {
       path: "/mapping",
       name: "mapping",
       component: () => import("../views/MappingView.vue"),
@@ -81,6 +87,12 @@ const router = createRouter({
       name: "withholding",
       component: () => import("../views/WithholdingView.vue"),
       meta: { requiresAuth: true, title: "Withholding Tax" },
+    },
+    {
+      path: "/learning",
+      name: "learning",
+      component: () => import("../views/LearningInsightsView.vue"),
+      meta: { requiresAuth: true, title: "Learning Insights" },
     },
     {
       path: "/guide",
