@@ -4,35 +4,43 @@
   "chunks": [
     {
       "title": "VAT Overview",
-      "content": "Value-Added Tax (VAT) is a consumption tax imposed on the sale, barter, exchange, or lease of goods or properties and services in the Philippines, as well as on the importation of goods. Standard rate: 12% (since 2006). Zero-rated: 0% (export sales, services to non-residents). VAT-exempt: Not subject to VAT."
+      "content": "Value-Added Tax (VAT) is a consumption tax imposed on the sale, barter, exchange, or lease of goods or properties and services in the Philippines, as well as on the importation of goods. Standard rate: 12% (since 2006). Zero-rated: 0% (export sales, services to non-residents). VAT-exempt: Not subject to VAT. VAT is an indirect tax — the seller collects it from the buyer and remits it to the BIR."
     },
     {
       "title": "VAT Registration Threshold",
-      "content": "Businesses with annual gross sales/receipts exceeding PHP 3,000,000 must register as VAT taxpayers. Below threshold: Optional VAT registration or Percentage Tax (3%)."
+      "content": "Businesses with annual gross sales/receipts exceeding PHP 3,000,000 must register as VAT taxpayers (Section 236 NIRC). Below threshold: businesses may opt to register as VAT or pay 3% Percentage Tax. Once registered as VAT, a taxpayer must remain VAT-registered for at least 3 years before cancellation. The 8% flat income tax option is available for self-employed/professionals earning under PHP 3M as alternative to graduated income tax + 3% percentage tax."
     },
     {
-      "title": "Output VAT",
-      "content": "Output VAT is collected from buyers on sale of goods/services. Computed as: Selling Price x 12%. Must be separately indicated in invoices/receipts."
+      "title": "Output VAT Computation",
+      "content": "Output VAT is the tax collected by VAT-registered sellers from their buyers upon sale of goods/services. Computation: Selling Price (exclusive of VAT) x 12%. If the price is VAT-inclusive, the VAT component is computed as: Total Price / 1.12 x 0.12. Output VAT must be separately indicated on VAT invoices and official receipts. For sales to government, the government agency withholds 5% of the gross payment as final withholding VAT."
     },
     {
-      "title": "Input VAT",
-      "content": "Input VAT is paid to suppliers on purchases of goods/services/capital goods. Creditable against Output VAT. Must be supported by VAT invoices/receipts."
+      "title": "Input VAT Treatment and Claims",
+      "content": "Input VAT is the VAT paid by a taxpayer on purchases of goods, properties, or services used in the course of trade or business. Requirements for claiming input VAT: (1) Must be supported by valid VAT invoice/official receipt; (2) Invoice must bear the seller's TIN and VAT registration number; (3) Must be for purchases used in the business; (4) Must be claimed within the period of purchase or within the next reporting period. Transitional input VAT: allowed for newly VAT-registered taxpayers at 2% of the beginning inventory value."
     },
     {
-      "title": "VAT Payable Formula",
-      "content": "VAT Payable = Output VAT - Input VAT. If Input VAT > Output VAT: Excess carried forward to next period. Excess input VAT can be applied for refund after 2 years (for zero-rated sales)."
+      "title": "Capital Goods Input VAT Amortization",
+      "content": "Input VAT on capital goods (depreciable assets for use in business): If the aggregate acquisition cost of capital goods in any 12-month period exceeds PHP 1,000,000, the input VAT shall be spread evenly over the useful life of the asset, not exceeding 60 months. If the aggregate cost does not exceed PHP 1M, the entire input VAT may be claimed in the month of purchase. Capital goods include: machinery, equipment, vehicles, buildings, and other depreciable assets with a useful life exceeding one year. Example: Purchase of equipment for PHP 2,400,000 (VAT = PHP 288,000). If useful life = 5 years (60 months), monthly amortization = PHP 288,000 / 60 = PHP 4,800 per month."
     },
     {
-      "title": "Filing Deadlines",
-      "content": "Monthly VAT (BIR 2550M): Within 20 days after end of each month. Quarterly VAT (BIR 2550Q): Within 25 days after end of each quarter."
+      "title": "VAT Payable Formula and Tax Credit",
+      "content": "VAT Payable = Output VAT - Input VAT. If Output VAT > Input VAT: taxpayer pays the difference. If Input VAT > Output VAT: the excess is carried forward as tax credit to the next period. Excess input VAT can be carried forward indefinitely until fully utilized. For zero-rated sales, excess input VAT may be claimed as refund within 2 years after the close of the taxable quarter when the sales were made (Section 112 NIRC). Refund application must be filed with the BIR within the prescriptive period."
     },
     {
       "title": "Zero-Rated Sales",
-      "content": "Zero-rated sales include: Export sales; Sales to PEZA registered enterprises; Services rendered to non-resident foreign persons; Transport of passengers and cargo by domestic air or sea vessels from Philippines to abroad."
+      "content": "Zero-rated sales are taxed at 0% VAT — no output tax is charged, but input VAT on purchases is fully creditable. Types: (1) Export sales - goods shipped out of PH; (2) Foreign currency denominated sales - services to non-resident foreign clients paid in foreign currency and accounted for per BSP rules; (3) Sales to PEZA-registered enterprises within economic zones; (4) Sale of raw materials/packaging to export-oriented enterprises; (5) Transport of passengers and cargo by domestic air/sea vessels from PH to abroad; (6) Sale of gold to BSP. Zero-rated sellers must register with the BIR as VAT taxpayers and maintain proper documentation."
     },
     {
       "title": "VAT-Exempt Transactions",
-      "content": "VAT-exempt transactions include: Agricultural and marine food products in original state; Educational services; Medical, dental, hospital, veterinary services; Employment services; Residential lot (PHP 1,919,500 or below); Residential dwelling (PHP 3,199,200 or below); Sale of drugs and medicines for diabetes, hypertension, cholesterol."
+      "content": "VAT-exempt transactions (Section 109 NIRC as amended by TRAIN Law): (1) Agricultural/marine food products in original state; (2) Fertilizers, seeds, seedlings, livestock/poultry feeds; (3) Educational services by accredited private institutions; (4) Medical, dental, hospital, veterinary services (except those by professionals); (5) Services by banks/financial intermediaries under BSP supervision; (6) Sale of residential lot not exceeding PHP 1,919,500 or house and lot not exceeding PHP 3,199,200; (7) Lease of residential unit with monthly rental not exceeding PHP 15,000; (8) Sale of drugs and medicines for diabetes, hypertension, and high cholesterol; (9) Sale of socialized housing. Note: VAT-exempt sellers CANNOT claim input VAT credits."
+    },
+    {
+      "title": "Sales to Government - 5% Final Withholding VAT",
+      "content": "Sales of goods and services to the Philippine national government, its political subdivisions, and GOCCs are subject to 5% final withholding VAT (Revenue Regulations No. 14-2003, as amended). The government buyer withholds and remits the 5% VAT directly to the BIR. The VAT-registered seller reports the sale on Line 2 of BIR 2550M. The 5% withheld is the seller's output VAT on government sales — no additional 12% is imposed. The seller may still claim input VAT on purchases related to government sales. Example: Sale of PHP 100,000 to a government agency. Government withholds PHP 5,000 (5%) and remits to BIR. Seller reports PHP 100,000 on Line 2 and PHP 5,000 on Line 6A."
+    },
+    {
+      "title": "VAT Invoice and Official Receipt Requirements",
+      "content": "VAT invoices (for sale of goods) and official receipts (for sale of services) must contain: (1) Seller's TIN followed by the word 'VAT'; (2) Total selling price, VAT component, and total amount payable shown separately; (3) Date of transaction; (4) Name, business name, TIN, and address of the buyer (if total exceeds PHP 1,000); (5) Quantity, unit cost, and description of goods/services; (6) Authority to Print (ATP) number. Non-compliant invoices/receipts result in disallowance of input VAT claim by the buyer. Invoices must be pre-numbered and in duplicate (seller and buyer copies)."
     }
   ]
 }

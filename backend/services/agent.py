@@ -60,7 +60,7 @@ AGENT_TOOLS = [
                 },
                 "category": {
                     "type": "string",
-                    "description": "Category: vat, income_tax, withholding, general",
+                    "description": "Category: vat, income_tax, withholding, compliance, general",
                 },
             },
             "required": ["query"],

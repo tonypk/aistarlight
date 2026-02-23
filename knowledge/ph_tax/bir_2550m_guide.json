@@ -4,39 +4,43 @@
   "chunks": [
     {
       "title": "BIR 2550M Purpose and Who Must File",
-      "content": "BIR Form 2550M is used by VAT-registered taxpayers to declare and pay their monthly Value-Added Tax. All persons or entities registered as VAT taxpayers with annual gross sales/receipts exceeding PHP 3,000,000 must file."
+      "content": "BIR Form 2550M (Monthly Value-Added Tax Declaration) must be filed by all persons or entities registered as VAT taxpayers. This includes: (1) Individuals and corporations with annual gross sales/receipts exceeding PHP 3,000,000; (2) Those who voluntarily registered as VAT taxpayers; (3) Franchisees of radio/television broadcasting with annual gross receipts exceeding PHP 10,000,000. Non-VAT registered persons who issued VAT invoices/receipts must also file."
     },
     {
-      "title": "BIR 2550M Filing Deadline",
-      "content": "Filing deadline: Within 20 days after the end of each month. Example: January VAT due on February 20. Payment options: eFPS, eBIRForms, Authorized Agent Banks (AABs), Revenue Collection Officers (RCOs)."
+      "title": "BIR 2550M Filing Deadline and Payment Methods",
+      "content": "Filing deadline: On or before the 20th day following the end of each taxable month. Example: January 2026 VAT is due on or before February 20, 2026. Payment options: (1) eFPS (Electronic Filing and Payment System) - mandatory for large taxpayers and top 20,000 corporations; (2) eBIRForms - for non-eFPS filers; (3) Authorized Agent Banks (AABs) within the jurisdiction of the taxpayer's RDO; (4) Revenue Collection Officers (RCOs) in areas without AABs. Note: Months covered by quarterly 2550Q need not file monthly 2550M (i.e., skip months 3, 6, 9, 12 if filing quarterly)."
     },
     {
       "title": "BIR 2550M Part I - Background Information",
-      "content": "Part I requires: TIN (Tax Identification Number), RDO Code, Taxpayer's Name, Registered Address, Filing Period."
+      "content": "Part I of BIR 2550M requires: (1) TIN (Tax Identification Number) - 9-digit number with 3-digit branch code (e.g., 123-456-789-000); (2) RDO Code - Revenue District Office where registered; (3) Taxpayer's Name - as registered with BIR; (4) Registered Address; (5) Filing Period (month and year); (6) Amendment indicator - mark if this is an amended return; (7) ATC (Alphanumeric Tax Code) - typically 'VT010' for regular VAT. If filing an amended return, the original return date and tax payments must be indicated."
     },
     {
-      "title": "BIR 2550M Part II - Sales Computation",
-      "content": "Line 1: Total Vatable Sales (all sales subject to 12% VAT). Line 2: Sales to Government (subject to 5% Final Withholding VAT). Line 3: Zero-Rated Sales (export and qualified zero-rated). Line 4: Exempt Sales (VAT-exempt transactions). Line 5: Total Sales (Sum of Lines 1-4)."
+      "title": "BIR 2550M Part II - Sales/Receipts Computation (Lines 1-5)",
+      "content": "Line 1: Vatable Sales/Receipts - All sales of goods/services subject to regular 12% VAT. This is the gross selling price excluding the VAT component. Line 2: Sales to Government - Sales to national and local government agencies subject to 5% Final Withholding VAT (per RR 14-2003). The government agency withholds and remits the 5% VAT. Line 3: Zero-Rated Sales - Export sales; sale to PEZA/Freeport enterprises; sale of gold to BSP; transport of passengers/cargo from PH to abroad. Line 4: Exempt Sales - Sales of VAT-exempt goods/services under Section 109 NIRC. Line 5: Total Sales = Line 1 + Line 2 + Line 3 + Line 4."
     },
     {
-      "title": "BIR 2550M Part III - Output Tax",
-      "content": "Line 6: Output VAT = Line 1 (Vatable Sales) × 12%."
+      "title": "BIR 2550M Part III - Output Tax (Lines 6, 6A, 6B)",
+      "content": "Line 6: Output VAT = Line 1 (Vatable Sales) x 12%. This is the VAT collected from buyers on regular vatable sales. Line 6A: Output VAT on Sales to Government = Line 2 x 5%. Note: For government sales, only 5% is remitted by the government agency as final withholding VAT. The remaining 7% is the seller's responsibility. However, in the 2550M, only the 5% withheld portion is reported on Line 6A. Line 6B: Total Output Tax = Line 6 + Line 6A. Zero-rated and exempt sales do not generate output tax."
     },
     {
-      "title": "BIR 2550M Part IV - Input Tax",
-      "content": "Line 7: Input VAT on Domestic Purchases of Goods (other than capital goods). Line 8: Input VAT on Domestic Purchases of Capital Goods. Line 9: Input VAT on Domestic Purchases of Services. Line 10: Input VAT on Importation of Goods. Line 11: Total Input VAT (Sum of Lines 7-10)."
+      "title": "BIR 2550M Part IV - Input Tax (Lines 7-11)",
+      "content": "Line 7: Input VAT on Domestic Purchases of Goods (other than capital goods) - VAT paid on purchases of raw materials, supplies, and other goods used in business. Line 8: Input VAT on Domestic Purchases of Capital Goods - VAT on depreciable assets. If aggregate acquisition cost exceeds PHP 1,000,000 in a 12-month period, the input VAT must be amortized over the useful life of the asset, not exceeding 60 months. Below PHP 1M, the full input VAT is claimable in the month of purchase. Line 9: Input VAT on Domestic Purchases of Services - VAT paid on professional fees, rent, utilities, and other services. Line 10: Input VAT on Importation of Goods - VAT paid at customs on imported goods. Line 11: Total Input Tax = Sum of Lines 7 to 10. All input VAT claims must be supported by valid VAT invoices or official receipts."
     },
     {
-      "title": "BIR 2550M Part V - Tax Due",
-      "content": "Line 12: VAT Payable = Line 6 - Line 11. Line 13: Less Tax Credits/Payments. Line 14: Net VAT Payable = Line 12 - Line 13. Line 15: Add Penalties (if any). Line 16: Total Amount Due = Line 14 + Line 15."
+      "title": "BIR 2550M Part V - Tax Due (Lines 12-16)",
+      "content": "Line 12: VAT Payable = Line 6B (Total Output Tax) - Line 11 (Total Input Tax). If positive, there is VAT to pay. If negative, the excess becomes tax credit. Line 13: Less Tax Credits/Payments - includes: (a) tax credit from prior period's excess input VAT; (b) creditable withholding VAT (from government sales); (c) advance VAT payments; (d) tax credit certificates. Line 14: Net VAT Payable = Line 12 - Line 13. If negative, the excess carries forward to the next period. Line 15: Add Penalties - computed as: (a) 25% surcharge for late filing/payment; (b) 12% annual interest from deadline to payment date; (c) compromise penalty per BIR schedule. Line 16: Total Amount Due = Line 14 + Line 15. This is the amount to be paid to the BIR."
     },
     {
       "title": "BIR 2550M Required Attachments",
-      "content": "Required attachments: Summary List of Sales (SLS), Summary List of Purchases (SLP), Summary Alphalist of Withholding Taxes (SAWT) if applicable, Previously filed return if amended."
+      "content": "Required attachments for BIR 2550M filing: (1) Summary List of Sales (SLS) - itemized list of all sales transactions with customer TIN, name, amount, and VAT; (2) Summary List of Purchases (SLP) - itemized list of all purchase transactions with supplier TIN, name, amount, and VAT; (3) Summary Alphalist of Withholding Taxes (SAWT) - if the taxpayer is a withholding agent; (4) Previously filed return - if this is an amended return. SLS and SLP must be submitted as CSV files via the eSALES/ePurchases module of eBIRForms or uploaded to the BIR's online submission system. Failure to submit attachments may result in disallowance of input VAT claims."
     },
     {
       "title": "BIR 2550M Late Filing Penalties",
-      "content": "Penalties for late filing: 25% surcharge, 12% annual interest, compromise penalty."
+      "content": "Penalties for late filing of BIR 2550M: (1) Surcharge - 25% of tax due for filing beyond the deadline; increases to 50% for willful neglect or fraud. (2) Interest - 12% per annum (or double the legal interest rate per BSP, whichever is higher) computed from the deadline date to actual payment date. (3) Compromise Penalty - based on the BIR schedule of compromise penalties (ranges from PHP 200 to PHP 50,000 depending on the violation). Example: If PHP 10,000 VAT is due by Feb 20 but paid on March 20 (30 days late): Surcharge = PHP 2,500 (25%), Interest = PHP 10,000 x 12% x 30/365 = PHP 98.63, Total penalties ~ PHP 2,598.63 + compromise."
+    },
+    {
+      "title": "BIR 2550M Common Filing Errors to Avoid",
+      "content": "Common errors when filing BIR 2550M: (1) Claiming input VAT without valid VAT invoices/receipts - all claims must be supported by documents bearing the supplier's TIN and VAT registration number; (2) Not amortizing capital goods input VAT when aggregate acquisition exceeds PHP 1M; (3) Misclassifying zero-rated vs exempt sales - zero-rated generates no output tax but allows input VAT credit, while exempt sales do not allow input VAT credit; (4) Failing to report Sales to Government separately on Line 2; (5) Not carrying forward excess input VAT from prior months on Line 13; (6) Incorrect TIN format on SLS/SLP attachments; (7) Filing monthly return for months already covered by quarterly return (months 3, 6, 9, 12); (8) Not matching declared sales with eSALES submissions."
     }
   ]
 }

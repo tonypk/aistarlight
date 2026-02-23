@@ -5,9 +5,8 @@ import io
 import os
 from typing import Any
 
-from jinja2 import Template
+from reportlab.lib.colors import Color, HexColor, black, white
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 
 from backend.config import settings
@@ -15,7 +14,8 @@ from backend.config import settings
 
 def generate_pdf_report(report_type: str, data: dict[str, Any], tenant_info: dict) -> str:
     """Generate a PDF report and return the file path."""
-    filename = f"{report_type}_{data.get('period', 'unknown')}_{tenant_info.get('tin', 'no_tin')}.pdf"
+    tin = tenant_info.get("tin_number", "no_tin")
+    filename = f"{report_type}_{data.get('period', 'unknown')}_{tin}.pdf"
     filepath = os.path.join(settings.report_dir, filename)
 
     if report_type == "BIR_2550M":
@@ -26,95 +26,184 @@ def generate_pdf_report(report_type: str, data: dict[str, Any], tenant_info: dic
     return filepath
 
 
+# Colors
+_HEADER_BG = HexColor("#1e3a5f")
+_SECTION_BG = HexColor("#e8edf2")
+_LINE_GRAY = HexColor("#cccccc")
+_ACCENT = HexColor("#2563eb")
+
+
+def _draw_section_header(c: canvas.Canvas, y: float, width: float, text: str) -> float:
+    """Draw a section header bar. Returns new y position."""
+    c.setFillColor(_SECTION_BG)
+    c.rect(54, y - 14, width - 108, 18, fill=1, stroke=0)
+    c.setFillColor(black)
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(60, y - 10, text)
+    return y - 22
+
+
+def _draw_line_item(
+    c: canvas.Canvas,
+    y: float,
+    width: float,
+    line_no: str,
+    label: str,
+    value: str,
+    bold: bool = False,
+) -> float:
+    """Draw a single line item with line number, label, and right-aligned amount."""
+    font = "Helvetica-Bold" if bold else "Helvetica"
+    c.setFont(font, 8)
+    c.setFillColor(black)
+    if line_no:
+        c.drawString(60, y, line_no)
+    c.drawString(90, y, label)
+    c.drawRightString(width - 60, y, f"PHP {_format_amount(value)}")
+    # light separator
+    c.setStrokeColor(_LINE_GRAY)
+    c.setLineWidth(0.3)
+    c.line(54, y - 4, width - 54, y - 4)
+    return y - 16
+
+
 def _generate_bir_2550m_pdf(filepath: str, data: dict, tenant_info: dict) -> None:
-    """Generate BIR 2550M Monthly VAT Declaration PDF."""
+    """Generate BIR 2550M Monthly VAT Declaration PDF matching official form layout."""
     c = canvas.Canvas(filepath, pagesize=letter)
     width, height = letter
 
-    # Header
-    c.setFont("Helvetica-Bold", 16)
-    c.drawCentredString(width / 2, height - 50, "BIR Form 2550M")
+    # === Title Banner ===
+    c.setFillColor(_HEADER_BG)
+    c.rect(0, height - 70, width, 70, fill=1, stroke=0)
+    c.setFillColor(white)
+    c.setFont("Helvetica-Bold", 18)
+    c.drawCentredString(width / 2, height - 30, "BIR Form No. 2550M")
     c.setFont("Helvetica", 10)
-    c.drawCentredString(width / 2, height - 65, "Monthly Value-Added Tax Declaration")
+    c.drawCentredString(width / 2, height - 48, "Monthly Value-Added Tax Declaration")
+    c.setFont("Helvetica", 7)
+    c.drawCentredString(width / 2, height - 60, "Republic of the Philippines - Department of Finance - Bureau of Internal Revenue")
 
-    # Company info
-    y = height - 100
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(72, y, "Taxpayer Information")
-    y -= 20
-    c.setFont("Helvetica", 9)
+    # === Part I: Background Information ===
+    y = height - 90
+    y = _draw_section_header(c, y, width, "Part I - Background Information")
 
-    info_fields = [
-        ("Company Name", tenant_info.get("company_name", "")),
+    c.setFont("Helvetica", 8)
+    info = [
         ("TIN", tenant_info.get("tin_number", "")),
         ("RDO Code", tenant_info.get("rdo_code", "")),
-        ("Period", data.get("period", "")),
+        ("Taxpayer's Name / Company", tenant_info.get("company_name", "")),
+        ("Taxable Period", data.get("period", "")),
+        ("Amendment?", "No"),
     ]
-    for label, value in info_fields:
-        c.drawString(72, y, f"{label}: {value}")
-        y -= 15
+    for label, value in info:
+        y -= 14
+        c.setFont("Helvetica", 8)
+        c.drawString(60, y, f"{label}:")
+        c.setFont("Helvetica-Bold", 8)
+        c.drawString(200, y, str(value))
 
-    # Sales section
+    # === Part II: Sales / Receipts (Lines 1-5) ===
     y -= 20
+    y = _draw_section_header(c, y, width, "Part II - Sales / Receipts")
+
+    y = _draw_line_item(c, y, width, "1", "Vatable Sales / Receipts",
+                        data.get("line_1_vatable_sales", data.get("vatable_sales", "0")))
+    y = _draw_line_item(c, y, width, "2", "Sales to Government (subject to 5% Final Withholding VAT)",
+                        data.get("line_2_sales_to_government", "0"))
+    y = _draw_line_item(c, y, width, "3", "Zero-Rated Sales",
+                        data.get("line_3_zero_rated_sales", data.get("zero_rated_sales", "0")))
+    y = _draw_line_item(c, y, width, "4", "Exempt Sales",
+                        data.get("line_4_exempt_sales", data.get("vat_exempt_sales", "0")))
+    y = _draw_line_item(c, y, width, "5", "Total Sales / Receipts (Sum of Lines 1 to 4)",
+                        data.get("line_5_total_sales", data.get("total_sales", "0")), bold=True)
+
+    # === Part III: Output Tax (Lines 6, 6A, 6B) ===
+    y -= 8
+    y = _draw_section_header(c, y, width, "Part III - Output Tax")
+
+    y = _draw_line_item(c, y, width, "6", "Output VAT (Line 1 x 12%)",
+                        data.get("line_6_output_vat", data.get("output_vat", "0")))
+    y = _draw_line_item(c, y, width, "6A", "Output VAT on Sales to Government (Line 2 x 5%)",
+                        data.get("line_6a_output_vat_government", "0"))
+    y = _draw_line_item(c, y, width, "6B", "Total Output Tax (Line 6 + Line 6A)",
+                        data.get("line_6b_total_output_vat", data.get("output_vat", "0")), bold=True)
+
+    # === Part IV: Input Tax (Lines 7-11) ===
+    y -= 8
+    y = _draw_section_header(c, y, width, "Part IV - Allowable Input Tax")
+
+    y = _draw_line_item(c, y, width, "7", "Input VAT on Domestic Purchases of Goods (other than capital goods)",
+                        data.get("line_7_input_vat_goods", data.get("input_vat_goods", "0")))
+    y = _draw_line_item(c, y, width, "8", "Input VAT on Domestic Purchases of Capital Goods",
+                        data.get("line_8_input_vat_capital", data.get("input_vat_capital", "0")))
+    y = _draw_line_item(c, y, width, "9", "Input VAT on Domestic Purchases of Services",
+                        data.get("line_9_input_vat_services", data.get("input_vat_services", "0")))
+    y = _draw_line_item(c, y, width, "10", "Input VAT on Importation of Goods",
+                        data.get("line_10_input_vat_imports", "0"))
+    y = _draw_line_item(c, y, width, "11", "Total Input Tax (Sum of Lines 7 to 10)",
+                        data.get("line_11_total_input_vat", data.get("total_input_vat", "0")), bold=True)
+
+    # === Part V: Tax Due (Lines 12-16) ===
+    y -= 8
+    y = _draw_section_header(c, y, width, "Part V - Tax Due")
+
+    y = _draw_line_item(c, y, width, "12", "VAT Payable (Line 6B - Line 11)",
+                        data.get("line_12_vat_payable", data.get("vat_payable", "0")))
+    y = _draw_line_item(c, y, width, "13", "Less: Tax Credits / Payments",
+                        data.get("line_13_less_tax_credits", "0"))
+    y = _draw_line_item(c, y, width, "14", "Net VAT Payable (Line 12 - Line 13)",
+                        data.get("line_14_net_vat_payable", data.get("net_vat_payable", "0")))
+    y = _draw_line_item(c, y, width, "15", "Add: Penalties (Surcharge, Interest, Compromise)",
+                        data.get("line_15_add_penalties", "0"))
+
+    # Line 16 - Total Amount Due - highlighted
+    y -= 4
+    c.setFillColor(HexColor("#f0f4ff"))
+    c.rect(54, y - 14, width - 108, 22, fill=1, stroke=0)
+    c.setStrokeColor(_ACCENT)
+    c.setLineWidth(1)
+    c.rect(54, y - 14, width - 108, 22, fill=0, stroke=1)
+    c.setFillColor(black)
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(72, y, "Part I - Sales/Receipts")
-    y -= 20
-    c.setFont("Helvetica", 9)
+    c.drawString(60, y - 8, "16")
+    c.drawString(90, y - 8, "TOTAL AMOUNT DUE (Line 14 + Line 15)")
+    total_due = data.get("line_16_total_amount_due", data.get("net_vat_payable", "0"))
+    c.setFillColor(_ACCENT)
+    c.drawRightString(width - 60, y - 8, f"PHP {_format_amount(total_due)}")
+    y -= 24
 
-    sales_fields = [
-        ("Vatable Sales", data.get("vatable_sales", "0")),
-        ("VAT-Exempt Sales", data.get("vat_exempt_sales", "0")),
-        ("Zero-Rated Sales", data.get("zero_rated_sales", "0")),
-        ("Total Sales", data.get("total_sales", "0")),
-        ("Output VAT (12%)", data.get("output_vat", "0")),
+    # Tax credit info
+    tax_credit = data.get("tax_credit_carried_forward", "0")
+    if float(tax_credit or 0) > 0:
+        y -= 8
+        c.setFillColor(HexColor("#fef3c7"))
+        c.rect(54, y - 10, width - 108, 18, fill=1, stroke=0)
+        c.setFillColor(HexColor("#92400e"))
+        c.setFont("Helvetica", 8)
+        c.drawString(60, y - 6, f"Excess Input VAT / Tax Credit Carried Forward to Next Period: PHP {_format_amount(tax_credit)}")
+        y -= 20
+
+    # === Notes ===
+    y -= 16
+    c.setFillColor(black)
+    c.setFont("Helvetica", 7)
+    notes = [
+        "IMPORTANT NOTES:",
+        "1. This is a draft computation for review. The official BIR 2550M form must be filed via eBIRForms or eFPS.",
+        "2. Sales to Government (Line 2): Subject to 5% final withholding VAT per RR 14-2003.",
+        "3. Capital Goods (Line 8): Input VAT on depreciable assets > PHP 1,000,000 should be amortized over useful life (max 60 months).",
+        "4. Tax Credits (Line 13): Include creditable withholding VAT, prior period excess credits, and other tax payments.",
+        "5. Required Attachments: Summary List of Sales (SLS), Summary List of Purchases (SLP), SAWT if applicable.",
+        "6. Filing Deadline: 20th day following the end of each month. Late filing incurs 25% surcharge + 12% annual interest.",
     ]
-    for label, value in sales_fields:
-        c.drawString(90, y, label)
-        c.drawRightString(width - 72, y, f"PHP {_format_amount(value)}")
-        y -= 15
-
-    # Input VAT section
-    y -= 15
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(72, y, "Part II - Input VAT")
-    y -= 20
-    c.setFont("Helvetica", 9)
-
-    input_fields = [
-        ("Input VAT on Goods", data.get("input_vat_goods", "0")),
-        ("Input VAT on Services", data.get("input_vat_services", "0")),
-        ("Input VAT on Capital Goods", data.get("input_vat_capital", "0")),
-        ("Total Input VAT", data.get("total_input_vat", "0")),
-    ]
-    for label, value in input_fields:
-        c.drawString(90, y, label)
-        c.drawRightString(width - 72, y, f"PHP {_format_amount(value)}")
-        y -= 15
-
-    # Summary
-    y -= 15
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(72, y, "Part III - Tax Due")
-    y -= 20
-    c.setFont("Helvetica", 9)
-
-    summary_fields = [
-        ("VAT Payable", data.get("vat_payable", "0")),
-        ("Tax Credit Carried Forward", data.get("tax_credit_carried_forward", "0")),
-    ]
-    for label, value in summary_fields:
-        c.drawString(90, y, label)
-        c.drawRightString(width - 72, y, f"PHP {_format_amount(value)}")
-        y -= 15
-
-    y -= 5
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(90, y, "NET VAT PAYABLE")
-    c.drawRightString(width - 72, y, f"PHP {_format_amount(data.get('net_vat_payable', '0'))}")
+    for note in notes:
+        c.drawString(60, y, note)
+        y -= 10
 
     # Footer
-    c.setFont("Helvetica", 7)
-    c.drawCentredString(width / 2, 40, "Generated by AIStarlight - AI Tax Filing Assistant")
+    c.setFont("Helvetica", 6)
+    c.setFillColor(HexColor("#888888"))
+    c.drawCentredString(width / 2, 30, "Generated by AIStarlight | This is a draft report for review purposes — not for official filing")
 
     c.save()
 
@@ -148,9 +237,13 @@ def generate_csv_export(data: dict[str, Any]) -> str:
     """Generate CSV string from report data."""
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Field", "Value"])
+    writer.writerow(["Line", "Field", "Value (PHP)"])
     for key, value in data.items():
-        writer.writerow([key, value])
+        if key.startswith("line_"):
+            parts = key.split("_", 2)
+            line_no = parts[1] if len(parts) > 1 else ""
+            label = parts[2].replace("_", " ").title() if len(parts) > 2 else key
+            writer.writerow([line_no, label, value])
     return output.getvalue()
 
 

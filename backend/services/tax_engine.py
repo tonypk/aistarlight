@@ -14,6 +14,8 @@ from typing import Any
 
 # Standard VAT rate in Philippines
 VAT_RATE = Decimal("0.12")
+# Final withholding VAT rate for sales to government
+GOVT_VAT_RATE = Decimal("0.05")
 
 # BIR form type registry - extensible for future tax types
 SUPPORTED_FORMS = {
@@ -22,16 +24,24 @@ SUPPORTED_FORMS = {
         "frequency": "monthly",
         "fields": [
             "vatable_sales",
-            "vat_exempt_sales",
+            "sales_to_government",
             "zero_rated_sales",
+            "vat_exempt_sales",
+            "total_sales",
             "output_vat",
+            "output_vat_government",
+            "total_output_vat",
             "input_vat_goods",
-            "input_vat_services",
             "input_vat_capital",
+            "input_vat_services",
+            "input_vat_imports",
             "total_input_vat",
             "vat_payable",
-            "tax_credit",
+            "less_tax_credits",
             "net_vat_payable",
+            "add_penalties",
+            "total_amount_due",
+            "tax_credit_carried_forward",
         ],
     },
     "BIR_2550Q": {
@@ -67,59 +77,128 @@ SUPPORTED_FORMS = {
 }
 
 
-def calculate_bir_2550m(sales_data: list[dict], purchases_data: list[dict]) -> dict[str, Any]:
-    """Calculate BIR 2550M (Monthly VAT) from sales and purchase records."""
+def calculate_bir_2550m(
+    sales_data: list[dict],
+    purchases_data: list[dict],
+    tax_credits: Decimal | str | None = None,
+    penalties: Decimal | str | None = None,
+) -> dict[str, Any]:
+    """Calculate BIR 2550M (Monthly VAT) from sales and purchase records.
+
+    Follows the actual BIR 2550M form structure:
+      Part II  - Sales/Receipts (Lines 1-5)
+      Part III - Output Tax (Lines 6, 6A, 6B)
+      Part IV  - Input Tax (Lines 7-11)
+      Part V   - Tax Due (Lines 12-16)
+    """
+    # --- Part II: Sales Classification ---
     vatable_sales = Decimal("0")
-    vat_exempt_sales = Decimal("0")
+    sales_to_government = Decimal("0")
     zero_rated_sales = Decimal("0")
+    vat_exempt_sales = Decimal("0")
 
     for row in sales_data:
         amount = Decimal(str(row.get("amount", 0)))
-        vat_type = row.get("vat_type", "vatable")
-        if vat_type == "vatable":
-            vatable_sales += amount
-        elif vat_type == "exempt":
-            vat_exempt_sales += amount
+        vat_type = str(row.get("vat_type", "vatable")).lower().strip()
+        if vat_type == "government":
+            sales_to_government += amount
         elif vat_type == "zero_rated":
             zero_rated_sales += amount
+        elif vat_type == "exempt":
+            vat_exempt_sales += amount
+        else:  # "vatable" or default
+            vatable_sales += amount
 
+    total_sales = vatable_sales + sales_to_government + zero_rated_sales + vat_exempt_sales
+
+    # --- Part III: Output Tax ---
+    # Line 6: Output VAT on vatable sales (12%)
     output_vat = vatable_sales * VAT_RATE
+    # Line 6A: Output VAT on sales to government (5% final withholding)
+    output_vat_government = sales_to_government * GOVT_VAT_RATE
+    # Line 6B: Total Output Tax
+    total_output_vat = output_vat + output_vat_government
 
+    # --- Part IV: Input Tax ---
     input_vat_goods = Decimal("0")
-    input_vat_services = Decimal("0")
     input_vat_capital = Decimal("0")
+    input_vat_services = Decimal("0")
+    input_vat_imports = Decimal("0")
 
     for row in purchases_data:
         amount = Decimal(str(row.get("amount", 0)))
         vat_amount = Decimal(str(row.get("vat_amount", 0)))
-        category = row.get("category", "goods")
+        category = str(row.get("category", "goods")).lower().strip()
 
         input_vat = vat_amount if vat_amount else amount * VAT_RATE
 
-        if category == "goods":
-            input_vat_goods += input_vat
+        if category == "capital":
+            input_vat_capital += input_vat
         elif category == "services":
             input_vat_services += input_vat
-        elif category == "capital":
-            input_vat_capital += input_vat
+        elif category == "imports":
+            input_vat_imports += input_vat
+        else:  # "goods" or default
+            input_vat_goods += input_vat
 
-    total_input_vat = input_vat_goods + input_vat_services + input_vat_capital
-    vat_payable = output_vat - total_input_vat
-    net_vat_payable = max(vat_payable, Decimal("0"))
-    tax_credit = max(-vat_payable, Decimal("0"))
+    total_input_vat = input_vat_goods + input_vat_capital + input_vat_services + input_vat_imports
+
+    # --- Part V: Tax Due ---
+    # Line 12: VAT Payable (Output - Input)
+    vat_payable = total_output_vat - total_input_vat
+
+    # Line 13: Less Tax Credits/Payments (from prior periods, etc.)
+    less_tax_credits = Decimal(str(tax_credits)) if tax_credits else Decimal("0")
+
+    # Line 14: Net VAT Payable
+    net_vat_payable_raw = vat_payable - less_tax_credits
+    net_vat_payable = max(net_vat_payable_raw, Decimal("0"))
+
+    # Tax credit carried forward (excess input VAT)
+    tax_credit_carried_forward = max(-net_vat_payable_raw, Decimal("0"))
+
+    # Line 15: Add Penalties (25% surcharge + 12% interest if late)
+    add_penalties = Decimal(str(penalties)) if penalties else Decimal("0")
+
+    # Line 16: Total Amount Due
+    total_amount_due = net_vat_payable + add_penalties
 
     return {
+        # Part II - Sales
+        "line_1_vatable_sales": str(vatable_sales),
+        "line_2_sales_to_government": str(sales_to_government),
+        "line_3_zero_rated_sales": str(zero_rated_sales),
+        "line_4_exempt_sales": str(vat_exempt_sales),
+        "line_5_total_sales": str(total_sales),
+        # Part III - Output Tax
+        "line_6_output_vat": str(output_vat),
+        "line_6a_output_vat_government": str(output_vat_government),
+        "line_6b_total_output_vat": str(total_output_vat),
+        # Part IV - Input Tax
+        "line_7_input_vat_goods": str(input_vat_goods),
+        "line_8_input_vat_capital": str(input_vat_capital),
+        "line_9_input_vat_services": str(input_vat_services),
+        "line_10_input_vat_imports": str(input_vat_imports),
+        "line_11_total_input_vat": str(total_input_vat),
+        # Part V - Tax Due
+        "line_12_vat_payable": str(vat_payable),
+        "line_13_less_tax_credits": str(less_tax_credits),
+        "line_14_net_vat_payable": str(net_vat_payable),
+        "line_15_add_penalties": str(add_penalties),
+        "line_16_total_amount_due": str(total_amount_due),
+        # Extra
+        "tax_credit_carried_forward": str(tax_credit_carried_forward),
+        # Legacy compatibility keys
         "vatable_sales": str(vatable_sales),
         "vat_exempt_sales": str(vat_exempt_sales),
         "zero_rated_sales": str(zero_rated_sales),
-        "total_sales": str(vatable_sales + vat_exempt_sales + zero_rated_sales),
+        "total_sales": str(total_sales),
         "output_vat": str(output_vat),
         "input_vat_goods": str(input_vat_goods),
         "input_vat_services": str(input_vat_services),
         "input_vat_capital": str(input_vat_capital),
         "total_input_vat": str(total_input_vat),
         "vat_payable": str(vat_payable),
-        "tax_credit_carried_forward": str(tax_credit),
         "net_vat_payable": str(net_vat_payable),
     }
 

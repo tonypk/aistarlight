@@ -3,24 +3,32 @@
   "source": "ph_tax_rates",
   "chunks": [
     {
-      "title": "VAT Rates",
-      "content": "Standard VAT: 12%. Zero-Rated: 0%. VAT-Exempt: N/A. Percentage Tax for non-VAT registered: 3%."
+      "title": "VAT Rates Summary",
+      "content": "Philippine VAT Rates: (1) Standard VAT: 12% on gross selling price of goods or gross receipts for services; (2) Zero-Rated: 0% - for export sales and qualified transactions under Section 106/108 NIRC; (3) VAT-Exempt: no VAT imposed, input VAT not creditable; (4) 5% Final Withholding VAT: applicable to sales to government agencies; (5) Percentage Tax for non-VAT registered: 3% of gross sales/receipts (in lieu of VAT)."
     },
     {
-      "title": "Individual Income Tax (TRAIN Law)",
-      "content": "Up to PHP 250,000: 0%. PHP 250,001-400,000: 15% of excess over 250,000. PHP 400,001-800,000: 22,500 + 20% of excess over 400,000. PHP 800,001-2,000,000: 102,500 + 25% of excess over 800,000. PHP 2,000,001-8,000,000: 402,500 + 30% of excess over 2,000,000. Over PHP 8,000,000: 2,202,500 + 35% of excess over 8,000,000."
+      "title": "Individual Income Tax Brackets (TRAIN Law, effective 2023+)",
+      "content": "Annual taxable income brackets: (1) Up to PHP 250,000: 0% tax; (2) PHP 250,001-400,000: 15% of excess over PHP 250,000; (3) PHP 400,001-800,000: PHP 22,500 + 20% of excess over PHP 400,000; (4) PHP 800,001-2,000,000: PHP 102,500 + 25% of excess over PHP 800,000; (5) PHP 2,000,001-8,000,000: PHP 402,500 + 30% of excess over PHP 2,000,000; (6) Over PHP 8,000,000: PHP 2,202,500 + 35% of excess over PHP 8,000,000. Tax-exempt income: 13th month pay and other benefits up to PHP 90,000; SSS/GSIS/PhilHealth/Pag-IBIG contributions; de minimis benefits."
     },
     {
-      "title": "Corporate Income Tax (CREATE Law)",
-      "content": "Regular Corporation (RCIT): 25%. Domestic Corporation (net taxable income ≤ PHP 5M AND total assets ≤ PHP 100M): 20%. Minimum Corporate Income Tax (MCIT): 2% of gross income. Proprietary educational institutions and non-profit hospitals: 10%."
+      "title": "Corporate Income Tax (CREATE Law, as amended by CREATE MORE Act)",
+      "content": "Corporate income tax rates: (1) Regular Corporate Income Tax (RCIT): 25% on net taxable income; (2) Reduced rate: 20% for domestic corporations with net taxable income not exceeding PHP 5,000,000 AND total assets (excluding land) not exceeding PHP 100,000,000; (3) Minimum Corporate Income Tax (MCIT): 1% of gross income, applicable from the 4th taxable year (temporarily reduced from 2% under CREATE Law through June 2023, now permanently 1% under CREATE MORE Act); (4) Proprietary educational institutions and non-profit hospitals: 10%; (5) Regional Operating Headquarters (ROHQ): 25%. MCIT applies when MCIT > RCIT. Excess MCIT can be carried forward for 3 years."
     },
     {
       "title": "Expanded Withholding Tax (EWT) Common Rates",
-      "content": "Professional fees (individual): 5%/10%/15%. Professional fees (corporation): 10%/15%. Rental of real property: 5%. Rental of personal property: 5%. Commissions: 10%/15%. Advertising: 2%. Income payments to contractors/subcontractors: 2%."
+      "content": "EWT rates on income payments (BIR RR 2-98, as amended): Professional fees: (a) Individual - 5% if gross income < PHP 3M, 10% if PHP 3M or more, 15% if gross income > PHP 720K; (b) Corporation - 10%, 15% if gross income > PHP 720K. Rental of real property: 5%. Rental of personal property (poles, satellites, etc.): 5%. Income payments to contractors/subcontractors: 2%. Advertising payments: 2%. Commission and fees (insurance agents, brokers): 10-15%. Talent fees, prizes, winnings: 10-20%. Interest on bank deposits: 20% final tax. Dividends to domestic corporations: exempt. Dividends to individuals: 10% final tax."
     },
     {
-      "title": "Withholding Tax on Compensation",
-      "content": "Monthly up to PHP 20,833: 0%. PHP 20,834-33,332: 15% of excess over 20,833. PHP 33,333-66,666: 1,875 + 20% of excess over 33,332. PHP 66,667-166,666: 8,541.80 + 25% of excess over 66,666. PHP 166,667-666,666: 33,541.80 + 30% of excess over 166,666. Over PHP 666,666: 183,541.80 + 35% of excess over 666,666."
+      "title": "Withholding Tax on Compensation (Monthly)",
+      "content": "Monthly withholding tax on compensation based on annualized brackets: (1) Monthly up to PHP 20,833: 0% withholding; (2) PHP 20,834-33,332: 15% of excess over PHP 20,833; (3) PHP 33,333-66,666: PHP 1,875 + 20% of excess over PHP 33,332; (4) PHP 66,667-166,666: PHP 8,541.80 + 25% of excess over PHP 66,666; (5) PHP 166,667-666,666: PHP 33,541.80 + 30% of excess over PHP 166,666; (6) Over PHP 666,666: PHP 183,541.80 + 35% of excess over PHP 666,666. Employers must remit using BIR Form 1601-C on or before the 10th day of the following month."
+    },
+    {
+      "title": "BIR Filing Deadlines Calendar",
+      "content": "Key BIR filing deadlines for tax compliance: Monthly: BIR 2550M (VAT) - 20th of following month; BIR 1601-C (withholding on compensation) - 10th of following month; BIR 0619-E (expanded withholding) - 10th of following month. Quarterly: BIR 2550Q (VAT) - 25th of month following quarter; BIR 1601-EQ (expanded withholding) - last day of month following quarter; BIR 1701Q/1702Q (income tax) - 60 days after quarter-end. Annual: BIR 1701/1702 (income tax) - April 15; BIR 1604-CF (annual information return of compensation) - January 31; BIR 0605 (annual registration fee) - January 31; BIR 2316 (certificate of withholding) - January 31."
+    },
+    {
+      "title": "Penalty Computation for Late Filing/Payment",
+      "content": "BIR penalties for non-compliance: (1) Surcharge: 25% of tax due for late filing or payment beyond deadline. 50% surcharge for willful neglect to file or fraudulent returns. (2) Interest: 12% per annum (or double the legal interest rate prescribed by BSP, whichever is higher), computed from the deadline to the date of actual payment. Daily interest = annual interest / 365. (3) Compromise Penalty: Assessed per BIR's schedule (RMO 7-2015). Common amounts: PHP 1,000 for failure to file return; PHP 200-25,000 for various violations. Penalties apply separately — surcharge, interest, and compromise are cumulative. Example: PHP 50,000 tax due, filed 45 days late: Surcharge = PHP 12,500 (25%); Interest = PHP 50,000 x 12% x 45/365 = PHP 739.73; Total with penalties = PHP 63,239.73 + compromise."
     }
   ]
 }

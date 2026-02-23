@@ -1,0 +1,30 @@
+{
+  "category": "compliance",
+  "source": "bir_compliance_guide",
+  "chunks": [
+    {
+      "title": "VAT Compliance Checklist for Monthly Filing",
+      "content": "Monthly VAT compliance checklist: (1) Reconcile sales per books vs. sales reported on BIR 2550M; (2) Verify all input VAT claims are supported by valid VAT invoices/receipts with supplier TIN; (3) Check that capital goods input VAT exceeding PHP 1M aggregate is properly amortized; (4) Ensure Sales to Government are separately reported on Line 2 with 5% withholding; (5) Prepare and submit Summary List of Sales (SLS) and Summary List of Purchases (SLP) as CSV; (6) File SAWT if applicable; (7) Carry forward excess input VAT from prior month on Line 13; (8) Reconcile BIR 2550M with BIR 2550Q for quarter-end months; (9) Cross-check total sales with Alpha List for withholding tax returns; (10) Retain all supporting documents for 10 years per NIRC Section 235."
+    },
+    {
+      "title": "Summary List of Sales (SLS) Format and Requirements",
+      "content": "The Summary List of Sales (SLS) is a mandatory attachment to VAT returns. Required fields per transaction: (1) Registered Name of Customer; (2) Customer TIN; (3) Address; (4) Amount of Gross Sales; (5) Amount of Exempt Sales; (6) Amount of Zero-Rated Sales; (7) Amount of Taxable Sales (net of VAT); (8) Amount of Output Tax. Format: CSV file following BIR-prescribed column layout. Filing: Must be submitted together with the VAT return via eSALES system or as attachment to eBIRForms. Threshold: All sales exceeding PHP 1,000 per transaction must be itemized. Sales below PHP 1,000 may be lumped as 'various customers'. Penalty for non-submission: Disallowance of claimed deductions."
+    },
+    {
+      "title": "Summary List of Purchases (SLP) Format and Requirements",
+      "content": "The Summary List of Purchases (SLP) is a mandatory attachment to VAT returns. Required fields per transaction: (1) Registered Name of Supplier; (2) Supplier TIN; (3) Address; (4) Amount of Gross Purchases; (5) Amount of Exempt Purchases; (6) Amount of Taxable Purchases (net of VAT); (7) Amount of Input Tax. Format: CSV file following BIR-prescribed column layout. Filing: Must be submitted together with the VAT return. Threshold: All purchases exceeding PHP 1,000 per transaction must be itemized. Critical: Input VAT claims without corresponding SLP entries may be disallowed upon BIR audit. Ensure supplier TINs are correct — incorrect TINs are a common cause of audit findings."
+    },
+    {
+      "title": "eFPS and eBIRForms Filing Requirements",
+      "content": "Electronic filing requirements: eFPS (Electronic Filing and Payment System): Mandatory for (1) Large taxpayers; (2) Top 20,000 private corporations; (3) Top 5,000 individual taxpayers; (4) Government offices. eFPS filers must file AND pay online. eBIRForms: For all other taxpayers not mandated to use eFPS. Downloaded software generates XML file for online submission. Payment can be made at AABs or via online banking (GCash, Maya, online bank transfer). Important: Paper filing is generally no longer accepted for VAT returns. Penalty for failure to use prescribed electronic filing: PHP 1,000 per return."
+    },
+    {
+      "title": "Record-Keeping Requirements for VAT",
+      "content": "VAT-registered taxpayers must maintain: (1) Books of Accounts - Journal, Ledger, and subsidiary books, registered with the BIR; (2) VAT invoices and official receipts - pre-numbered, with BIR Authority to Print (ATP); (3) Supporting documents for all input VAT claims; (4) Summary lists of sales and purchases; (5) Bank statements reconciled with reported sales/receipts. Retention period: All records must be kept for 10 years from the date the tax return was filed or from the last entry in the books (Section 235 NIRC). Books must be preserved in their original form — electronic storage is allowed if it maintains the integrity of the records. BIR may examine books at any time within the prescriptive period (3 years from filing, or 10 years if fraudulent)."
+    },
+    {
+      "title": "BIR Audit Triggers and Red Flags for VAT",
+      "content": "Common triggers for BIR VAT audit: (1) Consistent zero or negative VAT payable (claiming more input than output); (2) Significant discrepancies between declared sales and third-party data (banks, suppliers, government contracts); (3) Large input VAT claims without corresponding purchases in SLP; (4) Failure to file returns or late filing; (5) Amended returns showing significantly reduced tax liability; (6) Tips from informants; (7) Computer-assisted random selection. Red flags: (a) Input VAT from suspended or cancelled TINs; (b) Round-number expenses suggesting fabricated invoices; (c) Claiming input VAT on non-business purchases; (d) Mismatch between BIR 2550M and BIR 2550Q totals. Best practice: Maintain clean records, file on time, and ensure all VAT claims are properly documented."
+    }
+  ]
+}

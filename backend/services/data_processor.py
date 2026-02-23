@@ -89,9 +89,12 @@ def apply_column_mapping(
     column_mappings: {source_column: target_field}
     target fields: date, description, amount, vat_amount, vat_type, category, tin, _skip
 
+    vat_type: vatable, exempt, zero_rated, government
+    category (purchases): goods, services, capital, imports
+
     Returns (sales_data, purchases_data).
-    Sales: rows where category is not in ('goods', 'services', 'capital') or no category.
-    Purchases: rows where category is in ('goods', 'services', 'capital').
+    Sales: rows where category is not in purchase_categories or no category.
+    Purchases: rows where category is in purchase_categories.
     """
     # Build reverse mapping: target_field -> source_column
     reverse_map = {target: source for source, target in column_mappings.items() if target != "_skip"}
@@ -105,7 +108,7 @@ def apply_column_mapping(
 
     sales_data = []
     purchases_data = []
-    purchase_categories = {"goods", "services", "capital"}
+    purchase_categories = {"goods", "services", "capital", "imports"}
 
     for row in mapped_rows:
         category = str(row.get("category", "")).lower().strip()
@@ -127,7 +130,7 @@ def apply_column_mapping(
             "amount": amount,
             "vat_amount": vat_amount,
             "vat_type": row.get("vat_type", "vatable"),
-            "category": category if category in purchase_categories else "goods",
+            "category": category if category in purchase_categories else ("imports" if category == "imports" else "goods"),
             "tin": row.get("tin"),
         }
 

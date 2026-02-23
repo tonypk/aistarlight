@@ -16,8 +16,8 @@ const targetFields = [
   { value: 'description', label: 'Description' },
   { value: 'amount', label: 'Amount' },
   { value: 'vat_amount', label: 'VAT Amount' },
-  { value: 'vat_type', label: 'VAT Type (vatable/exempt/zero_rated)' },
-  { value: 'category', label: 'Category (goods/services/capital/sales)' },
+  { value: 'vat_type', label: 'VAT Type (vatable/exempt/zero_rated/government)' },
+  { value: 'category', label: 'Category (goods/services/capital/imports)' },
   { value: 'tin', label: 'TIN' },
   { value: '_skip', label: '-- Skip --' },
 ]
