@@ -52,8 +52,11 @@ Respond ONLY with valid JSON in this format:
     ...
   },
   "unmapped": ["column_names_that_dont_map"],
-  "confidence": 0.95
+  "confidence": 0.95,
+  "field_confidence": {"source_column_name": 0.95, ...}
 }
+
+field_confidence: per-column confidence (0.0-1.0) indicating how sure you are about each mapping.
 """
 
 
