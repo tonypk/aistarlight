@@ -2,19 +2,25 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { receiptsApi } from '@/api/receipts'
+import { compressBatch, type CompressResult } from '@/utils/imageCompressor'
 
 const router = useRouter()
 
 // State
 const files = ref<File[]>([])
-const previews = ref<{ name: string; url: string; size: string }[]>([])
+const previews = ref<{ name: string; url: string; size: string; originalSize: string; compressed: boolean }[]>([])
 const period = ref('')
 const reportType = ref('BIR_2550M')
 const processing = ref(false)
+const compressing = ref(false)
+const compressProgress = ref({ done: 0, total: 0 })
 const currentStep = ref(0)
 const result = ref<any>(null)
 const error = ref('')
 const dragOver = ref(false)
+
+// Compression stats
+const compressionStats = ref<{ totalOriginal: number; totalCompressed: number } | null>(null)
 
 // Batch history
 const batches = ref<any[]>([])
@@ -22,7 +28,7 @@ const showHistory = ref(false)
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/bmp', 'image/tiff', 'image/webp']
 const MAX_FILES = 50
-const STEPS = ['Upload', 'OCR', 'Parse', 'Transactions', 'Report']
+const STEPS = ['Compress', 'Upload', 'OCR', 'Parse', 'Report']
 
 const reportTypes = [
   { value: 'BIR_2550M', label: 'BIR 2550M - Monthly VAT' },
@@ -35,7 +41,7 @@ const defaultPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStar
 period.value = defaultPeriod
 
 const canProcess = computed(() =>
-  files.value.length > 0 && period.value && !processing.value
+  files.value.length > 0 && period.value && !processing.value && !compressing.value
 )
 
 const successCount = computed(() =>
@@ -69,7 +75,7 @@ function handleFileInput(e: Event) {
   input.value = ''
 }
 
-function addFiles(newFiles: File[]) {
+async function addFiles(newFiles: File[]) {
   const valid = newFiles.filter(f => {
     const ext = f.name.split('.').pop()?.toLowerCase()
     return ALLOWED_TYPES.includes(f.type) || ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif', 'webp'].includes(ext || '')
@@ -78,14 +84,45 @@ function addFiles(newFiles: File[]) {
   const remaining = MAX_FILES - files.value.length
   const toAdd = valid.slice(0, remaining)
 
-  files.value = [...files.value, ...toAdd]
-  toAdd.forEach(f => {
-    previews.value.push({
-      name: f.name,
-      url: URL.createObjectURL(f),
-      size: formatSize(f.size),
+  if (toAdd.length === 0) return
+
+  // Compress images in browser before adding
+  compressing.value = true
+  compressProgress.value = { done: 0, total: toAdd.length }
+
+  try {
+    const results = await compressBatch(
+      toAdd,
+      { maxDimension: 2048, quality: 0.80, grayscale: false, maxFileSize: 2 * 1024 * 1024 },
+      (done, total) => {
+        compressProgress.value = { done, total }
+      }
+    )
+
+    let totalOriginal = compressionStats.value?.totalOriginal ?? 0
+    let totalCompressed = compressionStats.value?.totalCompressed ?? 0
+
+    const compressedFiles: File[] = []
+    results.forEach((r: CompressResult) => {
+      compressedFiles.push(r.file)
+      totalOriginal += r.originalSize
+      totalCompressed += r.compressedSize
+      previews.value.push({
+        name: r.file.name,
+        url: URL.createObjectURL(r.blob),
+        size: formatSize(r.compressedSize),
+        originalSize: formatSize(r.originalSize),
+        compressed: r.ratio < 0.95,
+      })
     })
-  })
+
+    files.value = [...files.value, ...compressedFiles]
+    compressionStats.value = { totalOriginal, totalCompressed }
+  } catch (err: any) {
+    error.value = `Image compression failed: ${err.message}`
+  } finally {
+    compressing.value = false
+  }
 }
 
 function removeFile(index: number) {
@@ -98,6 +135,7 @@ function clearFiles() {
   previews.value.forEach(p => URL.revokeObjectURL(p.url))
   files.value = []
   previews.value = []
+  compressionStats.value = null
 }
 
 function formatSize(bytes: number): string {
@@ -221,6 +259,24 @@ function reset() {
         />
       </div>
 
+      <!-- Compressing Indicator -->
+      <div v-if="compressing" class="compress-status">
+        <div class="compress-spinner"></div>
+        <span>Compressing images... {{ compressProgress.done }}/{{ compressProgress.total }}</span>
+        <div class="compress-bar">
+          <div class="compress-bar-fill" :style="{ width: (compressProgress.total ? compressProgress.done / compressProgress.total * 100 : 0) + '%' }"></div>
+        </div>
+      </div>
+
+      <!-- Compression Stats -->
+      <div v-if="compressionStats && !compressing" class="compress-stats">
+        <span class="stats-label">Compressed:</span>
+        <span class="stats-original">{{ formatSize(compressionStats.totalOriginal) }}</span>
+        <span class="stats-arrow">&rarr;</span>
+        <span class="stats-compressed">{{ formatSize(compressionStats.totalCompressed) }}</span>
+        <span class="stats-ratio">({{ ((1 - compressionStats.totalCompressed / compressionStats.totalOriginal) * 100).toFixed(0) }}% saved)</span>
+      </div>
+
       <!-- Previews -->
       <div v-if="previews.length > 0" class="preview-section">
         <div class="preview-header">
@@ -232,7 +288,12 @@ function reset() {
             <img :src="p.url" :alt="p.name" class="preview-img" />
             <div class="preview-info">
               <span class="preview-name" :title="p.name">{{ p.name }}</span>
-              <span class="preview-size">{{ p.size }}</span>
+              <span class="preview-size">
+                {{ p.size }}
+                <span v-if="p.compressed" class="size-saved" :title="'Original: ' + p.originalSize">
+                  &darr;{{ p.originalSize }}
+                </span>
+              </span>
             </div>
             <button class="remove-btn" @click.stop="removeFile(i)">&times;</button>
           </div>
@@ -469,6 +530,68 @@ function reset() {
 }
 .drop-icon { font-size: 48px; display: block; margin-bottom: 8px; }
 .drop-hint { color: #999; font-size: 13px; margin-top: 4px; }
+
+/* Compress Status */
+.compress-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f5f3ff;
+  border: 1px solid #c4b5fd;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #4f46e5;
+  flex-wrap: wrap;
+}
+.compress-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #c4b5fd;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+.compress-bar {
+  flex: 1;
+  min-width: 120px;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.compress-bar-fill {
+  height: 100%;
+  background: #4f46e5;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+/* Compression Stats */
+.compress-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+.stats-label { color: #666; }
+.stats-original { color: #999; text-decoration: line-through; }
+.stats-arrow { color: #22c55e; font-weight: bold; }
+.stats-compressed { color: #16a34a; font-weight: 600; }
+.stats-ratio { color: #22c55e; font-size: 13px; }
+
+.size-saved {
+  display: block;
+  font-size: 10px;
+  color: #22c55e;
+}
 
 /* Previews */
 .preview-section { margin-bottom: 20px; }
