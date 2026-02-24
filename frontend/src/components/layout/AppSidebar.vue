@@ -24,7 +24,7 @@ const menuItems = [
   { name: 'Knowledge', path: '/knowledge', icon: '📚', minRole: 'viewer' },
   { name: 'Memory', path: '/memory', icon: '🧠', minRole: 'admin' },
   { name: 'User Guide', path: '/guide', icon: '📖', minRole: 'viewer' },
-  { name: 'Settings', path: '/settings', icon: '⚙️', minRole: 'owner' },
+  { name: 'Settings', path: '/settings', icon: '⚙️', minRole: 'admin' },
 ]
 
 const ROLE_LEVEL: Record<string, number> = {

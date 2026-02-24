@@ -14,9 +14,12 @@ const sections = [
   { id: 'bank-recon', title: 'Bank Reconciliation' },
   { id: 'reports', title: 'Report Generation' },
   { id: 'edit-report', title: 'Edit Reports' },
+  { id: 'calendar', title: 'Filing Calendar' },
+  { id: 'compare', title: 'Period Comparison' },
   { id: 'corrections', title: 'Corrections & Learning' },
   { id: 'suppliers', title: 'Suppliers' },
   { id: 'withholding', title: 'Withholding Tax' },
+  { id: 'team', title: 'Team & Roles' },
   { id: 'chat', title: 'AI Tax Assistant' },
   { id: 'knowledge', title: 'Knowledge Base' },
   { id: 'faq', title: 'FAQ' },
@@ -88,7 +91,7 @@ function scrollTo(id: string) {
               <span class="fi">📋</span>
               <div>
                 <strong>BIR Reports</strong>
-                <p>Auto-calculate and generate BIR 2550M / 2550Q / 1601C / 0619E PDFs</p>
+                <p>Auto-calculate and generate BIR 2550M / 2550Q / 1601C / 0619E / 1701 / 1702 PDFs</p>
               </div>
             </div>
             <div class="feature-item">
@@ -114,6 +117,8 @@ function scrollTo(id: string) {
               <li><strong>BIR 2550Q</strong> &mdash; Quarterly Value-Added Tax Return</li>
               <li><strong>BIR 1601-C</strong> &mdash; Monthly Remittance of Withholding Tax on Compensation</li>
               <li><strong>BIR 0619-E</strong> &mdash; Monthly Remittance of Expanded Withholding Tax</li>
+              <li><strong>BIR 1701</strong> &mdash; Annual Income Tax Return (Individual / Self-Employed)</li>
+              <li><strong>BIR 1702</strong> &mdash; Annual Income Tax Return (Corporate)</li>
               <li><strong>BIR 2307</strong> &mdash; Certificate of Creditable Tax Withheld at Source</li>
               <li><strong>SAWT</strong> &mdash; Summary Alphalist of Withholding Taxes</li>
             </ul>
@@ -419,7 +424,7 @@ function scrollTo(id: string) {
 
           <h4>Generating a Report</h4>
           <ol>
-            <li>Select the <strong>Form Type</strong> (BIR 2550M / 2550Q / 1601C / 0619E)</li>
+            <li>Select the <strong>Form Type</strong> (BIR 2550M / 2550Q / 1601C / 0619E / 1701 / 1702)</li>
             <li>Select the <strong>Filing Period</strong> (month or quarter)</li>
             <li>Data source options:
               <ul>
@@ -471,9 +476,65 @@ function scrollTo(id: string) {
           </div>
         </section>
 
-        <!-- 11. Corrections & Learning -->
+        <!-- 11. Filing Calendar -->
+        <section id="calendar">
+          <h3>11. Filing Calendar</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Filing Calendar</strong></p>
+
+          <p>View upcoming BIR filing deadlines with color-coded status indicators:</p>
+          <ul>
+            <li><strong style="color: #ef4444;">Overdue</strong> &mdash; Past the deadline, needs immediate attention</li>
+            <li><strong style="color: #f59e0b;">Upcoming</strong> &mdash; Due within 7 days</li>
+            <li><strong style="color: #22c55e;">Scheduled</strong> &mdash; More than 7 days away</li>
+          </ul>
+
+          <h4>Covered Forms</h4>
+          <table class="ref-table">
+            <thead>
+              <tr><th>Form</th><th>Frequency</th><th>Deadline</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>BIR 2550M</td><td>Monthly</td><td>20th of following month</td></tr>
+              <tr><td>BIR 1601-C</td><td>Monthly</td><td>10th of following month</td></tr>
+              <tr><td>BIR 0619-E</td><td>Monthly</td><td>10th of following month</td></tr>
+              <tr><td>BIR 2550Q</td><td>Quarterly</td><td>25th after quarter end</td></tr>
+              <tr><td>BIR 1701</td><td>Annual</td><td>April 15</td></tr>
+              <tr><td>BIR 1702</td><td>Annual</td><td>April 15</td></tr>
+              <tr><td>BIR 0605</td><td>Annual</td><td>January 31</td></tr>
+            </tbody>
+          </table>
+
+          <div class="tip-box">
+            <strong>Tip:</strong> Use the "months ahead" slider to see more or fewer months into the future. The calendar auto-calculates days remaining for each deadline.
+          </div>
+        </section>
+
+        <!-- 12. Period Comparison -->
+        <section id="compare">
+          <h3>12. Period Comparison</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Period Compare</strong></p>
+
+          <p>Compare tax calculations across two different periods to identify trends and anomalies.</p>
+
+          <h4>How to Use</h4>
+          <ol>
+            <li>Select two filing periods to compare (e.g., 2026-01 vs 2025-12)</li>
+            <li>Choose the report type (BIR 2550M, 2550Q, etc.)</li>
+            <li>Click "Compare" to see a side-by-side breakdown</li>
+          </ol>
+
+          <h4>Comparison Display</h4>
+          <ul>
+            <li>Each field shows Period A value, Period B value, difference, and percentage change</li>
+            <li><strong style="color: #ef4444;">Red</strong> indicates an increase (higher tax amount)</li>
+            <li><strong style="color: #22c55e;">Green</strong> indicates a decrease</li>
+            <li>Useful for month-over-month or quarter-over-quarter analysis</li>
+          </ul>
+        </section>
+
+        <!-- 13. Corrections & Learning -->
         <section id="corrections">
-          <h3>11. Corrections &amp; Learning</h3>
+          <h3>13. Corrections &amp; Learning</h3>
           <p>Navigate to: Any report or transaction view &rarr; <strong>Edit / Correct</strong></p>
 
           <p>When you correct a transaction's classification or report field, the system doesn't just update the value &mdash; it learns from your correction to improve future accuracy.</p>
@@ -516,9 +577,9 @@ function scrollTo(id: string) {
           </div>
         </section>
 
-        <!-- 12. Suppliers -->
+        <!-- 14. Suppliers -->
         <section id="suppliers">
-          <h3>12. Supplier Management</h3>
+          <h3>14. Supplier Management</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Suppliers</strong></p>
 
           <h4>Managing Suppliers</h4>
@@ -544,9 +605,9 @@ function scrollTo(id: string) {
           </table>
         </section>
 
-        <!-- 13. Withholding Tax -->
+        <!-- 15. Withholding Tax -->
         <section id="withholding">
-          <h3>13. Withholding Tax (EWT) Management</h3>
+          <h3>15. Withholding Tax (EWT) Management</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Withholding Tax</strong></p>
 
           <h4>EWT Workflow</h4>
@@ -598,9 +659,57 @@ function scrollTo(id: string) {
           </table>
         </section>
 
-        <!-- 14. AI Chat -->
+        <!-- 16. Team & Roles -->
+        <section id="team">
+          <h3>16. Team &amp; Role Management</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Settings</strong></p>
+
+          <p>AIStarlight supports role-based access control (RBAC) for team collaboration. Each member has a role that determines what features they can access.</p>
+
+          <h4>Role Hierarchy</h4>
+          <table class="ref-table">
+            <thead>
+              <tr><th>Role</th><th>Level</th><th>Permissions</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Owner</strong></td>
+                <td>4 (Highest)</td>
+                <td>Full access + Settings + Team management</td>
+              </tr>
+              <tr>
+                <td><strong>Admin</strong></td>
+                <td>3</td>
+                <td>All features + Settings + Invite members</td>
+              </tr>
+              <tr>
+                <td><strong>Accountant</strong></td>
+                <td>2</td>
+                <td>Upload, classify, reconcile, generate reports</td>
+              </tr>
+              <tr>
+                <td><strong>Viewer</strong></td>
+                <td>1 (Lowest)</td>
+                <td>View dashboard, reports, calendar (read-only)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4>Managing Team Members</h4>
+          <ul>
+            <li><strong>Invite</strong> &mdash; Admin/Owner can invite new members by email with a selected role</li>
+            <li><strong>Change Role</strong> &mdash; Admin/Owner can promote or demote members (except the Owner)</li>
+            <li><strong>Multi-Company</strong> &mdash; Users can belong to multiple companies and switch between them via the sidebar</li>
+          </ul>
+
+          <div class="info-box">
+            <strong>Note:</strong> The sidebar menu automatically adjusts based on your role. Viewers see fewer menu items than Accountants or Admins.
+          </div>
+        </section>
+
+        <!-- 17. AI Chat -->
         <section id="chat">
-          <h3>14. AI Tax Assistant</h3>
+          <h3>17. AI Tax Assistant</h3>
           <p>Navigate to: Sidebar &rarr; <strong>AI Chat</strong></p>
 
           <p>You can ask the AI assistant any Philippine tax-related question in English or Chinese. For example:</p>
@@ -617,9 +726,9 @@ function scrollTo(id: string) {
           </div>
         </section>
 
-        <!-- 15. Knowledge -->
+        <!-- 18. Knowledge -->
         <section id="knowledge">
-          <h3>15. Knowledge Base</h3>
+          <h3>18. Knowledge Base</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Knowledge</strong></p>
 
           <p>The knowledge base contains structured data on Philippine tax laws and regulations, used to enhance the AI assistant's accuracy.</p>
@@ -637,9 +746,9 @@ function scrollTo(id: string) {
           <p>You can search the knowledge base for specific provisions and regulations on the Knowledge page.</p>
         </section>
 
-        <!-- 16. FAQ -->
+        <!-- 19. FAQ -->
         <section id="faq">
-          <h3>16. Frequently Asked Questions</h3>
+          <h3>19. Frequently Asked Questions</h3>
 
           <div class="faq-item">
             <h4>Q: What if the report calculations are incorrect?</h4>
@@ -679,6 +788,26 @@ function scrollTo(id: string) {
           <div class="faq-item">
             <h4>Q: How does the AI match analysis work?</h4>
             <p>A: After standard matching (by amount and date), unmatched entries are sent to AI in batches. The AI suggests fuzzy matches, identifies bank fees and internal transfers, and explains why entries don't match. You can accept or reject each suggestion.</p>
+          </div>
+
+          <div class="faq-item">
+            <h4>Q: How do I generate an annual income tax return (BIR 1701 or 1702)?</h4>
+            <p>A: Go to Reports, select BIR 1701 (Individual) or BIR 1702 (Corporate), and provide income data via manual entry. The system calculates graduated tax (1701) or RCIT vs MCIT (1702) automatically. Download the generated PDF for review.</p>
+          </div>
+
+          <div class="faq-item">
+            <h4>Q: What is the difference between OSD and Itemized deductions?</h4>
+            <p>A: OSD (Optional Standard Deduction) is 40% of gross sales (individual) or gross income (corporate) — no supporting documents needed. Itemized deductions require full documentation but may be higher if your actual expenses exceed 40%.</p>
+          </div>
+
+          <div class="faq-item">
+            <h4>Q: Can I export report data as CSV?</h4>
+            <p>A: Yes. In the Reports list, each report has a "CSV" button next to the PDF download button. Click it to download the calculated data as a CSV file.</p>
+          </div>
+
+          <div class="faq-item">
+            <h4>Q: How do I invite team members?</h4>
+            <p>A: Go to Settings (Owner/Admin only). In the Team Members section, enter the email address, select a role, and click "Invite". The user can then log in and access the company data based on their assigned role.</p>
           </div>
         </section>
 

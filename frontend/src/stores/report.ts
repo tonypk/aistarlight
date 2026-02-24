@@ -105,6 +105,24 @@ export const useReportStore = defineStore("report", () => {
     }
   }
 
+  async function exportCsv(id: string) {
+    let url = "";
+    try {
+      const res = await reportsApi.exportCsv(id);
+      url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `report_${id}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch {
+      alert("Failed to export CSV. Please try again.");
+    } finally {
+      if (url) window.URL.revokeObjectURL(url);
+    }
+  }
+
   return {
     reports,
     currentReport,
@@ -117,5 +135,6 @@ export const useReportStore = defineStore("report", () => {
     transitionReport,
     fetchAuditLogs,
     downloadReport,
+    exportCsv,
   };
 });

@@ -207,6 +207,7 @@ function formatFormType(type: string): string {
             <td>{{ new Date(r.created_at).toLocaleDateString() }}</td>
             <td class="actions-cell">
               <button class="dl-btn" @click="handleDownload(r.id)">PDF</button>
+              <button class="csv-btn" @click="reportStore.exportCsv(r.id)">CSV</button>
               <button
                 v-if="isEditable(r.status)"
                 class="edit-btn"
@@ -317,6 +318,16 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
   cursor: pointer;
   font-size: 12px;
 }
+.csv-btn {
+  padding: 4px 10px;
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #065f46;
+}
+.csv-btn:hover { background: #a7f3d0; }
 .edit-btn {
   padding: 4px 10px;
   background: #dbeafe;

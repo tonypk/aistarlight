@@ -2,7 +2,7 @@ import uuid
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.deps import get_current_tenant, get_current_user, get_session
@@ -19,7 +19,7 @@ from backend.services.report_editor import (
     VersionConflictError,
     apply_field_overrides,
 )
-from backend.services.report_generator import generate_pdf_report
+from backend.services.report_generator import generate_csv_export, generate_pdf_report
 from backend.services.tax_engine import calculate_bir_2550m, calculate_report, get_supported_forms
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -78,7 +78,7 @@ async def generate_report(
     # Check if form type is supported (via schema DB or hardcoded registry)
     from backend.services.schema_registry import get_form_schema
 
-    supported_types = ("BIR_2550M", "BIR_2550Q", "BIR_1601C", "BIR_0619E")
+    supported_types = ("BIR_2550M", "BIR_2550Q", "BIR_1601C", "BIR_0619E", "BIR_1701", "BIR_1702")
     schema = await get_form_schema(data.report_type, db)
     if not schema and data.report_type not in supported_types:
         raise HTTPException(
@@ -156,6 +156,8 @@ async def generate_report(
         extra_kwargs["compensation_data"] = data.manual_data or {}
     elif data.report_type == "BIR_0619E":
         extra_kwargs["ewt_data"] = data.manual_data or {}
+    elif data.report_type in ("BIR_1701", "BIR_1702"):
+        extra_kwargs["income_data"] = data.manual_data or {}
 
     calculated = await calculate_report(
         form_type=data.report_type,
@@ -268,6 +270,41 @@ async def download_report(
         report.file_path,
         media_type="application/pdf",
         filename=f"{report.report_type}_{report.period}.pdf",
+    )
+
+
+@router.get("/{report_id}/export-csv")
+async def export_report_csv(
+    report_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_session),
+):
+    """Export report data as CSV."""
+    import io
+
+    report_repo = ReportRepository(db)
+    report = await report_repo.get_by_id(uuid.UUID(report_id))
+    if not report or report.tenant_id != user.tenant_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
+    if not report.calculated_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No calculated data")
+
+    csv_content = generate_csv_export(report.calculated_data)
+    filename = f"{report.report_type}_{report.period}.csv"
+
+    await log_action(
+        db,
+        tenant_id=user.tenant_id,
+        user_id=user.id,
+        entity_type="report",
+        entity_id=report.id,
+        action="export_csv",
+    )
+
+    return StreamingResponse(
+        io.StringIO(csv_content),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
