@@ -101,6 +101,18 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "Learning Insights" },
     },
     {
+      path: "/calendar",
+      name: "calendar",
+      component: () => import("../views/FilingCalendarView.vue"),
+      meta: { requiresAuth: true, title: "Filing Calendar" },
+    },
+    {
+      path: "/compare",
+      name: "compare",
+      component: () => import("../views/PeriodComparisonView.vue"),
+      meta: { requiresAuth: true, title: "Period Comparison" },
+    },
+    {
       path: "/guide",
       name: "guide",
       component: () => import("../views/GuideView.vue"),

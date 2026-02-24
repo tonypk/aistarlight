@@ -13,6 +13,8 @@ const menuItems = [
   { name: 'Reconciliation', path: '/reconciliation', icon: '🔍' },
   { name: 'Bank Recon', path: '/bank-reconciliation', icon: '🏦' },
   { name: 'Reports', path: '/reports', icon: '📋' },
+  { name: 'Filing Calendar', path: '/calendar', icon: '📅' },
+  { name: 'Period Compare', path: '/compare', icon: '⚖️' },
   { name: 'Suppliers', path: '/suppliers', icon: '🏢' },
   { name: 'Withholding Tax', path: '/withholding', icon: '📑' },
   { name: 'Learning Insights', path: '/learning', icon: '🎓' },
