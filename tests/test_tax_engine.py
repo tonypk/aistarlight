@@ -7,6 +7,8 @@ import pytest
 from backend.services.tax_engine import (
     calculate_bir_0619e,
     calculate_bir_1601c,
+    calculate_bir_1701,
+    calculate_bir_1702,
     calculate_bir_2550m,
     calculate_bir_2550q,
     get_supported_forms,
@@ -215,6 +217,162 @@ class TestBIR0619E:
         assert result["line_9_total_amount_due"] == "0"
 
 
+class TestBIR1701:
+    """BIR 1701 (Annual Income Tax — Individual) tests."""
+
+    def test_basic_osd_calculation(self):
+        data = {
+            "gross_sales_receipts": "1000000",
+            "cost_of_sales": "300000",
+            "deduction_method": "osd",
+        }
+        result = calculate_bir_1701(data)
+
+        assert result["gross_income_from_business"] == "700000"
+        assert result["total_gross_income"] == "700000"
+        # OSD = 40% of 1,000,000 = 400,000
+        assert result["osd_amount"] == "400000.00"
+        assert result["total_deductions"] == "400000.00"
+        # Net taxable = 700,000 - 400,000 = 300,000
+        assert result["net_taxable_income"] == "300000.00"
+
+    def test_graduated_tax_bracket_250k(self):
+        """Income <= 250k should be tax-free."""
+        data = {"gross_sales_receipts": "250000", "deduction_method": "itemized", "itemized_deductions": "0"}
+        result = calculate_bir_1701(data)
+        assert result["income_tax_due"] == "0"
+
+    def test_graduated_tax_bracket_400k(self):
+        """Income 300k: 15% of (300k - 250k) = 7,500."""
+        data = {"gross_sales_receipts": "300000", "deduction_method": "itemized", "itemized_deductions": "0"}
+        result = calculate_bir_1701(data)
+        assert Decimal(result["income_tax_due"]) == Decimal("7500.00")
+
+    def test_graduated_tax_bracket_800k(self):
+        """Income 600k: 22,500 + 20% of (600k - 400k) = 22,500 + 40,000 = 62,500."""
+        data = {"gross_sales_receipts": "600000", "deduction_method": "itemized", "itemized_deductions": "0"}
+        result = calculate_bir_1701(data)
+        assert Decimal(result["income_tax_due"]) == Decimal("62500.00")
+
+    def test_itemized_deductions(self):
+        data = {
+            "gross_sales_receipts": "1000000",
+            "cost_of_sales": "200000",
+            "deduction_method": "itemized",
+            "itemized_deductions": "150000",
+        }
+        result = calculate_bir_1701(data)
+        # Gross income = 800,000, deductions = 150,000, net = 650,000
+        assert result["net_taxable_income"] == "650000"
+        assert result["osd_amount"] == "0"
+
+    def test_tax_credits_reduce_payable(self):
+        data = {
+            "gross_sales_receipts": "500000",
+            "deduction_method": "itemized",
+            "itemized_deductions": "0",
+            "creditable_withholding_tax": "20000",
+            "quarterly_payments": "10000",
+        }
+        result = calculate_bir_1701(data)
+        # Tax due on 500k: 22,500 + 20% of (500k - 400k) = 22,500 + 20,000 = 42,500
+        assert Decimal(result["income_tax_due"]) == Decimal("42500.00")
+        assert result["total_tax_credits"] == "30000"
+        # 42,500 - 30,000 = 12,500
+        assert Decimal(result["tax_payable"]) == Decimal("12500.00")
+
+    def test_empty_data(self):
+        result = calculate_bir_1701({})
+        assert result["total_amount_due"] == "0"
+
+
+class TestBIR1702:
+    """BIR 1702 (Annual Income Tax — Corporate) tests."""
+
+    def test_basic_rcit_calculation(self):
+        data = {
+            "gross_income": "5000000",
+            "cost_of_sales": "2000000",
+            "deduction_method": "itemized",
+            "itemized_deductions": "500000",
+        }
+        result = calculate_bir_1702(data)
+
+        # Gross profit = 3,000,000
+        assert result["gross_profit"] == "3000000"
+        # Net taxable = 3,000,000 - 500,000 = 2,500,000
+        assert result["net_taxable_income"] == "2500000"
+        # RCIT = 25% of 2,500,000 = 625,000
+        assert Decimal(result["rcit_amount"]) == Decimal("625000.00")
+        # MCIT = 1% of 5,000,000 = 50,000
+        assert Decimal(result["mcit_amount"]) == Decimal("50000.00")
+        # RCIT > MCIT, so tax due = 625,000
+        assert Decimal(result["income_tax_due"]) == Decimal("625000.00")
+
+    def test_sme_rate(self):
+        data = {
+            "gross_income": "2000000",
+            "cost_of_sales": "500000",
+            "deduction_method": "itemized",
+            "itemized_deductions": "200000",
+            "is_sme": "true",
+        }
+        result = calculate_bir_1702(data)
+
+        # Net taxable = 1,500,000 - 200,000 = 1,300,000
+        assert result["net_taxable_income"] == "1300000"
+        assert result["rcit_rate"] == "0.20"
+        # RCIT = 20% of 1,300,000 = 260,000
+        assert Decimal(result["rcit_amount"]) == Decimal("260000.00")
+
+    def test_mcit_exceeds_rcit(self):
+        """When MCIT > RCIT, MCIT applies."""
+        data = {
+            "gross_income": "10000000",
+            "cost_of_sales": "8000000",
+            "deduction_method": "itemized",
+            "itemized_deductions": "1500000",
+        }
+        result = calculate_bir_1702(data)
+
+        # Gross profit = 2,000,000, Net = 2,000,000 - 1,500,000 = 500,000
+        # RCIT = 25% of 500,000 = 125,000
+        # MCIT = 1% of 10,000,000 = 100,000
+        # RCIT > MCIT, so RCIT applies
+        assert Decimal(result["income_tax_due"]) == Decimal("125000.00")
+
+    def test_osd_corporate(self):
+        data = {
+            "gross_income": "3000000",
+            "cost_of_sales": "1000000",
+            "deduction_method": "osd",
+        }
+        result = calculate_bir_1702(data)
+
+        # OSD = 40% of gross income (3,000,000) = 1,200,000
+        assert result["osd_amount"] == "1200000.00"
+        # Net taxable = 2,000,000 - 1,200,000 = 800,000
+        assert result["net_taxable_income"] == "800000.00"
+
+    def test_excess_mcit_carryforward(self):
+        data = {
+            "gross_income": "5000000",
+            "cost_of_sales": "2000000",
+            "deduction_method": "itemized",
+            "itemized_deductions": "500000",
+            "excess_mcit_prior": "50000",
+        }
+        result = calculate_bir_1702(data)
+
+        # RCIT = 625,000, MCIT = 50,000, RCIT > MCIT so RCIT applies
+        # RCIT - excess MCIT = 625,000 - 50,000 = 575,000
+        assert Decimal(result["income_tax_due"]) == Decimal("575000.00")
+
+    def test_empty_data(self):
+        result = calculate_bir_1702({})
+        assert Decimal(result["total_amount_due"]) == Decimal("0")
+
+
 class TestGetSupportedForms:
     """get_supported_forms() function tests."""
 
@@ -230,12 +388,14 @@ class TestGetSupportedForms:
         assert forms["BIR_2550M"]["status"] == "active"
         assert forms["BIR_2550Q"]["status"] == "active"
 
+    def test_1701_1702_are_active(self):
+        forms = get_supported_forms()
+        assert forms["BIR_1701"]["status"] == "active"
+        assert forms["BIR_1702"]["status"] == "active"
+
     def test_stub_forms_have_coming_soon_status(self):
         forms = get_supported_forms()
-        assert forms["BIR_1701"]["status"] == "coming_soon"
-        assert forms["BIR_1702"]["status"] == "coming_soon"
         assert forms["BIR_2316"]["status"] == "coming_soon"
-        assert forms["SAWT"]["status"] == "coming_soon"
 
     def test_each_form_has_required_fields(self):
         forms = get_supported_forms()

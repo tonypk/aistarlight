@@ -10,9 +10,11 @@ from backend.models.memory import CorrectionHistory, UserPreference
 from backend.models.receipt import ReceiptBatch
 from backend.models.reconciliation import ReconciliationSession
 from backend.models.report import Report
+from backend.models.revoked_token import RevokedToken
 from backend.models.supplier import Supplier
 from backend.models.tenant import Tenant, User
 from backend.models.transaction import Transaction
+from backend.models.user_tenant import UserTenant
 from backend.models.withholding import WithholdingCertificate
 from backend.models.workflow import ReportStatus
 
@@ -31,11 +33,13 @@ __all__ = [
     "ReconciliationSession",
     "Report",
     "ReportStatus",
+    "RevokedToken",
     "Supplier",
     "Tenant",
     "Transaction",
     "User",
     "UserPreference",
+    "UserTenant",
     "ValidationResult",
     "WithholdingCertificate",
 ]

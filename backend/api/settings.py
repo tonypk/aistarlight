@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.deps import get_current_tenant, get_current_user, get_session
+from backend.deps import get_current_tenant, get_current_user, get_session, require_role
 from backend.models.tenant import Tenant, User
 from backend.repositories.tenant import TenantRepository
 from backend.schemas.common import ok
@@ -29,11 +29,11 @@ async def get_company(
 @router.put("/company")
 async def update_company(
     data: CompanySettingsUpdate,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_role("admin")),
     tenant: Tenant = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_session),
 ):
-    """Update company settings (TIN, RDO, etc.)."""
+    """Update company settings (TIN, RDO, etc.). Requires admin role."""
     repo = TenantRepository(db)
     updates = data.model_dump(exclude_none=True)
     if updates:

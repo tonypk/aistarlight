@@ -1,12 +1,15 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { authApi, type LoginData, type RegisterData } from '../api/auth'
+import { authApi, type Company, type LoginData, type RegisterData } from '../api/auth'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<Record<string, string> | null>(null)
   const accessToken = ref(localStorage.getItem('access_token') || '')
+  const companies = ref<Company[]>([])
 
   const isAuthenticated = computed(() => !!accessToken.value)
+  const currentRole = computed(() => user.value?.role || 'viewer')
+  const isOwnerOrAdmin = computed(() => ['owner', 'admin'].includes(currentRole.value))
 
   async function login(data: LoginData) {
     const res = await authApi.login(data)
@@ -27,12 +30,44 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = res.data.data
   }
 
-  function logout() {
+  async function fetchCompanies() {
+    try {
+      const res = await authApi.listCompanies()
+      companies.value = res.data.data.companies || []
+    } catch {
+      companies.value = []
+    }
+  }
+
+  async function switchCompany(tenantId: string) {
+    const res = await authApi.switchCompany(tenantId)
+    const tokens = res.data.data
+    accessToken.value = tokens.access_token
+    localStorage.setItem('access_token', tokens.access_token)
+    localStorage.setItem('refresh_token', tokens.refresh_token)
+    await fetchUser()
+    await fetchCompanies()
+  }
+
+  async function logout() {
+    const refreshToken = localStorage.getItem('refresh_token')
+    if (refreshToken) {
+      try {
+        await authApi.logout(refreshToken)
+      } catch {
+        // Best-effort token revocation
+      }
+    }
     user.value = null
     accessToken.value = ''
+    companies.value = []
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
   }
 
-  return { user, accessToken, isAuthenticated, login, register, fetchUser, logout }
+  return {
+    user, accessToken, companies,
+    isAuthenticated, currentRole, isOwnerOrAdmin,
+    login, register, fetchUser, fetchCompanies, switchCompany, logout,
+  }
 })

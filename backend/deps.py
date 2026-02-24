@@ -13,6 +13,14 @@ from backend.models.tenant import Tenant, User
 
 security = HTTPBearer(auto_error=False)
 
+# Role hierarchy: owner > admin > accountant > viewer
+ROLE_HIERARCHY = {
+    "owner": 4,
+    "admin": 3,
+    "accountant": 2,
+    "viewer": 1,
+}
+
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async for session in get_db():
@@ -61,3 +69,25 @@ async def get_current_tenant(
     if not tenant:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found")
     return tenant
+
+
+def require_role(minimum_role: str):
+    """Dependency factory that checks if the current user has at least the given role.
+
+    Usage:
+        @router.post("/admin-action")
+        async def admin_action(user: User = Depends(require_role("admin"))):
+            ...
+    """
+    min_level = ROLE_HIERARCHY.get(minimum_role, 0)
+
+    async def _check_role(user: User = Depends(get_current_user)) -> User:
+        user_level = ROLE_HIERARCHY.get(user.role, 0)
+        if user_level < min_level:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Requires {minimum_role} role or higher",
+            )
+        return user
+
+    return _check_role

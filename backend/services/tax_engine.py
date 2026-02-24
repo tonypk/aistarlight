@@ -125,14 +125,61 @@ SUPPORTED_FORMS = {
     "BIR_1701": {
         "name": "Annual Income Tax Return (Individual)",
         "frequency": "annual",
-        "fields": [],
-        "status": "coming_soon",
+        "fields": [
+            "gross_sales_receipts",
+            "cost_of_sales",
+            "gross_income_from_business",
+            "other_taxable_income",
+            "total_gross_income",
+            "deduction_method",
+            "itemized_deductions",
+            "osd_amount",
+            "total_deductions",
+            "net_taxable_income",
+            "income_tax_due",
+            "creditable_withholding_tax",
+            "quarterly_payments",
+            "other_credits",
+            "total_tax_credits",
+            "tax_payable",
+            "surcharge",
+            "interest",
+            "compromise",
+            "total_penalties",
+            "total_amount_due",
+        ],
     },
     "BIR_1702": {
         "name": "Annual Income Tax Return (Corporate)",
         "frequency": "annual",
-        "fields": [],
-        "status": "coming_soon",
+        "fields": [
+            "gross_income",
+            "cost_of_sales",
+            "gross_profit",
+            "other_income",
+            "total_gross_income",
+            "deduction_method",
+            "itemized_deductions",
+            "osd_amount",
+            "total_deductions",
+            "net_taxable_income",
+            "rcit_rate",
+            "rcit_amount",
+            "mcit_base",
+            "mcit_amount",
+            "income_tax_due",
+            "excess_mcit_prior",
+            "creditable_withholding_tax",
+            "quarterly_payments",
+            "other_credits",
+            "total_tax_credits",
+            "tax_payable",
+            "surcharge",
+            "interest",
+            "compromise",
+            "total_penalties",
+            "total_amount_due",
+        ],
     },
     "BIR_2316": {
         "name": "Certificate of Compensation Payment/Tax Withheld",
@@ -374,6 +421,189 @@ def calculate_bir_0619e(
     }
 
 
+# Philippine TRAIN Law graduated income tax rates (individual, effective Jan 2023)
+INDIVIDUAL_TAX_BRACKETS = [
+    (Decimal("250000"), Decimal("0"), Decimal("0")),         # 0 – 250,000: 0%
+    (Decimal("400000"), Decimal("0"), Decimal("0.15")),      # 250,001 – 400,000: 15% excess over 250k
+    (Decimal("800000"), Decimal("22500"), Decimal("0.20")),  # 400,001 – 800,000: 22,500 + 20% excess over 400k
+    (Decimal("2000000"), Decimal("102500"), Decimal("0.25")),  # 800,001 – 2,000,000: 102,500 + 25% excess over 800k
+    (Decimal("8000000"), Decimal("402500"), Decimal("0.30")),  # 2,000,001 – 8,000,000: 402,500 + 30% excess over 2M
+    (Decimal("999999999999"), Decimal("2202500"), Decimal("0.35")),  # Over 8,000,000: 2,202,500 + 35% excess over 8M
+]
+
+
+def _compute_graduated_tax(taxable_income: Decimal) -> Decimal:
+    """Compute graduated income tax using TRAIN Law brackets."""
+    if taxable_income <= Decimal("0"):
+        return Decimal("0")
+    prev_limit = Decimal("0")
+    for bracket_limit, base_tax, rate in INDIVIDUAL_TAX_BRACKETS:
+        if taxable_income <= bracket_limit:
+            excess = taxable_income - prev_limit
+            return base_tax + (excess * rate)
+        prev_limit = bracket_limit
+    return Decimal("0")
+
+
+def calculate_bir_1701(income_data: dict[str, Any]) -> dict[str, Any]:
+    """Calculate BIR 1701 (Annual Income Tax Return — Individual).
+
+    Supports:
+    - Business/professional income
+    - Itemized deductions or OSD (40% of gross sales/receipts)
+    - TRAIN Law graduated tax rates
+    - Tax credits (withholding taxes, quarterly payments)
+    """
+    gross_sales = Decimal(str(income_data.get("gross_sales_receipts", 0)))
+    cost_of_sales = Decimal(str(income_data.get("cost_of_sales", 0)))
+    other_income = Decimal(str(income_data.get("other_taxable_income", 0)))
+    deduction_method = str(income_data.get("deduction_method", "osd")).lower()
+    itemized = Decimal(str(income_data.get("itemized_deductions", 0)))
+    cwt = Decimal(str(income_data.get("creditable_withholding_tax", 0)))
+    quarterly_payments = Decimal(str(income_data.get("quarterly_payments", 0)))
+    other_credits = Decimal(str(income_data.get("other_credits", 0)))
+    surcharge = Decimal(str(income_data.get("surcharge", 0)))
+    interest = Decimal(str(income_data.get("interest", 0)))
+    compromise = Decimal(str(income_data.get("compromise", 0)))
+
+    gross_income_biz = max(gross_sales - cost_of_sales, Decimal("0"))
+    total_gross = gross_income_biz + other_income
+
+    # Deductions
+    if deduction_method == "itemized":
+        total_deductions = itemized
+        osd_amount = Decimal("0")
+    else:
+        # OSD = 40% of gross sales/receipts
+        osd_amount = gross_sales * Decimal("0.40")
+        total_deductions = osd_amount
+
+    net_taxable = max(total_gross - total_deductions, Decimal("0"))
+    tax_due = _compute_graduated_tax(net_taxable)
+
+    total_credits = cwt + quarterly_payments + other_credits
+    tax_payable = max(tax_due - total_credits, Decimal("0"))
+    total_penalties = surcharge + interest + compromise
+    total_due = tax_payable + total_penalties
+
+    return {
+        "gross_sales_receipts": str(gross_sales),
+        "cost_of_sales": str(cost_of_sales),
+        "gross_income_from_business": str(gross_income_biz),
+        "other_taxable_income": str(other_income),
+        "total_gross_income": str(total_gross),
+        "deduction_method": deduction_method,
+        "itemized_deductions": str(itemized),
+        "osd_amount": str(osd_amount),
+        "total_deductions": str(total_deductions),
+        "net_taxable_income": str(net_taxable),
+        "income_tax_due": str(tax_due),
+        "creditable_withholding_tax": str(cwt),
+        "quarterly_payments": str(quarterly_payments),
+        "other_credits": str(other_credits),
+        "total_tax_credits": str(total_credits),
+        "tax_payable": str(tax_payable),
+        "surcharge": str(surcharge),
+        "interest": str(interest),
+        "compromise": str(compromise),
+        "total_penalties": str(total_penalties),
+        "total_amount_due": str(total_due),
+    }
+
+
+# Corporate income tax rates
+RCIT_RATE_STANDARD = Decimal("0.25")  # 25% for net taxable > 5M or total assets > 100M
+RCIT_RATE_SME = Decimal("0.20")       # 20% for SMEs (net taxable ≤ 5M and assets ≤ 100M)
+MCIT_RATE = Decimal("0.01")           # 1% MCIT (reduced from 2% under CREATE Law)
+
+
+def calculate_bir_1702(income_data: dict[str, Any]) -> dict[str, Any]:
+    """Calculate BIR 1702 (Annual Income Tax Return — Corporate).
+
+    Supports:
+    - RCIT (25% standard / 20% SME) vs MCIT (1%) comparison
+    - Itemized deductions or OSD (40% of gross income)
+    - Excess MCIT carryforward (up to 3 years)
+    - Tax credits (withholding taxes, quarterly payments)
+    """
+    gross_income = Decimal(str(income_data.get("gross_income", 0)))
+    cost_of_sales = Decimal(str(income_data.get("cost_of_sales", 0)))
+    other_income = Decimal(str(income_data.get("other_income", 0)))
+    deduction_method = str(income_data.get("deduction_method", "itemized")).lower()
+    itemized = Decimal(str(income_data.get("itemized_deductions", 0)))
+    excess_mcit_prior = Decimal(str(income_data.get("excess_mcit_prior", 0)))
+    cwt = Decimal(str(income_data.get("creditable_withholding_tax", 0)))
+    quarterly_payments = Decimal(str(income_data.get("quarterly_payments", 0)))
+    other_credits = Decimal(str(income_data.get("other_credits", 0)))
+    surcharge = Decimal(str(income_data.get("surcharge", 0)))
+    interest = Decimal(str(income_data.get("interest", 0)))
+    compromise = Decimal(str(income_data.get("compromise", 0)))
+    is_sme = str(income_data.get("is_sme", "false")).lower() in ("true", "1", "yes")
+
+    gross_profit = max(gross_income - cost_of_sales, Decimal("0"))
+    total_gross = gross_profit + other_income
+
+    # Deductions
+    if deduction_method == "osd":
+        osd_amount = gross_income * Decimal("0.40")
+        total_deductions = osd_amount
+    else:
+        osd_amount = Decimal("0")
+        total_deductions = itemized
+
+    net_taxable = max(total_gross - total_deductions, Decimal("0"))
+
+    # RCIT calculation
+    rcit_rate = RCIT_RATE_SME if is_sme else RCIT_RATE_STANDARD
+    rcit_amount = net_taxable * rcit_rate
+
+    # MCIT calculation (1% of gross income)
+    mcit_base = gross_income
+    mcit_amount = mcit_base * MCIT_RATE
+
+    # Tax due = higher of RCIT or MCIT
+    if mcit_amount > rcit_amount:
+        tax_due = mcit_amount
+    else:
+        tax_due = rcit_amount
+        # Can apply excess MCIT from prior years against RCIT
+        tax_due = max(tax_due - excess_mcit_prior, Decimal("0"))
+
+    total_credits = cwt + quarterly_payments + other_credits
+    tax_payable = max(tax_due - total_credits, Decimal("0"))
+    total_penalties = surcharge + interest + compromise
+    total_due = tax_payable + total_penalties
+
+    return {
+        "gross_income": str(gross_income),
+        "cost_of_sales": str(cost_of_sales),
+        "gross_profit": str(gross_profit),
+        "other_income": str(other_income),
+        "total_gross_income": str(total_gross),
+        "deduction_method": deduction_method,
+        "itemized_deductions": str(itemized),
+        "osd_amount": str(osd_amount),
+        "total_deductions": str(total_deductions),
+        "net_taxable_income": str(net_taxable),
+        "rcit_rate": str(rcit_rate),
+        "rcit_amount": str(rcit_amount),
+        "mcit_base": str(mcit_base),
+        "mcit_amount": str(mcit_amount),
+        "income_tax_due": str(tax_due),
+        "excess_mcit_prior": str(excess_mcit_prior),
+        "creditable_withholding_tax": str(cwt),
+        "quarterly_payments": str(quarterly_payments),
+        "other_credits": str(other_credits),
+        "total_tax_credits": str(total_credits),
+        "tax_payable": str(tax_payable),
+        "surcharge": str(surcharge),
+        "interest": str(interest),
+        "compromise": str(compromise),
+        "total_penalties": str(total_penalties),
+        "total_amount_due": str(total_due),
+    }
+
+
 async def calculate_report(
     form_type: str,
     sales_data: list[dict] | None = None,
@@ -421,6 +651,10 @@ async def calculate_report(
         return calculate_bir_1601c(kwargs.get("compensation_data", {}))
     if form_type == "BIR_0619E":
         return calculate_bir_0619e(kwargs.get("ewt_data", {}))
+    if form_type == "BIR_1701":
+        return calculate_bir_1701(kwargs.get("income_data", {}))
+    if form_type == "BIR_1702":
+        return calculate_bir_1702(kwargs.get("income_data", {}))
 
     raise ValueError(f"No calculator available for {form_type}")
 
