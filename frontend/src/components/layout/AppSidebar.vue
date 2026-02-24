@@ -19,6 +19,12 @@ const menuItems = [
   { name: 'Period Compare', path: '/compare', icon: '⚖️', minRole: 'viewer' },
   { name: 'Suppliers', path: '/suppliers', icon: '🏢', minRole: 'accountant' },
   { name: 'Withholding Tax', path: '/withholding', icon: '📑', minRole: 'accountant' },
+  { name: 'divider', path: '', icon: '', minRole: 'accountant', divider: true, label: 'Accounting' },
+  { name: 'Chart of Accounts', path: '/accounts', icon: '📒', minRole: 'accountant' },
+  { name: 'Journal Entries', path: '/journal-entries', icon: '📝', minRole: 'accountant' },
+  { name: 'General Ledger', path: '/general-ledger', icon: '📓', minRole: 'accountant' },
+  { name: 'Financial Statements', path: '/statements', icon: '📊', minRole: 'accountant' },
+  { name: 'Tax from GL', path: '/tax-bridge', icon: '🧮', minRole: 'accountant' },
   { name: 'Learning Insights', path: '/learning', icon: '🎓', minRole: 'viewer' },
   { name: 'AI Chat', path: '/chat', icon: '💬', minRole: 'viewer' },
   { name: 'Knowledge', path: '/knowledge', icon: '📚', minRole: 'viewer' },
@@ -80,16 +86,18 @@ async function handleLogout() {
     </div>
 
     <nav>
-      <router-link
-        v-for="item in visibleMenuItems"
-        :key="item.path"
-        :to="item.path"
-        class="nav-item"
-        active-class="active"
-      >
-        <span class="icon">{{ item.icon }}</span>
-        {{ item.name }}
-      </router-link>
+      <template v-for="item in visibleMenuItems" :key="item.path || item.label">
+        <div v-if="item.divider" class="nav-divider">{{ item.label }}</div>
+        <router-link
+          v-else
+          :to="item.path"
+          class="nav-item"
+          active-class="active"
+        >
+          <span class="icon">{{ item.icon }}</span>
+          {{ item.name }}
+        </router-link>
+      </template>
     </nav>
 
     <div class="sidebar-footer">
@@ -173,6 +181,13 @@ nav::-webkit-scrollbar-track { background: transparent; }
   border-right: 3px solid #4f46e5;
 }
 .icon { font-size: 18px; }
+.nav-divider {
+  padding: 16px 20px 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #64748b;
+}
 
 .sidebar-footer {
   padding: 12px 20px;

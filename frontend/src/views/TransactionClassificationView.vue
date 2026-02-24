@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTransactionStore } from '../stores/transaction'
 import { useUploadStore } from '../stores/upload'
+import { useAccountingStore } from '../stores/accounting'
 import TransactionSummaryCards from '../components/transaction/TransactionSummaryCards.vue'
 import TransactionFiltersBar from '../components/transaction/TransactionFilters.vue'
 import TransactionTable from '../components/transaction/TransactionTable.vue'
@@ -13,6 +14,7 @@ const router = useRouter()
 const route = useRoute()
 const store = useTransactionStore()
 const uploadStore = useUploadStore()
+const accounting = useAccountingStore()
 
 const page = ref(1)
 const selectedIds = ref<string[]>([])
@@ -109,6 +111,21 @@ function deleteSession(id: string) {
 
 function goToUpload() {
   router.push('/upload')
+}
+
+const generatingJournals = ref(false)
+async function generateJournalEntries() {
+  if (!sessionId.value) return
+  generatingJournals.value = true
+  classifyError.value = ''
+  try {
+    await accounting.generateJournalsFromSession(sessionId.value)
+    router.push('/journal-entries')
+  } catch (e: any) {
+    classifyError.value = e?.response?.data?.error ?? 'Journal entry generation failed'
+  } finally {
+    generatingJournals.value = false
+  }
 }
 
 function changePage(newPage: number) {
@@ -213,6 +230,13 @@ const statusTextColors: Record<string, string> = {
           </button>
           <button class="nav-btn" @click="goToReconciliation">
             Continue to Reconciliation
+          </button>
+          <button
+            class="bridge-btn"
+            @click="generateJournalEntries"
+            :disabled="generatingJournals || store.sessionStatus === 'draft'"
+          >
+            {{ generatingJournals ? 'Generating...' : 'Generate Journal Entries' }}
           </button>
         </div>
       </div>
@@ -342,6 +366,17 @@ const statusTextColors: Record<string, string> = {
   font-size: 14px;
 }
 .nav-btn:hover { background: #4338ca; }
+.bridge-btn {
+  padding: 10px 24px;
+  background: #059669;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.bridge-btn:hover { background: #047857; }
+.bridge-btn:disabled { opacity: 0.6; cursor: default; }
 .pagination {
   display: flex;
   justify-content: center;

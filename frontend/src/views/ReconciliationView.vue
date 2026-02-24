@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTransactionStore } from '../stores/transaction'
 import { useReportStore } from '../stores/report'
+import { useAccountingStore } from '../stores/accounting'
 import { reconciliationApi } from '../api/transactions'
 import VATSummarySheet from '../components/reconciliation/VATSummarySheet.vue'
 import ReconciliationSummary from '../components/reconciliation/ReconciliationSummary.vue'
@@ -12,6 +13,7 @@ const router = useRouter()
 const route = useRoute()
 const store = useTransactionStore()
 const reportStore = useReportStore()
+const accounting = useAccountingStore()
 
 const selectedReportId = ref<string>('')
 const reconError = ref('')
@@ -130,6 +132,21 @@ async function exportPdf() {
 
 async function exportCsv() {
   await store.exportCsv(sessionId.value)
+}
+
+const generatingJournals = ref(false)
+async function generateJournalEntries() {
+  if (!sessionId.value) return
+  generatingJournals.value = true
+  reconError.value = ''
+  try {
+    await accounting.generateJournalsFromSession(sessionId.value)
+    router.push('/journal-entries')
+  } catch (e: any) {
+    reconError.value = e?.response?.data?.error ?? 'Journal entry generation failed'
+  } finally {
+    generatingJournals.value = false
+  }
 }
 
 function goBack() {
@@ -279,6 +296,16 @@ const statusTextColors: Record<string, string> = {
             {{ generatingReport ? 'Generating...' : 'Generate Report' }}
           </button>
         </div>
+        <div class="control-row" v-if="store.currentSession?.status === 'completed'">
+          <label>Accounting Pipeline:</label>
+          <button
+            class="btn bridge"
+            @click="generateJournalEntries"
+            :disabled="generatingJournals"
+          >
+            {{ generatingJournals ? 'Generating...' : 'Generate Journal Entries' }}
+          </button>
+        </div>
       </div>
 
       <!-- VAT Summary -->
@@ -410,6 +437,9 @@ const statusTextColors: Record<string, string> = {
 .btn.primary { background: #4f46e5; color: #fff; border-color: #4f46e5; }
 .btn.primary:hover { background: #4338ca; }
 .btn.primary:disabled { opacity: 0.6; cursor: default; }
+.btn.bridge { background: #059669; color: #fff; border-color: #059669; }
+.btn.bridge:hover { background: #047857; }
+.btn.bridge:disabled { opacity: 0.6; cursor: default; }
 
 .match-only {
   background: #fff;

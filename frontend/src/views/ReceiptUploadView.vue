@@ -3,8 +3,11 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { receiptsApi } from '@/api/receipts'
 import { compressBatch, type CompressResult } from '@/utils/imageCompressor'
+import { useAccountingStore } from '@/stores/accounting'
 
 const router = useRouter()
+const accounting = useAccountingStore()
+const converting = ref(false)
 
 // State
 const files = ref<File[]>([])
@@ -196,6 +199,17 @@ function confidenceColor(confidence: number): string {
   if (confidence >= 0.85) return '#22c55e'
   if (confidence >= 0.60) return '#eab308'
   return '#ef4444'
+}
+
+async function convertToTransactions() {
+  if (!result.value?.batch_id || !result.value?.session_id) return
+  converting.value = true
+  try {
+    await accounting.convertReceiptToTransactions(result.value.batch_id, result.value.session_id)
+    router.push({ path: '/classification', query: { session: result.value.session_id } })
+  } finally {
+    converting.value = false
+  }
 }
 
 function reset() {
@@ -411,6 +425,14 @@ function reset() {
           @click="goToSession(result.session_id)"
         >
           View Transactions
+        </button>
+        <button
+          v-if="result.batch_id && result.session_id"
+          class="btn-bridge"
+          :disabled="converting"
+          @click="convertToTransactions"
+        >
+          {{ converting ? 'Converting...' : 'Convert to Transactions' }}
         </button>
         <button class="btn-secondary" @click="reset">
           Upload More
@@ -691,6 +713,17 @@ function reset() {
   cursor: pointer;
 }
 .btn-secondary:hover { background: #f9fafb; }
+.btn-bridge {
+  padding: 8px 16px;
+  background: #059669;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.btn-bridge:hover { background: #047857; }
+.btn-bridge:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-text {
   background: none;
   border: none;

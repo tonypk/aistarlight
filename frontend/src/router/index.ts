@@ -124,6 +124,37 @@ const router = createRouter({
       component: () => import("../views/SettingsView.vue"),
       meta: { requiresAuth: true, title: "Settings" },
     },
+    // Accounting Pipeline
+    {
+      path: "/accounts",
+      name: "accounts",
+      component: () => import("../views/ChartOfAccountsView.vue"),
+      meta: { requiresAuth: true, title: "Chart of Accounts" },
+    },
+    {
+      path: "/journal-entries",
+      name: "journal-entries",
+      component: () => import("../views/JournalEntriesView.vue"),
+      meta: { requiresAuth: true, title: "Journal Entries" },
+    },
+    {
+      path: "/general-ledger",
+      name: "general-ledger",
+      component: () => import("../views/GeneralLedgerView.vue"),
+      meta: { requiresAuth: true, title: "General Ledger" },
+    },
+    {
+      path: "/statements",
+      name: "statements",
+      component: () => import("../views/FinancialStatementsView.vue"),
+      meta: { requiresAuth: true, title: "Financial Statements" },
+    },
+    {
+      path: "/tax-bridge",
+      name: "tax-bridge",
+      component: () => import("../views/TaxBridgeView.vue"),
+      meta: { requiresAuth: true, title: "Tax from GL" },
+    },
   ],
 });
 
