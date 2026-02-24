@@ -132,10 +132,12 @@ def _clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     str_cols = df.select_dtypes(include=["object"]).columns
     for col in str_cols:
         df[col] = df[col].astype(str).str.strip()
+        # pandas str.strip() turns None/NaN into the string "nan"; revert those.
+        df[col] = df[col].replace({"nan": None, "None": None, "": None})
     # Drop fully empty rows
     df = df.dropna(how="all")
-    # Replace NaN with None for JSON serialization
-    df = df.where(pd.notnull(df), None)
+    # Replace NaN/NaT with None for JSON serialization (works for all dtypes).
+    df = df.astype(object).where(df.notna(), None)
     return df
 
 
