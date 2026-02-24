@@ -49,7 +49,7 @@ async function handleSend() {
           :role="msg.role"
           :content="msg.content"
         />
-        <div v-if="chat.loading" class="typing">AI is thinking...</div>
+        <div v-if="chat.loading && !chat.messages.some(m => m.streaming)" class="typing">AI is thinking...</div>
       </div>
 
       <form class="input-area" @submit.prevent="handleSend">

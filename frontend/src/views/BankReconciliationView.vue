@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { onMounted } from 'vue'
 import {
   bankReconApi,
   type BankReconBatch,
   type BankReconBatchListItem,
 } from '@/api/bankRecon'
+import { reconciliationApi } from '@/api/transactions'
 
 // Wizard steps
 const STEPS = ['Upload', 'Parsing', 'Matching', 'AI Analysis', 'Summary']
@@ -28,6 +30,25 @@ const batch = ref<BankReconBatch | null>(null)
 const batches = ref<BankReconBatchListItem[]>([])
 const showHistory = ref(false)
 const historyLoading = ref(false)
+
+// Reconciliation sessions (for dropdown)
+interface ReconSession {
+  id: string
+  period: string
+  status: string
+}
+const reconSessions = ref<ReconSession[]>([])
+
+onMounted(async () => {
+  try {
+    const res = await reconciliationApi.listSessions(1, 50)
+    reconSessions.value = (res.data.data || []).map((s: any) => ({
+      id: s.id,
+      period: s.period || '',
+      status: s.status || '',
+    }))
+  } catch { /* ignore */ }
+})
 
 // Default period
 const now = new Date()
@@ -374,8 +395,13 @@ function exportCSV() {
           <input v-model="period" type="month" />
         </div>
         <div class="form-group">
-          <label>Recon Session ID (optional)</label>
-          <input v-model="sessionId" placeholder="Link to existing session" />
+          <label>Link to Recon Session (optional)</label>
+          <select v-model="sessionId">
+            <option value="">— None —</option>
+            <option v-for="s in reconSessions" :key="s.id" :value="s.id">
+              {{ s.period || 'No period' }} — {{ s.status }} ({{ s.id.substring(0, 8) }}...)
+            </option>
+          </select>
         </div>
       </div>
 
@@ -746,6 +772,7 @@ function exportCSV() {
   margin-bottom: 4px;
   color: #475569;
 }
+.form-group select,
 .form-group input[type="month"],
 .form-group input[type="text"],
 .form-group input[type="number"],

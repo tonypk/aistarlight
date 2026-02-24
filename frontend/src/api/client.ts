@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { useToastStore } from '../stores/toast'
 
 const client = axios.create({
   baseURL: '/api/v1',
@@ -36,6 +37,22 @@ client.interceptors.response.use(
         }
       }
     }
+
+    // Show toast for non-401 errors (skip if caller opts out via _silentError)
+    if (error.response?.status !== 401 && !error.config?._silentError) {
+      try {
+        const toast = useToastStore()
+        const msg =
+          error.response?.data?.detail ||
+          error.response?.data?.error ||
+          error.message ||
+          'Request failed'
+        toast.error(msg)
+      } catch {
+        // Toast store not ready yet (before app mount) — ignore
+      }
+    }
+
     return Promise.reject(error)
   }
 )

@@ -5,6 +5,7 @@ import { chatApi } from '../api/chat'
 interface Message {
   role: 'user' | 'assistant'
   content: string
+  streaming?: boolean
 }
 
 export const useChatStore = defineStore('chat', () => {
@@ -32,15 +33,40 @@ export const useChatStore = defineStore('chat', () => {
   async function sendMessage(content: string) {
     messages.value = [...messages.value, { role: 'user', content }]
     loading.value = true
+
+    // Add placeholder for streaming response
+    const assistantIdx = messages.value.length
+    messages.value = [...messages.value, { role: 'assistant', content: '', streaming: true }]
+
     try {
-      const res = await chatApi.send({ content })
-      const reply = res.data.data
-      messages.value = [...messages.value, { role: 'assistant', content: reply.content }]
+      let fullContent = ''
+      for await (const chunk of chatApi.stream({ content })) {
+        if (chunk.error) {
+          fullContent = chunk.error
+          break
+        }
+        if (chunk.token) {
+          fullContent += chunk.token
+          // Update streaming message in-place
+          messages.value = messages.value.map((m, i) =>
+            i === assistantIdx ? { ...m, content: fullContent } : m
+          )
+        }
+        if (chunk.done) {
+          break
+        }
+      }
+
+      // Mark streaming as complete
+      messages.value = messages.value.map((m, i) =>
+        i === assistantIdx ? { role: 'assistant', content: fullContent } : m
+      )
     } catch {
-      messages.value = [
-        ...messages.value,
-        { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' },
-      ]
+      messages.value = messages.value.map((m, i) =>
+        i === assistantIdx
+          ? { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }
+          : m
+      )
     } finally {
       loading.value = false
     }

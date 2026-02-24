@@ -1,3 +1,5 @@
+from collections.abc import AsyncIterator
+
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletion
 
@@ -68,3 +70,31 @@ async def chat_completion_with_tools(
         max_tokens=max_tokens,
     )
     return response
+
+
+async def chat_completion_stream(
+    messages: list[dict],
+    system: str = "",
+    model: str = "",
+    max_tokens: int = 4096,
+    temperature: float = 0.3,
+) -> AsyncIterator[str]:
+    """Stream chat completion tokens as an async generator."""
+    client = get_client()
+    model = model or settings.openai_model
+
+    full_messages = []
+    if system:
+        full_messages.append({"role": "system", "content": system})
+    full_messages.extend(messages)
+
+    stream = await client.chat.completions.create(
+        model=model,
+        messages=full_messages,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        stream=True,
+    )
+    async for chunk in stream:
+        if chunk.choices and chunk.choices[0].delta.content:
+            yield chunk.choices[0].delta.content

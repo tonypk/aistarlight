@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import AppHeader from './components/layout/AppHeader.vue'
 import AppSidebar from './components/layout/AppSidebar.vue'
+import ToastContainer from './components/layout/ToastContainer.vue'
 import { useAuthStore } from './stores/auth'
 
 const auth = useAuthStore()
@@ -24,6 +25,7 @@ const showLayout = computed(() => auth.isAuthenticated && route.name !== 'login'
     <template v-else>
       <router-view />
     </template>
+    <ToastContainer />
   </div>
 </template>
 

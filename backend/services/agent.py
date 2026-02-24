@@ -2,11 +2,12 @@
 
 import json
 import uuid
+from collections.abc import AsyncIterator
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.core.llm import chat_completion_with_tools
+from backend.core.llm import chat_completion_stream, chat_completion_with_tools
 
 AGENT_SYSTEM_PROMPT = """You are AIStarlight, an AI-powered Philippine tax filing assistant.
 You help small and medium businesses with their BIR tax filings.
@@ -276,3 +277,70 @@ async def process_message(
         "tool_calls": tool_calls_executed,
         "stop_reason": choice.finish_reason,
     }
+
+
+async def process_message_stream(
+    user_message: str,
+    conversation_history: list[dict],
+    tenant_context: dict[str, Any],
+    db: AsyncSession | None = None,
+) -> AsyncIterator[str]:
+    """Process a user message through the agent, streaming the final response.
+
+    Tool calls are executed non-streaming first.
+    The final LLM response (with or without tool context) is streamed.
+    """
+    messages = [*conversation_history, {"role": "user", "content": user_message}]
+
+    # First call: non-streaming to detect tool calls
+    response = await chat_completion_with_tools(
+        messages=messages,
+        tools=AGENT_TOOLS,
+        system=AGENT_SYSTEM_PROMPT,
+    )
+
+    choice = response.choices[0]
+
+    if choice.finish_reason == "tool_calls" and choice.message.tool_calls:
+        # Execute tools
+        assistant_message = {
+            "role": "assistant",
+            "content": choice.message.content,
+            "tool_calls": [
+                {
+                    "id": tc.id,
+                    "type": "function",
+                    "function": {"name": tc.function.name, "arguments": tc.function.arguments},
+                }
+                for tc in choice.message.tool_calls
+            ],
+        }
+        follow_up_messages = [*messages, assistant_message]
+
+        for tc in choice.message.tool_calls:
+            tool_name = tc.function.name
+            tool_input = json.loads(tc.function.arguments)
+
+            if db is not None:
+                tenant_id = uuid.UUID(tenant_context.get("tenant_id", ""))
+                tool_result = await execute_tool(tool_name, tool_input, tenant_id, db)
+            else:
+                tool_result = json.dumps({"error": "Database session not available"})
+
+            follow_up_messages.append({
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": tool_result,
+            })
+
+        # Stream the follow-up response
+        async for token in chat_completion_stream(
+            messages=follow_up_messages,
+            system=AGENT_SYSTEM_PROMPT,
+        ):
+            yield token
+    else:
+        # No tool calls — yield the already-received response
+        text = choice.message.content or ""
+        if text:
+            yield text
