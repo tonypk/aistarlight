@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { client } from '../api/client'
 import { reportsApi } from '../api/reports'
 import { useAuthStore } from '../stores/auth'
@@ -25,19 +25,39 @@ interface DashboardStats {
   knowledge_count: number
 }
 
+interface CalendarEvent {
+  form: string
+  name: string
+  period: string
+  deadline: string
+  days_remaining: number
+  status: 'overdue' | 'upcoming' | 'scheduled'
+}
+
 const stats = ref<DashboardStats | null>(null)
 const recentReports = ref<ReportSummary[]>([])
+const deadlines = ref<CalendarEvent[]>([])
 const loading = ref(true)
+
+const urgentDeadlines = computed(() =>
+  deadlines.value.filter(d => d.status === 'overdue' || d.status === 'upcoming').slice(0, 5)
+)
+
+const nextDeadlines = computed(() =>
+  deadlines.value.filter(d => d.status === 'scheduled').slice(0, 5)
+)
 
 onMounted(async () => {
   if (!auth.user) await auth.fetchUser()
   try {
-    const [statsRes, reportsRes] = await Promise.all([
+    const [statsRes, reportsRes, calendarRes] = await Promise.all([
       client.get('/dashboard/stats'),
       reportsApi.list(1, 5),
+      client.get('/dashboard/calendar', { params: { months_ahead: 3 } }),
     ])
     stats.value = statsRes.data.data
     recentReports.value = reportsRes.data.data || []
+    deadlines.value = calendarRes.data.data || []
   } catch {
     // First time user or API error
   } finally {
@@ -55,6 +75,10 @@ function statusLabel(status: string): string {
     confirmed: 'Confirmed',
   }
   return labels[status] || status
+}
+
+function formatDeadline(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 </script>
 
@@ -113,39 +137,83 @@ function statusLabel(status: string): string {
       </div>
     </div>
 
-    <!-- Quick actions -->
-    <h3 class="section-title">Quick Actions</h3>
-    <div class="cards">
-      <router-link to="/upload" class="card">
-        <span class="card-icon">📤</span>
-        <h3>Upload Data</h3>
-        <p>Upload sales & purchase records</p>
-      </router-link>
-      <router-link to="/reports" class="card">
-        <span class="card-icon">📋</span>
-        <h3>Generate Report</h3>
-        <p>Create BIR 2550M and more</p>
-      </router-link>
-      <router-link to="/bank-reconciliation" class="card">
-        <span class="card-icon">🏦</span>
-        <h3>Bank Recon</h3>
-        <p>Auto-reconcile bank & billing</p>
-      </router-link>
-      <router-link to="/receipts" class="card">
-        <span class="card-icon">🧾</span>
-        <h3>Receipt Scanner</h3>
-        <p>OCR receipt processing</p>
-      </router-link>
-      <router-link to="/chat" class="card">
-        <span class="card-icon">💬</span>
-        <h3>AI Assistant</h3>
-        <p>Ask tax questions</p>
-      </router-link>
-      <router-link to="/withholding" class="card">
-        <span class="card-icon">📑</span>
-        <h3>Withholding Tax</h3>
-        <p>EWT, BIR 2307 & SAWT</p>
-      </router-link>
+    <!-- Deadline Alerts -->
+    <div v-if="urgentDeadlines.length" class="deadline-alerts">
+      <h3 class="section-title">Upcoming Deadlines</h3>
+      <div class="deadline-list">
+        <div
+          v-for="d in urgentDeadlines"
+          :key="d.form + d.deadline"
+          class="deadline-item"
+          :class="d.status"
+        >
+          <div class="deadline-badge" :class="d.status">
+            {{ d.status === 'overdue' ? 'OVERDUE' : d.days_remaining + 'd' }}
+          </div>
+          <div class="deadline-info">
+            <strong>{{ d.form }}</strong>
+            <span class="deadline-name">{{ d.name }}</span>
+          </div>
+          <div class="deadline-date">
+            {{ formatDeadline(d.deadline) }}
+            <span class="deadline-period">{{ d.period }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-column layout: Quick Actions + Next Deadlines -->
+    <div class="two-col">
+      <div class="col-main">
+        <h3 class="section-title">Quick Actions</h3>
+        <div class="cards">
+          <router-link to="/upload" class="card">
+            <span class="card-icon">📤</span>
+            <h3>Upload Data</h3>
+            <p>Upload sales & purchase records</p>
+          </router-link>
+          <router-link to="/reports" class="card">
+            <span class="card-icon">📋</span>
+            <h3>Generate Report</h3>
+            <p>Create BIR 2550M and more</p>
+          </router-link>
+          <router-link to="/bank-reconciliation" class="card">
+            <span class="card-icon">🏦</span>
+            <h3>Bank Recon</h3>
+            <p>Auto-reconcile bank & billing</p>
+          </router-link>
+          <router-link to="/receipts" class="card">
+            <span class="card-icon">🧾</span>
+            <h3>Receipt Scanner</h3>
+            <p>OCR receipt processing</p>
+          </router-link>
+          <router-link to="/chat" class="card">
+            <span class="card-icon">💬</span>
+            <h3>AI Assistant</h3>
+            <p>Ask tax questions</p>
+          </router-link>
+          <router-link to="/withholding" class="card">
+            <span class="card-icon">📑</span>
+            <h3>Withholding Tax</h3>
+            <p>EWT, BIR 2307 & SAWT</p>
+          </router-link>
+        </div>
+      </div>
+
+      <!-- Next scheduled deadlines sidebar -->
+      <div v-if="nextDeadlines.length" class="col-side">
+        <h3 class="section-title">Scheduled</h3>
+        <div class="mini-deadlines">
+          <div v-for="d in nextDeadlines" :key="d.form + d.deadline" class="mini-deadline">
+            <div class="mini-days">{{ d.days_remaining }}d</div>
+            <div>
+              <div class="mini-form">{{ d.form }}</div>
+              <div class="mini-date">{{ formatDeadline(d.deadline) }} &middot; {{ d.period }}</div>
+            </div>
+          </div>
+        </div>
+        <router-link to="/calendar" class="view-all">View full calendar →</router-link>
+      </div>
     </div>
 
     <!-- Recent reports -->
@@ -216,12 +284,125 @@ function statusLabel(status: string): string {
 
 .section-title { font-size: 16px; margin-bottom: 12px; color: #374151; }
 
+/* Deadline Alerts */
+.deadline-alerts {
+  margin-bottom: 24px;
+}
+.deadline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.deadline-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+}
+.deadline-item.overdue {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.deadline-item.upcoming {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.deadline-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  min-width: 60px;
+  text-align: center;
+}
+.deadline-badge.overdue { background: #fee2e2; color: #dc2626; }
+.deadline-badge.upcoming { background: #fef3c7; color: #d97706; }
+.deadline-info {
+  flex: 1;
+}
+.deadline-info strong {
+  font-size: 14px;
+  margin-right: 8px;
+}
+.deadline-name {
+  font-size: 13px;
+  color: #6b7280;
+}
+.deadline-date {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+.deadline-period {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: #9ca3af;
+}
+
+/* Two column layout */
+.two-col {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+.col-main { flex: 1; }
+.col-side {
+  width: 260px;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  align-self: flex-start;
+}
+.col-side .section-title { margin-bottom: 12px; font-size: 14px; }
+
+/* Mini deadlines in sidebar */
+.mini-deadlines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mini-deadline {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.mini-days {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef2ff;
+  color: #4f46e5;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.mini-form { font-size: 13px; font-weight: 600; color: #1e293b; }
+.mini-date { font-size: 11px; color: #9ca3af; }
+.view-all {
+  display: block;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #4f46e5;
+  text-decoration: none;
+}
+.view-all:hover { text-decoration: underline; }
+
 /* Quick actions cards */
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
-  margin-bottom: 28px;
 }
 .card {
   background: #fff;
@@ -272,4 +453,9 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
 
 .muted { color: #94a3b8; }
 .loading-state { text-align: center; padding: 40px; color: #64748b; }
+
+@media (max-width: 768px) {
+  .two-col { flex-direction: column; }
+  .col-side { width: 100%; }
+}
 </style>

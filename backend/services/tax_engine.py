@@ -184,8 +184,27 @@ SUPPORTED_FORMS = {
     "BIR_2316": {
         "name": "Certificate of Compensation Payment/Tax Withheld",
         "frequency": "annual",
-        "fields": [],
-        "status": "coming_soon",
+        "fields": [
+            "employee_name",
+            "employee_tin",
+            "employer_name",
+            "employer_tin",
+            "present_employer_compensation",
+            "present_employer_nontaxable",
+            "present_employer_taxable",
+            "previous_employer_compensation",
+            "previous_employer_nontaxable",
+            "previous_employer_taxable",
+            "total_compensation",
+            "total_nontaxable_compensation",
+            "total_taxable_compensation",
+            "tax_due",
+            "tax_withheld_present",
+            "tax_withheld_previous",
+            "total_tax_withheld",
+            "amount_refunded",
+            "amount_still_due",
+        ],
     },
     "SAWT": {
         "name": "Summary Alphalist of Withholding Taxes",
@@ -604,6 +623,66 @@ def calculate_bir_1702(income_data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def calculate_bir_2316(compensation_data: dict[str, Any]) -> dict[str, Any]:
+    """Calculate BIR 2316 (Certificate of Compensation Payment/Tax Withheld).
+
+    This is an employer-issued annual certificate showing:
+    - Total compensation paid to an employee
+    - Non-taxable and taxable amounts
+    - Tax withheld (present and previous employer)
+    - Year-end adjustment (refund or amount still due)
+    """
+    # Present employer
+    present_comp = Decimal(str(compensation_data.get("present_employer_compensation", 0)))
+    present_nt = Decimal(str(compensation_data.get("present_employer_nontaxable", 0)))
+    present_taxable = max(present_comp - present_nt, Decimal("0"))
+
+    # Previous employer (if applicable)
+    prev_comp = Decimal(str(compensation_data.get("previous_employer_compensation", 0)))
+    prev_nt = Decimal(str(compensation_data.get("previous_employer_nontaxable", 0)))
+    prev_taxable = max(prev_comp - prev_nt, Decimal("0"))
+
+    # Totals
+    total_comp = present_comp + prev_comp
+    total_nt = present_nt + prev_nt
+    total_taxable = present_taxable + prev_taxable
+
+    # Tax computation using graduated rates
+    tax_due = _compute_graduated_tax(total_taxable)
+
+    # Tax withheld
+    tax_withheld_present = Decimal(str(compensation_data.get("tax_withheld_present", 0)))
+    tax_withheld_previous = Decimal(str(compensation_data.get("tax_withheld_previous", 0)))
+    total_tax_withheld = tax_withheld_present + tax_withheld_previous
+
+    # Year-end adjustment
+    diff = total_tax_withheld - tax_due
+    amount_refunded = max(diff, Decimal("0"))
+    amount_still_due = max(-diff, Decimal("0"))
+
+    return {
+        "employee_name": compensation_data.get("employee_name", ""),
+        "employee_tin": compensation_data.get("employee_tin", ""),
+        "employer_name": compensation_data.get("employer_name", ""),
+        "employer_tin": compensation_data.get("employer_tin", ""),
+        "present_employer_compensation": str(present_comp),
+        "present_employer_nontaxable": str(present_nt),
+        "present_employer_taxable": str(present_taxable),
+        "previous_employer_compensation": str(prev_comp),
+        "previous_employer_nontaxable": str(prev_nt),
+        "previous_employer_taxable": str(prev_taxable),
+        "total_compensation": str(total_comp),
+        "total_nontaxable_compensation": str(total_nt),
+        "total_taxable_compensation": str(total_taxable),
+        "tax_due": str(tax_due),
+        "tax_withheld_present": str(tax_withheld_present),
+        "tax_withheld_previous": str(tax_withheld_previous),
+        "total_tax_withheld": str(total_tax_withheld),
+        "amount_refunded": str(amount_refunded),
+        "amount_still_due": str(amount_still_due),
+    }
+
+
 async def calculate_report(
     form_type: str,
     sales_data: list[dict] | None = None,
@@ -655,6 +734,8 @@ async def calculate_report(
         return calculate_bir_1701(kwargs.get("income_data", {}))
     if form_type == "BIR_1702":
         return calculate_bir_1702(kwargs.get("income_data", {}))
+    if form_type == "BIR_2316":
+        return calculate_bir_2316(kwargs.get("compensation_data", {}))
 
     raise ValueError(f"No calculator available for {form_type}")
 

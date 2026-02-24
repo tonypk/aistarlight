@@ -9,6 +9,7 @@ from backend.services.tax_engine import (
     calculate_bir_1601c,
     calculate_bir_1701,
     calculate_bir_1702,
+    calculate_bir_2316,
     calculate_bir_2550m,
     calculate_bir_2550q,
     get_supported_forms,
@@ -393,9 +394,9 @@ class TestGetSupportedForms:
         assert forms["BIR_1701"]["status"] == "active"
         assert forms["BIR_1702"]["status"] == "active"
 
-    def test_stub_forms_have_coming_soon_status(self):
+    def test_2316_is_active(self):
         forms = get_supported_forms()
-        assert forms["BIR_2316"]["status"] == "coming_soon"
+        assert forms["BIR_2316"]["status"] == "active"
 
     def test_each_form_has_required_fields(self):
         forms = get_supported_forms()
@@ -403,3 +404,65 @@ class TestGetSupportedForms:
             assert "name" in info, f"{form_type} missing name"
             assert "frequency" in info, f"{form_type} missing frequency"
             assert "status" in info, f"{form_type} missing status"
+
+
+class TestBIR2316:
+    """BIR 2316 (Certificate of Compensation Payment/Tax Withheld) tests."""
+
+    def test_basic_calculation(self):
+        result = calculate_bir_2316({
+            "employee_name": "Juan Dela Cruz",
+            "employee_tin": "123-456-789-000",
+            "present_employer_compensation": 600000,
+            "present_employer_nontaxable": 100000,
+            "tax_withheld_present": 50000,
+        })
+        assert result["present_employer_compensation"] == "600000"
+        assert result["present_employer_nontaxable"] == "100000"
+        assert result["present_employer_taxable"] == "500000"
+        assert result["total_taxable_compensation"] == "500000"
+        assert result["employee_name"] == "Juan Dela Cruz"
+        # Tax due for 500,000: 22,500 + 20% of (500k - 400k) = 22,500 + 20,000 = 42,500
+        assert Decimal(result["tax_due"]) == Decimal("42500")
+
+    def test_with_previous_employer(self):
+        result = calculate_bir_2316({
+            "present_employer_compensation": 400000,
+            "present_employer_nontaxable": 50000,
+            "previous_employer_compensation": 200000,
+            "previous_employer_nontaxable": 30000,
+            "tax_withheld_present": 30000,
+            "tax_withheld_previous": 10000,
+        })
+        assert result["total_compensation"] == "600000"
+        assert result["total_nontaxable_compensation"] == "80000"
+        assert result["total_taxable_compensation"] == "520000"
+        assert result["total_tax_withheld"] == "40000"
+
+    def test_refund_when_overwitheld(self):
+        result = calculate_bir_2316({
+            "present_employer_compensation": 300000,
+            "present_employer_nontaxable": 100000,
+            "tax_withheld_present": 10000,
+        })
+        # Taxable = 200,000, which is below 250k → tax_due = 0
+        assert Decimal(result["tax_due"]) == Decimal("0")
+        assert Decimal(result["amount_refunded"]) == Decimal("10000")
+        assert Decimal(result["amount_still_due"]) == Decimal("0")
+
+    def test_amount_still_due_when_underwitheld(self):
+        result = calculate_bir_2316({
+            "present_employer_compensation": 500000,
+            "present_employer_nontaxable": 0,
+            "tax_withheld_present": 20000,
+        })
+        # Taxable = 500,000, tax_due = 22,500 + 20% of 100k = 42,500
+        # Still due = 42,500 - 20,000 = 22,500
+        assert Decimal(result["tax_due"]) == Decimal("42500")
+        assert Decimal(result["amount_still_due"]) == Decimal("22500")
+        assert Decimal(result["amount_refunded"]) == Decimal("0")
+
+    def test_empty_data(self):
+        result = calculate_bir_2316({})
+        assert Decimal(result["total_compensation"]) == Decimal("0")
+        assert Decimal(result["tax_due"]) == Decimal("0")

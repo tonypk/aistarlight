@@ -78,7 +78,7 @@ async def generate_report(
     # Check if form type is supported (via schema DB or hardcoded registry)
     from backend.services.schema_registry import get_form_schema
 
-    supported_types = ("BIR_2550M", "BIR_2550Q", "BIR_1601C", "BIR_0619E", "BIR_1701", "BIR_1702")
+    supported_types = ("BIR_2550M", "BIR_2550Q", "BIR_1601C", "BIR_0619E", "BIR_1701", "BIR_1702", "BIR_2316")
     schema = await get_form_schema(data.report_type, db)
     if not schema and data.report_type not in supported_types:
         raise HTTPException(
@@ -158,6 +158,8 @@ async def generate_report(
         extra_kwargs["ewt_data"] = data.manual_data or {}
     elif data.report_type in ("BIR_1701", "BIR_1702"):
         extra_kwargs["income_data"] = data.manual_data or {}
+    elif data.report_type == "BIR_2316":
+        extra_kwargs["compensation_data"] = data.manual_data or {}
 
     calculated = await calculate_report(
         form_type=data.report_type,

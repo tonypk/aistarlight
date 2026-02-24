@@ -24,7 +24,9 @@ onMounted(async () => {
   // Load available form types from schema registry + supported forms
   try {
     const res = await formsApi.list()
-    availableForms.value = res.data.data || []
+    // Filter out coming_soon forms — only show active/generatable forms
+    const allForms: FormSummary[] = res.data.data || []
+    availableForms.value = allForms.filter(f => f.status !== 'coming_soon')
     if (availableForms.value.length > 0 && !availableForms.value.find(f => f.form_type === selectedFormType.value)) {
       selectedFormType.value = availableForms.value[0].form_type
     }
