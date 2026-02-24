@@ -106,6 +106,22 @@ SUPPORTED_FORMS = {
             "line_9_total_amount_due",
         ],
     },
+    "BIR_2307": {
+        "name": "Certificate of Creditable Tax Withheld at Source",
+        "frequency": "quarterly",
+        "fields": [
+            "payee_tin",
+            "payee_name",
+            "payee_address",
+            "payor_tin",
+            "payor_name",
+            "atc_code",
+            "income_payment",
+            "tax_withheld",
+            "period_from",
+            "period_to",
+        ],
+    },
     "BIR_1701": {
         "name": "Annual Income Tax Return (Individual)",
         "frequency": "annual",
@@ -127,8 +143,13 @@ SUPPORTED_FORMS = {
     "SAWT": {
         "name": "Summary Alphalist of Withholding Taxes",
         "frequency": "attachment",
-        "fields": [],
-        "status": "coming_soon",
+        "fields": [
+            "payee_tin",
+            "payee_name",
+            "atc_code",
+            "income_payment",
+            "tax_withheld",
+        ],
     },
 }
 

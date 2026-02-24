@@ -12,14 +12,24 @@ AGENT_SYSTEM_PROMPT = """You are AIStarlight, an AI-powered Philippine tax filin
 You help small and medium businesses with their BIR tax filings.
 
 Your capabilities:
-1. Process uploaded financial data (sales/purchase records)
-2. Calculate VAT and generate BIR 2550M reports
-3. Remember user preferences for recurring filings
-4. Answer questions about Philippine tax regulations
+1. Process uploaded financial data (sales/purchase records, bank statements, receipts)
+2. Calculate VAT, withholding tax, and generate BIR reports
+3. AI-powered transaction classification and column mapping
+4. Bank & billing auto-reconciliation (CSV/Excel/PDF/image, supports BDO/BPI/Metrobank/PayPal/Stripe/GCash)
+5. Receipt OCR scanning and data extraction
+6. EWT classification, BIR 2307 certificate generation, and SAWT
+7. Compliance validation and anomaly detection
+8. Remember user preferences for recurring filings
+9. Answer questions about Philippine tax regulations (289 knowledge entries covering VAT, income tax, withholding, payroll, incentives, compliance)
 
 Currently supported BIR forms:
 - BIR 2550M (Monthly VAT Declaration) - fully supported
-- BIR 2550Q, 1701, 1702, 2316, 1601C, SAWT - planned
+- BIR 2550Q (Quarterly VAT Return) - fully supported
+- BIR 1601-C (Monthly Withholding Tax on Compensation) - fully supported
+- BIR 0619-E (Monthly Expanded Withholding Tax) - fully supported
+- BIR 2307 (Certificate of Creditable Tax Withheld) - fully supported (PDF generation)
+- SAWT (Summary Alphalist of Withholding Taxes) - fully supported (CSV/PDF)
+- BIR 1701, 1702, 2316 - coming soon
 
 When the user asks to generate a report, use the generate_report tool.
 When the user asks about tax rules, use the lookup_tax_rule tool.
@@ -38,7 +48,7 @@ AGENT_TOOLS = [
             "properties": {
                 "report_type": {
                     "type": "string",
-                    "description": "BIR form type, e.g., BIR_2550M",
+                    "description": "BIR form type: BIR_2550M, BIR_2550Q, BIR_1601C, BIR_0619E",
                 },
                 "period": {
                     "type": "string",
@@ -60,7 +70,7 @@ AGENT_TOOLS = [
                 },
                 "category": {
                     "type": "string",
-                    "description": "Category: vat, income_tax, withholding, compliance, general",
+                    "description": "Category: vat, income_tax, withholding, compliance, general, payroll, incentives",
                 },
             },
             "required": ["query"],
@@ -109,8 +119,9 @@ async def _execute_generate_report(
     report_type = tool_input.get("report_type", "BIR_2550M")
     period = tool_input.get("period", "")
 
-    if report_type != "BIR_2550M":
-        return json.dumps({"error": f"Report type {report_type} not yet supported"})
+    supported_types = {"BIR_2550M", "BIR_2550Q", "BIR_1601C", "BIR_0619E"}
+    if report_type not in supported_types:
+        return json.dumps({"error": f"Report type {report_type} not yet supported. Supported: {', '.join(sorted(supported_types))}"})
 
     # Check if user has existing reports for this period
     from backend.repositories.report import ReportRepository
