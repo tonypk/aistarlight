@@ -37,6 +37,7 @@ const ROLE_LEVEL: Record<string, number> = {
   viewer: 1,
   accountant: 2,
   admin: 3,
+  company_admin: 3,
   owner: 4,
 }
 

@@ -33,7 +33,7 @@ const inviting = ref(false)
 const inviteMsg = ref('')
 const inviteErr = ref('')
 
-const isOwnerOrAdmin = computed(() => ['owner', 'admin'].includes(auth.currentRole))
+const isOwnerOrAdmin = computed(() => ['owner', 'admin', 'company_admin'].includes(auth.currentRole))
 
 onMounted(async () => {
   const res = await client.get('/settings/company')
