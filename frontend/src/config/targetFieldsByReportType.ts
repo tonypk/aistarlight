@@ -14,6 +14,9 @@ export const REPORT_TYPES: ReportTypeOption[] = [
   { value: "BIR_2550Q", label: "BIR 2550Q — Quarterly VAT" },
   { value: "BIR_1601C", label: "BIR 1601C — Withholding on Compensation" },
   { value: "BIR_0619E", label: "BIR 0619E — Expanded Withholding" },
+  { value: "BIR_1701", label: "BIR 1701 — Annual ITR (Individuals)" },
+  { value: "BIR_1702", label: "BIR 1702 — Annual ITR (Corporations)" },
+  { value: "BIR_2316", label: "BIR 2316 — Certificate of Compensation" },
   { value: "Bank_Statement", label: "Bank Statement" },
 ];
 
@@ -361,6 +364,669 @@ export const TARGET_FIELDS: Record<string, TargetField[]> = {
       group: "Summary",
     },
   ],
+  // ===========================================================================
+  // BIR 1701 — Annual Income Tax Return for Individuals
+  // (Self-Employed, Professionals, Mixed Income Earners)
+  // Per TRAIN Law (RA 10963), RR 8-2018
+  // ===========================================================================
+  BIR_1701: [
+    // --- 1. Taxpayer Information ---
+    { value: "tin", label: "TIN (Taxpayer ID)", group: "Taxpayer Info" },
+    {
+      value: "registered_name",
+      label: "Registered Name",
+      group: "Taxpayer Info",
+    },
+    {
+      value: "trade_name",
+      label: "Trade/Business Name",
+      group: "Taxpayer Info",
+    },
+    { value: "rdo_code", label: "RDO Code", group: "Taxpayer Info" },
+    { value: "address", label: "Address", group: "Taxpayer Info" },
+    { value: "zip_code", label: "ZIP Code", group: "Taxpayer Info" },
+    {
+      value: "taxpayer_type",
+      label: "Taxpayer Type (Single Proprietor/Professional/Mixed)",
+      group: "Taxpayer Info",
+    },
+    { value: "taxable_year", label: "Taxable Year", group: "Taxpayer Info" },
+
+    // --- 2. Gross Income (Revenue) ---
+    {
+      value: "income_date",
+      label: "Date of Income/Receipt",
+      group: "Gross Income",
+    },
+    {
+      value: "income_source",
+      label: "Source/Client Name",
+      group: "Gross Income",
+    },
+    {
+      value: "or_si_number",
+      label: "OR/SI/Receipt Number",
+      group: "Gross Income",
+    },
+    {
+      value: "gross_sales_receipts",
+      label: "Gross Sales/Receipts/Revenue/Fees",
+      group: "Gross Income",
+    },
+    {
+      value: "sales_returns",
+      label: "Sales Returns/Allowances/Discounts",
+      group: "Gross Income",
+    },
+    { value: "net_sales", label: "Net Sales/Receipts", group: "Gross Income" },
+    {
+      value: "cost_of_sales",
+      label: "Cost of Sales/Services",
+      group: "Gross Income",
+    },
+    {
+      value: "gross_income",
+      label: "Gross Income from Operation",
+      group: "Gross Income",
+    },
+    {
+      value: "other_taxable_income",
+      label: "Other Taxable Income (Non-Operating)",
+      group: "Gross Income",
+    },
+    {
+      value: "compensation_income",
+      label: "Compensation Income (Mixed Income Earner)",
+      group: "Gross Income",
+    },
+    {
+      value: "total_gross_income",
+      label: "Total Gross Income",
+      group: "Gross Income",
+    },
+
+    // --- 3. Allowable Deductions ---
+    { value: "expense_date", label: "Expense Date", group: "Deductions" },
+    {
+      value: "expense_description",
+      label: "Expense Description",
+      group: "Deductions",
+    },
+    {
+      value: "expense_category",
+      label: "Expense Category/Account",
+      group: "Deductions",
+    },
+    { value: "expense_amount", label: "Expense Amount", group: "Deductions" },
+    {
+      value: "deduction_method",
+      label: "Deduction Method (OSD/Itemized)",
+      group: "Deductions",
+    },
+    {
+      value: "optional_standard_deduction",
+      label: "OSD (40% of Gross Sales/Receipts)",
+      group: "Deductions",
+    },
+    {
+      value: "salaries_wages",
+      label: "Salaries, Wages & Benefits",
+      group: "Deductions",
+    },
+    { value: "rent_expense", label: "Rent/Lease", group: "Deductions" },
+    {
+      value: "depreciation",
+      label: "Depreciation/Amortization",
+      group: "Deductions",
+    },
+    {
+      value: "utilities",
+      label: "Utilities (Light, Water, Phone)",
+      group: "Deductions",
+    },
+    { value: "taxes_licenses", label: "Taxes & Licenses", group: "Deductions" },
+    { value: "insurance", label: "Insurance", group: "Deductions" },
+    {
+      value: "professional_fees",
+      label: "Professional Fees",
+      group: "Deductions",
+    },
+    {
+      value: "repairs_maintenance",
+      label: "Repairs & Maintenance",
+      group: "Deductions",
+    },
+    {
+      value: "representation",
+      label: "Representation & Entertainment",
+      group: "Deductions",
+    },
+    {
+      value: "transportation",
+      label: "Transportation & Travel",
+      group: "Deductions",
+    },
+    { value: "communication", label: "Communication", group: "Deductions" },
+    { value: "supplies", label: "Supplies", group: "Deductions" },
+    { value: "bad_debts", label: "Bad Debts", group: "Deductions" },
+    {
+      value: "interest_expense",
+      label: "Interest Expense",
+      group: "Deductions",
+    },
+    {
+      value: "other_deductions",
+      label: "Other Deductions",
+      group: "Deductions",
+    },
+    {
+      value: "total_deductions",
+      label: "Total Allowable Deductions",
+      group: "Deductions",
+    },
+
+    // --- 4. Tax Computation ---
+    {
+      value: "taxable_income",
+      label: "Net Taxable Income",
+      group: "Tax Computation",
+    },
+    {
+      value: "income_tax_due",
+      label: "Income Tax Due",
+      group: "Tax Computation",
+    },
+
+    // --- 5. Tax Credits & Payment ---
+    {
+      value: "prior_year_excess_credits",
+      label: "Prior Year's Excess Credits",
+      group: "Tax Credits",
+    },
+    {
+      value: "quarterly_tax_payments",
+      label: "Quarterly Tax Payments (1701Q)",
+      group: "Tax Credits",
+    },
+    {
+      value: "creditable_withholding_tax",
+      label: "Creditable Withholding Tax (BIR 2307)",
+      group: "Tax Credits",
+    },
+    {
+      value: "tax_withheld_per_2316",
+      label: "Tax Withheld per BIR 2316",
+      group: "Tax Credits",
+    },
+    {
+      value: "foreign_tax_credits",
+      label: "Foreign Tax Credits",
+      group: "Tax Credits",
+    },
+    {
+      value: "other_tax_credits",
+      label: "Other Tax Credits/Payments",
+      group: "Tax Credits",
+    },
+    {
+      value: "total_tax_credits",
+      label: "Total Tax Credits/Payments",
+      group: "Tax Credits",
+    },
+    {
+      value: "tax_payable",
+      label: "Tax Payable/(Overpayment)",
+      group: "Tax Credits",
+    },
+    { value: "penalty_surcharge", label: "Surcharge", group: "Tax Credits" },
+    { value: "penalty_interest", label: "Interest", group: "Tax Credits" },
+    { value: "penalty_compromise", label: "Compromise", group: "Tax Credits" },
+    {
+      value: "total_amount_payable",
+      label: "Total Amount Payable",
+      group: "Tax Credits",
+    },
+  ],
+
+  // ===========================================================================
+  // BIR 1702 — Annual Income Tax Return for Corporations/Partnerships
+  // Per TRAIN Law (RA 10963), CREATE Law (RA 11534)
+  // Regular Tax: 25% (20% for MSME ≤ ₱5M net income & ≤ ₱100M assets)
+  // MCIT: 1% (until 2023-06-30) / 2% thereafter
+  // ===========================================================================
+  BIR_1702: [
+    // --- 1. Corporate Information ---
+    { value: "tin", label: "TIN (Taxpayer ID)", group: "Corporate Info" },
+    {
+      value: "registered_name",
+      label: "Registered Name",
+      group: "Corporate Info",
+    },
+    {
+      value: "trade_name",
+      label: "Trade/Business Name",
+      group: "Corporate Info",
+    },
+    { value: "rdo_code", label: "RDO Code", group: "Corporate Info" },
+    { value: "address", label: "Registered Address", group: "Corporate Info" },
+    { value: "zip_code", label: "ZIP Code", group: "Corporate Info" },
+    {
+      value: "sec_registration",
+      label: "SEC/DTI Registration No.",
+      group: "Corporate Info",
+    },
+    {
+      value: "industry_classification",
+      label: "PSIC/Industry Classification",
+      group: "Corporate Info",
+    },
+    {
+      value: "taxable_year",
+      label: "Taxable Year/Fiscal Year",
+      group: "Corporate Info",
+    },
+    {
+      value: "tax_regime",
+      label: "Tax Regime (Regular/Special/Exempt)",
+      group: "Corporate Info",
+    },
+
+    // --- 2. Revenue / Gross Income ---
+    {
+      value: "revenue_date",
+      label: "Revenue/Transaction Date",
+      group: "Revenue",
+    },
+    {
+      value: "revenue_source",
+      label: "Revenue Source/Client Name",
+      group: "Revenue",
+    },
+    { value: "or_si_number", label: "OR/SI/Invoice Number", group: "Revenue" },
+    {
+      value: "gross_sales_receipts",
+      label: "Gross Sales/Receipts/Revenue",
+      group: "Revenue",
+    },
+    {
+      value: "sales_returns",
+      label: "Sales Returns/Allowances/Discounts",
+      group: "Revenue",
+    },
+    { value: "net_sales", label: "Net Sales/Revenue", group: "Revenue" },
+    {
+      value: "cost_of_sales",
+      label: "Cost of Sales/Services",
+      group: "Revenue",
+    },
+    {
+      value: "gross_income",
+      label: "Gross Income from Operations",
+      group: "Revenue",
+    },
+    {
+      value: "other_income",
+      label: "Other Income (Non-Operating)",
+      group: "Revenue",
+    },
+    {
+      value: "total_gross_income",
+      label: "Total Gross Income",
+      group: "Revenue",
+    },
+
+    // --- 3. Operating Expenses ---
+    {
+      value: "expense_date",
+      label: "Expense Date",
+      group: "Operating Expenses",
+    },
+    {
+      value: "expense_description",
+      label: "Expense Description",
+      group: "Operating Expenses",
+    },
+    {
+      value: "expense_category",
+      label: "Expense Category/Account",
+      group: "Operating Expenses",
+    },
+    {
+      value: "expense_amount",
+      label: "Expense Amount",
+      group: "Operating Expenses",
+    },
+    {
+      value: "salaries_wages",
+      label: "Salaries, Wages & Employee Benefits",
+      group: "Operating Expenses",
+    },
+    { value: "rent_expense", label: "Rent/Lease", group: "Operating Expenses" },
+    {
+      value: "depreciation",
+      label: "Depreciation/Amortization",
+      group: "Operating Expenses",
+    },
+    { value: "utilities", label: "Utilities", group: "Operating Expenses" },
+    {
+      value: "taxes_licenses",
+      label: "Taxes & Licenses",
+      group: "Operating Expenses",
+    },
+    { value: "insurance", label: "Insurance", group: "Operating Expenses" },
+    {
+      value: "professional_fees",
+      label: "Professional/Outside Service Fees",
+      group: "Operating Expenses",
+    },
+    {
+      value: "repairs_maintenance",
+      label: "Repairs & Maintenance",
+      group: "Operating Expenses",
+    },
+    {
+      value: "representation",
+      label: "Representation & Entertainment",
+      group: "Operating Expenses",
+    },
+    {
+      value: "transportation",
+      label: "Transportation & Travel",
+      group: "Operating Expenses",
+    },
+    {
+      value: "communication",
+      label: "Communication",
+      group: "Operating Expenses",
+    },
+    { value: "supplies", label: "Supplies", group: "Operating Expenses" },
+    { value: "bad_debts", label: "Bad Debts", group: "Operating Expenses" },
+    {
+      value: "interest_expense",
+      label: "Interest Expense",
+      group: "Operating Expenses",
+    },
+    {
+      value: "charitable_contributions",
+      label: "Charitable Contributions",
+      group: "Operating Expenses",
+    },
+    {
+      value: "research_development",
+      label: "Research & Development",
+      group: "Operating Expenses",
+    },
+    {
+      value: "other_deductions",
+      label: "Other Deductions",
+      group: "Operating Expenses",
+    },
+    {
+      value: "total_operating_expenses",
+      label: "Total Operating Expenses",
+      group: "Operating Expenses",
+    },
+
+    // --- 4. Tax Computation ---
+    {
+      value: "net_income_before_tax",
+      label: "Net Income Before Tax",
+      group: "Tax Computation",
+    },
+    {
+      value: "taxable_income",
+      label: "Net Taxable Income",
+      group: "Tax Computation",
+    },
+    {
+      value: "regular_income_tax",
+      label: "Regular Income Tax (25%/20%)",
+      group: "Tax Computation",
+    },
+    {
+      value: "mcit",
+      label: "MCIT (Minimum Corporate Income Tax)",
+      group: "Tax Computation",
+    },
+    {
+      value: "income_tax_due",
+      label: "Income Tax Due (Higher of Regular/MCIT)",
+      group: "Tax Computation",
+    },
+
+    // --- 5. Tax Credits & Payment ---
+    {
+      value: "prior_year_excess_credits",
+      label: "Prior Year's Excess Credits",
+      group: "Tax Credits",
+    },
+    {
+      value: "excess_mcit",
+      label: "Excess MCIT from Prior Year(s)",
+      group: "Tax Credits",
+    },
+    {
+      value: "quarterly_tax_payments",
+      label: "Quarterly Tax Payments (1702Q)",
+      group: "Tax Credits",
+    },
+    {
+      value: "creditable_withholding_tax",
+      label: "Creditable Withholding Tax (BIR 2307)",
+      group: "Tax Credits",
+    },
+    {
+      value: "foreign_tax_credits",
+      label: "Foreign Tax Credits",
+      group: "Tax Credits",
+    },
+    {
+      value: "other_tax_credits",
+      label: "Other Tax Credits/Payments",
+      group: "Tax Credits",
+    },
+    {
+      value: "total_tax_credits",
+      label: "Total Tax Credits/Payments",
+      group: "Tax Credits",
+    },
+    {
+      value: "tax_payable",
+      label: "Tax Payable/(Overpayment)",
+      group: "Tax Credits",
+    },
+    { value: "penalty_surcharge", label: "Surcharge", group: "Tax Credits" },
+    { value: "penalty_interest", label: "Interest", group: "Tax Credits" },
+    { value: "penalty_compromise", label: "Compromise", group: "Tax Credits" },
+    {
+      value: "total_amount_payable",
+      label: "Total Amount Payable",
+      group: "Tax Credits",
+    },
+  ],
+
+  // ===========================================================================
+  // BIR 2316 — Certificate of Compensation Payment/Tax Withheld
+  // Annual certificate issued by employer to employee
+  // Per RR 11-2018, TRAIN Law (RA 10963)
+  // ===========================================================================
+  BIR_2316: [
+    // --- 1. Employer Information ---
+    { value: "employer_tin", label: "Employer TIN", group: "Employer Info" },
+    { value: "employer_name", label: "Employer Name", group: "Employer Info" },
+    {
+      value: "employer_address",
+      label: "Employer Address",
+      group: "Employer Info",
+    },
+    {
+      value: "employer_zip_code",
+      label: "Employer ZIP Code",
+      group: "Employer Info",
+    },
+    { value: "rdo_code", label: "RDO Code", group: "Employer Info" },
+
+    // --- 2. Employee Information ---
+    { value: "employee_tin", label: "Employee TIN", group: "Employee Info" },
+    { value: "employee_name", label: "Employee Name", group: "Employee Info" },
+    {
+      value: "employee_address",
+      label: "Employee Address",
+      group: "Employee Info",
+    },
+    {
+      value: "employee_zip_code",
+      label: "Employee ZIP Code",
+      group: "Employee Info",
+    },
+    { value: "date_of_birth", label: "Date of Birth", group: "Employee Info" },
+    { value: "nationality", label: "Nationality", group: "Employee Info" },
+    { value: "civil_status", label: "Civil Status", group: "Employee Info" },
+    {
+      value: "employment_status",
+      label: "Employment Status (Regular/Contractual/MWE)",
+      group: "Employee Info",
+    },
+    { value: "date_hired", label: "Date Hired", group: "Employee Info" },
+    {
+      value: "date_separated",
+      label: "Date of Separation (if applicable)",
+      group: "Employee Info",
+    },
+
+    // --- 3. Gross Compensation (Present Employer) ---
+    {
+      value: "basic_salary",
+      label: "Basic Salary (Annual)",
+      group: "Compensation",
+    },
+    { value: "overtime_pay", label: "Overtime Pay", group: "Compensation" },
+    { value: "holiday_pay", label: "Holiday Pay", group: "Compensation" },
+    {
+      value: "night_differential",
+      label: "Night Shift Differential",
+      group: "Compensation",
+    },
+    { value: "hazard_pay", label: "Hazard Pay", group: "Compensation" },
+    {
+      value: "thirteenth_month_pay",
+      label: "13th Month Pay",
+      group: "Compensation",
+    },
+    {
+      value: "other_benefits",
+      label: "Other Benefits/Bonuses",
+      group: "Compensation",
+    },
+    {
+      value: "gross_compensation",
+      label: "Gross Compensation Income",
+      group: "Compensation",
+    },
+
+    // --- 4. Non-Taxable Compensation ---
+    {
+      value: "nontaxable_13th_month",
+      label: "13th Month Pay & Other Benefits (≤ ₱90K)",
+      group: "Non-Taxable",
+    },
+    {
+      value: "nontaxable_deminimis",
+      label: "De Minimis Benefits",
+      group: "Non-Taxable",
+    },
+    {
+      value: "sss_gsis_contribution",
+      label: "SSS/GSIS Contribution",
+      group: "Non-Taxable",
+    },
+    {
+      value: "philhealth_contribution",
+      label: "PhilHealth Contribution",
+      group: "Non-Taxable",
+    },
+    {
+      value: "pagibig_contribution",
+      label: "Pag-IBIG/HDMF Contribution",
+      group: "Non-Taxable",
+    },
+    { value: "union_dues", label: "Union Dues", group: "Non-Taxable" },
+    {
+      value: "other_nontaxable",
+      label: "Other Non-Taxable Compensation",
+      group: "Non-Taxable",
+    },
+    {
+      value: "total_nontaxable",
+      label: "Total Non-Taxable Compensation",
+      group: "Non-Taxable",
+    },
+
+    // --- 5. Taxable Compensation & Tax ---
+    {
+      value: "taxable_compensation",
+      label: "Net Taxable Compensation",
+      group: "Tax Computation",
+    },
+    {
+      value: "income_tax_due",
+      label: "Income Tax Due",
+      group: "Tax Computation",
+    },
+    {
+      value: "tax_withheld_jan_nov",
+      label: "Tax Withheld (January–November)",
+      group: "Tax Computation",
+    },
+    {
+      value: "tax_withheld_december",
+      label: "Tax Withheld (December — Adjustment Month)",
+      group: "Tax Computation",
+    },
+    {
+      value: "total_tax_withheld",
+      label: "Total Tax Withheld for the Year",
+      group: "Tax Computation",
+    },
+    {
+      value: "tax_adjustment",
+      label: "Year-End Tax Adjustment (Over/Under)",
+      group: "Tax Computation",
+    },
+
+    // --- 6. Previous Employer (if applicable) ---
+    {
+      value: "prev_employer_tin",
+      label: "Previous Employer TIN",
+      group: "Previous Employer",
+    },
+    {
+      value: "prev_employer_name",
+      label: "Previous Employer Name",
+      group: "Previous Employer",
+    },
+    {
+      value: "prev_gross_compensation",
+      label: "Previous Employer Gross Compensation",
+      group: "Previous Employer",
+    },
+    {
+      value: "prev_nontaxable",
+      label: "Previous Employer Non-Taxable",
+      group: "Previous Employer",
+    },
+    {
+      value: "prev_taxable_compensation",
+      label: "Previous Employer Taxable Compensation",
+      group: "Previous Employer",
+    },
+    {
+      value: "prev_tax_withheld",
+      label: "Previous Employer Tax Withheld",
+      group: "Previous Employer",
+    },
+  ],
+
   Bank_Statement: [
     { value: "date", label: "Date" },
     { value: "description", label: "Description" },
