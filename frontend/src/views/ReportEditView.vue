@@ -209,6 +209,7 @@ function handleBack() {
                 v-model="editableFields[field.id]"
                 class="field-input"
                 :class="{ changed: isModified(field.id) }"
+                :data-testid="`edit-field-${field.id}`"
               />
             </template>
             <template v-else>
@@ -233,13 +234,13 @@ function handleBack() {
 
       <div class="notes-row">
         <label>Notes (optional):</label>
-        <input type="text" v-model="notes" placeholder="Reason for changes..." class="notes-input" />
+        <input type="text" v-model="notes" placeholder="Reason for changes..." class="notes-input" data-testid="edit-notes" />
       </div>
 
       <p v-if="error" class="error">{{ error }}</p>
 
       <div class="actions">
-        <button class="save-btn" @click="handleSave" :disabled="!hasChanges || saving">
+        <button class="save-btn" @click="handleSave" :disabled="!hasChanges || saving" data-testid="edit-save-btn">
           {{ saving ? 'Saving...' : 'Save Changes' }}
         </button>
         <button class="cancel-btn" @click="handleBack">Cancel</button>

@@ -181,6 +181,7 @@ function proceedToMapping() {
       <label class="report-type-label">Report Type</label>
       <select
         class="report-type-select"
+        data-testid="upload-report-type"
         :value="uploadStore.reportType"
         @change="uploadStore.setReportType(($event.target as HTMLSelectElement).value)"
       >
@@ -192,7 +193,7 @@ function proceedToMapping() {
 
     <!-- Upload Progress -->
     <Transition name="fade">
-      <div v-if="uploading" class="progress-section">
+      <div v-if="uploading" class="progress-section" data-testid="upload-progress">
         <div class="progress-bar-wrap">
           <div class="progress-bar" :style="{ width: uploadProgress + '%' }"></div>
         </div>
@@ -233,7 +234,7 @@ function proceedToMapping() {
 
     <!-- Success: file preview -->
     <Transition name="fade">
-      <div v-if="uploadStore.hasFile && !uploading" class="preview-section">
+      <div v-if="uploadStore.hasFile && !uploading" class="preview-section" data-testid="upload-success">
         <div class="file-info">
           <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
             <path
@@ -242,7 +243,7 @@ function proceedToMapping() {
               clip-rule="evenodd"
             />
           </svg>
-          <span>Uploaded: <strong>{{ uploadStore.filename }}</strong></span>
+          <span data-testid="upload-filename">Uploaded: <strong>{{ uploadStore.filename }}</strong></span>
         </div>
 
         <div v-for="(sheet, name) in uploadStore.sheets" :key="name" class="sheet">
@@ -263,7 +264,7 @@ function proceedToMapping() {
           </div>
         </div>
 
-        <button class="proceed-btn" @click="proceedToMapping">
+        <button class="proceed-btn" @click="proceedToMapping" data-testid="upload-proceed-btn">
           Proceed to Column Mapping
           <svg class="arrow-icon" viewBox="0 0 20 20" fill="currentColor">
             <path

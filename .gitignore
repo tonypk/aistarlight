@@ -50,6 +50,9 @@ backend/migrations/versions/__pycache__/
 .coverage
 htmlcov/
 .pytest_cache/
+frontend/e2e/.auth/
+frontend/test-results/
+frontend/playwright-report/
 
 # Claude
 .claude/

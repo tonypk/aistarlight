@@ -87,6 +87,7 @@ defineExpose({ clearFile })
       @dragover.prevent="dragOver = true"
       @dragleave="dragOver = false"
       @drop.prevent="handleDrop"
+      data-testid="file-dropzone"
     >
       <div class="upload-content">
         <!-- No file selected -->
@@ -101,7 +102,7 @@ defineExpose({ clearFile })
           <p class="upload-hint">Supports .xlsx, .xls, .csv — large files are automatically optimized</p>
           <label class="upload-btn">
             Browse Files
-            <input type="file" accept=".xlsx,.xls,.csv" hidden @change="handleFileInput" />
+            <input type="file" accept=".xlsx,.xls,.csv" hidden @change="handleFileInput" data-testid="file-input" />
           </label>
         </template>
 
@@ -112,7 +113,7 @@ defineExpose({ clearFile })
               <span class="file-ext">{{ fileInfo?.ext }}</span>
             </div>
             <div class="file-details">
-              <span class="file-name">{{ fileInfo?.name }}</span>
+              <span class="file-name" data-testid="file-name">{{ fileInfo?.name }}</span>
               <span class="file-size">{{ fileInfo?.size }}</span>
             </div>
             <button class="file-change" @click.stop="clearFile">
@@ -125,7 +126,7 @@ defineExpose({ clearFile })
 
     <!-- Inline validation error -->
     <Transition name="slide">
-      <div v-if="validationError" class="validation-error">
+      <div v-if="validationError" class="validation-error" data-testid="file-validation-error">
         <svg class="error-icon" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
         </svg>

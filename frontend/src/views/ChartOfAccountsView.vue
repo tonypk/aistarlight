@@ -44,7 +44,7 @@ const groupedAccounts = computed(() => {
     <div class="page-header">
       <h1>Chart of Accounts</h1>
       <div class="actions">
-        <button class="btn btn-secondary" @click="store.seedAccounts()" :disabled="store.loading">
+        <button class="btn btn-secondary" @click="store.seedAccounts()" :disabled="store.loading" data-testid="coa-seed-btn">
           Seed PH Standard COA
         </button>
       </div>
@@ -64,7 +64,7 @@ const groupedAccounts = computed(() => {
       <p>No accounts found. Seed the Philippine Standard Chart of Accounts to get started.</p>
     </div>
 
-    <div v-else class="account-groups">
+    <div v-else class="account-groups" data-testid="coa-groups">
       <div v-for="(accts, group) in groupedAccounts" :key="group" class="account-group">
         <h3 class="group-title">{{ group }}</h3>
         <table class="table">

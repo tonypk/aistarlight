@@ -205,7 +205,7 @@ const statusTextColors: Record<string, string> = {
       <div class="view-header">
         <div>
           <h2>Transaction Classification</h2>
-          <p class="desc" v-if="store.currentSession">
+          <p class="desc" v-if="store.currentSession" data-testid="classify-status">
             Period: {{ store.currentSession.period }}
             | {{ store.transactionTotal }} transactions
             | Status: {{ store.currentSession.status }}
@@ -217,6 +217,7 @@ const statusTextColors: Record<string, string> = {
             class="ai-btn"
             :disabled="store.classifying"
             @click="classify"
+            data-testid="classify-ai-btn"
           >
             {{ store.classifying ? 'Classifying...' : 'AI Classify' }}
           </button>
@@ -228,7 +229,7 @@ const statusTextColors: Record<string, string> = {
           >
             Re-classify All
           </button>
-          <button class="nav-btn" @click="goToReconciliation">
+          <button class="nav-btn" @click="goToReconciliation" data-testid="classify-to-recon-btn">
             Continue to Reconciliation
           </button>
           <button

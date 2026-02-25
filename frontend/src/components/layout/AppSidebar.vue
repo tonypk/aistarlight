@@ -93,6 +93,7 @@ async function handleLogout() {
           :to="item.path"
           class="nav-item"
           active-class="active"
+          :data-testid="`sidebar-nav-${item.path.replace('/', '') || 'dashboard'}`"
         >
           <span class="icon">{{ item.icon }}</span>
           {{ item.name }}
@@ -105,7 +106,7 @@ async function handleLogout() {
         <span class="user-name">{{ auth.user.full_name || auth.user.email }}</span>
         <span class="user-role">{{ auth.currentRole }}</span>
       </div>
-      <button class="logout-btn" @click="handleLogout">Logout</button>
+      <button class="logout-btn" @click="handleLogout" data-testid="sidebar-logout">Logout</button>
     </div>
   </aside>
 </template>

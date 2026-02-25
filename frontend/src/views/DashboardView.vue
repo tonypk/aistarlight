@@ -84,7 +84,7 @@ function formatDeadline(dateStr: string): string {
 
 <template>
   <div class="dashboard">
-    <div class="welcome-section">
+    <div class="welcome-section" data-testid="dashboard-welcome">
       <div>
         <h2>Welcome, {{ auth.user?.full_name || 'User' }}</h2>
         <p class="company">{{ auth.user?.company_name }}</p>
@@ -92,7 +92,7 @@ function formatDeadline(dateStr: string): string {
     </div>
 
     <!-- Stats cards -->
-    <div v-if="stats" class="stats-row">
+    <div v-if="stats" class="stats-row" data-testid="dashboard-stats">
       <div class="stat-card">
         <div class="stat-icon">📋</div>
         <div class="stat-info">
@@ -167,7 +167,7 @@ function formatDeadline(dateStr: string): string {
       <div class="col-main">
         <h3 class="section-title">Quick Actions</h3>
         <div class="cards">
-          <router-link to="/upload" class="card">
+          <router-link to="/upload" class="card" data-testid="dashboard-quick-upload">
             <span class="card-icon">📤</span>
             <h3>Upload Data</h3>
             <p>Upload sales & purchase records</p>

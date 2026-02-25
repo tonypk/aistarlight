@@ -55,23 +55,23 @@ async function handleSubmit() {
         </div>
         <div class="field">
           <label>Email</label>
-          <input v-model="email" type="email" required placeholder="you@company.com" />
+          <input v-model="email" type="email" required placeholder="you@company.com" data-testid="login-email" />
         </div>
         <div class="field">
           <label>Password</label>
-          <input v-model="password" type="password" required placeholder="Enter password" />
+          <input v-model="password" type="password" required placeholder="Enter password" data-testid="login-password" />
         </div>
 
-        <p v-if="error" class="error">{{ error }}</p>
+        <p v-if="error" class="error" data-testid="login-error">{{ error }}</p>
 
-        <button type="submit" class="submit-btn" :disabled="loading">
+        <button type="submit" class="submit-btn" :disabled="loading" data-testid="login-submit">
           {{ loading ? 'Please wait...' : isRegister ? 'Create Account' : 'Sign In' }}
         </button>
       </form>
 
       <p class="toggle">
         {{ isRegister ? 'Already have an account?' : 'Need an account?' }}
-        <a href="#" @click.prevent="isRegister = !isRegister">
+        <a href="#" @click.prevent="isRegister = !isRegister" data-testid="login-toggle">
           {{ isRegister ? 'Sign In' : 'Register' }}
         </a>
       </p>

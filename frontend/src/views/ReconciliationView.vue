@@ -234,7 +234,7 @@ const statusTextColors: Record<string, string> = {
       <div class="view-header">
         <div>
           <h2>VAT Reconciliation</h2>
-          <p class="desc" v-if="store.currentSession">
+          <p class="desc" v-if="store.currentSession" data-testid="recon-status">
             Period: {{ store.currentSession.period }}
             | Status: {{ store.currentSession.status }}
           </p>
@@ -272,13 +272,13 @@ const statusTextColors: Record<string, string> = {
           </select>
         </div>
         <div class="control-actions">
-          <button class="btn secondary" @click="fetchSummary" :disabled="store.loading">
+          <button class="btn secondary" @click="fetchSummary" :disabled="store.loading" data-testid="recon-summary-btn">
             Generate Summary
           </button>
-          <button class="btn secondary" @click="runDetectAnomalies" :disabled="store.loading">
+          <button class="btn secondary" @click="runDetectAnomalies" :disabled="store.loading" data-testid="recon-detect-btn">
             Detect Anomalies
           </button>
-          <button class="btn primary" @click="runReconciliation" :disabled="reconRunning">
+          <button class="btn primary" @click="runReconciliation" :disabled="reconRunning" data-testid="recon-run-btn">
             {{ reconRunning ? 'Running...' : 'Run Reconciliation' }}
           </button>
         </div>
@@ -292,6 +292,7 @@ const statusTextColors: Record<string, string> = {
             class="btn primary"
             @click="generateReportFromSession"
             :disabled="generatingReport"
+            data-testid="recon-generate-btn"
           >
             {{ generatingReport ? 'Generating...' : 'Generate Report' }}
           </button>
@@ -319,23 +320,23 @@ const statusTextColors: Record<string, string> = {
       />
 
       <!-- Match Stats (when no comparison) -->
-      <div v-else-if="store.reconciliationResult" class="match-only">
+      <div v-else-if="store.reconciliationResult?.match_stats" class="match-only">
         <h3>Transaction Matching</h3>
         <div class="match-grid">
           <div class="match-stat">
-            <div class="val">{{ store.reconciliationResult.match_stats.matched_pairs }}</div>
+            <div class="val">{{ store.reconciliationResult.match_stats.matched_pairs ?? 0 }}</div>
             <div class="lbl">Matched</div>
           </div>
           <div class="match-stat">
-            <div class="val">{{ store.reconciliationResult.match_stats.unmatched_records }}</div>
+            <div class="val">{{ store.reconciliationResult.match_stats.unmatched_records ?? 0 }}</div>
             <div class="lbl">Unmatched Records</div>
           </div>
           <div class="match-stat">
-            <div class="val">{{ store.reconciliationResult.match_stats.unmatched_bank }}</div>
+            <div class="val">{{ store.reconciliationResult.match_stats.unmatched_bank ?? 0 }}</div>
             <div class="lbl">Unmatched Bank</div>
           </div>
           <div class="match-stat">
-            <div class="val">{{ (store.reconciliationResult.match_stats.match_rate * 100).toFixed(1) }}%</div>
+            <div class="val">{{ ((store.reconciliationResult.match_stats.match_rate ?? 0) * 100).toFixed(1) }}%</div>
             <div class="lbl">Match Rate</div>
           </div>
         </div>

@@ -236,11 +236,12 @@ function isLowConfidence(col: string): boolean {
           class="ai-btn"
           @click="requestAiMapping"
           :disabled="aiLoading"
+          data-testid="mapping-ai-btn"
         >
           {{ aiLoading ? 'AI is analyzing...' : aiSuggested ? 'Re-run AI Mapping' : 'Auto-Map with AI' }}
         </button>
 
-        <span v-if="aiSuggested" class="confidence-badge" :class="confidenceBadge.cls">
+        <span v-if="aiSuggested" class="confidence-badge" :class="confidenceBadge.cls" data-testid="mapping-confidence">
           Confidence: {{ confidenceBadge.label }}
         </span>
       </div>
@@ -285,7 +286,7 @@ function isLowConfidence(col: string): boolean {
         <p class="unmapped-hint">These columns could not be automatically matched. Map them manually or skip them.</p>
       </div>
 
-      <button class="confirm-btn" @click="requestPreview">
+      <button class="confirm-btn" @click="requestPreview" data-testid="mapping-preview-btn">
         Preview Mapping
       </button>
     </template>
@@ -313,7 +314,7 @@ function isLowConfidence(col: string): boolean {
 
         <div class="preview-actions">
           <button class="back-btn" @click="backToEdit">Back to Edit</button>
-          <button class="confirm-btn" @click="confirmMapping">Confirm & Continue</button>
+          <button class="confirm-btn" @click="confirmMapping" data-testid="mapping-confirm-btn">Confirm & Continue</button>
         </div>
       </div>
     </template>

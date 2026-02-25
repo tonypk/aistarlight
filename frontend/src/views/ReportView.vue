@@ -147,7 +147,7 @@ function formatFormType(type: string): string {
 
       <div class="form-row">
         <label>Form Type:</label>
-        <select v-model="selectedFormType" class="form-select">
+        <select v-model="selectedFormType" class="form-select" data-testid="report-form-type">
           <option v-for="form in availableForms" :key="form.form_type" :value="form.form_type">
             {{ formatFormType(form.form_type) }} — {{ form.name }}
           </option>
@@ -165,11 +165,12 @@ function formatFormType(type: string): string {
 
       <div class="form-row">
         <label>Period:</label>
-        <input type="month" v-model="period" />
+        <input type="month" v-model="period" data-testid="report-period" />
         <button
           class="gen-btn"
           @click="handleGenerate"
           :disabled="generating"
+          data-testid="report-generate-btn"
         >
           {{ generating ? 'Generating...' : 'Generate Report' }}
         </button>
@@ -187,7 +188,7 @@ function formatFormType(type: string): string {
     />
 
     <!-- Report history -->
-    <div class="report-list" v-if="reportStore.reports.length">
+    <div class="report-list" v-if="reportStore.reports.length" data-testid="report-table">
       <h3>Previous Reports</h3>
       <table>
         <thead>
@@ -201,7 +202,7 @@ function formatFormType(type: string): string {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="r in reportStore.reports" :key="r.id">
+          <tr v-for="r in reportStore.reports" :key="r.id" data-testid="report-row">
             <td>{{ formatFormType(r.report_type) }}</td>
             <td>{{ r.period }}</td>
             <td><span class="badge" :class="statusColor(r.status)">{{ r.status }}</span></td>

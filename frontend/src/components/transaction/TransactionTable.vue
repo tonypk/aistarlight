@@ -64,7 +64,7 @@ function formatAmount(amount: number): string {
 <template>
   <div class="table-wrapper">
     <div v-if="loading" class="loading">Loading transactions...</div>
-    <table v-else>
+    <table v-else data-testid="txn-table">
       <thead>
         <tr>
           <th class="check-col"><input type="checkbox" @change="toggleAll" /></th>
@@ -79,7 +79,7 @@ function formatAmount(amount: number): string {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="txn in transactions" :key="txn.id" :class="{ 'low-conf': txn.confidence < 0.5 }">
+        <tr v-for="txn in transactions" :key="txn.id" :class="{ 'low-conf': txn.confidence < 0.5 }" data-testid="txn-row">
           <td class="check-col">
             <input type="checkbox" :checked="selectedIds.has(txn.id)" @change="toggleSelect(txn.id)" />
           </td>
