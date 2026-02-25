@@ -78,13 +78,38 @@ const HEADER_KEYWORDS = new Set([
 
 /** Returns true if the string looks like a number rather than a header label. */
 function looksNumeric(s: string): boolean {
-  const cleaned = s.trim().replace(/[,$₱PHP% ]/g, "");
+  let cleaned = s.trim();
+  // Remove currency/formatting symbols (whole words, not character class)
+  for (const sym of [",", "$", "₱", "PHP", "%", " "]) {
+    cleaned = cleaned.split(sym).join("");
+  }
   if (!cleaned) return false;
   let digitDot = 0;
   for (const c of cleaned) {
     if ((c >= "0" && c <= "9") || c === "." || c === "-") digitDot++;
   }
   return digitDot / cleaned.length > 0.7;
+}
+
+/**
+ * Returns true if the row looks like sequential field numbering (e.g. 1, 2, 3, 4, 5).
+ * BIR forms often have such a row just above the real column headers.
+ */
+function isSequentialNumbers(row: unknown[]): boolean {
+  const nums: number[] = [];
+  for (const cell of row) {
+    const v = String(cell ?? "").trim();
+    if (!v) continue;
+    const n = Number(v);
+    if (!Number.isInteger(n) || n < 0) return false;
+    nums.push(n);
+  }
+  if (nums.length < 3) return false;
+  // Check if they form a consecutive sequence (1,2,3,... or 0,1,2,...)
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i] !== nums[i - 1] + 1) return false;
+  }
+  return true;
 }
 
 /**
@@ -105,6 +130,9 @@ function detectHeaderRow(rows: unknown[][]): number {
   for (let i = 0; i < scanLimit; i++) {
     const row = rows[i];
     if (!row || row.length === 0) continue;
+
+    // Skip sequential numbering rows (e.g. 1, 2, 3, 4, 5)
+    if (isSequentialNumbers(row)) continue;
 
     let nonEmpty = 0;
     let numericCount = 0;
@@ -140,6 +168,9 @@ function detectHeaderRow(rows: unknown[][]): number {
     const uniqueness = unique.size / nonEmpty;
     const textRatio = 1 - numericCount / nonEmpty;
     const keywordRatio = keywordHits / nonEmpty;
+
+    // Heavily penalize all-numeric rows — real headers contain text
+    if (textRatio === 0) continue;
 
     const score =
       fillRatio * uniqueness * (0.5 + 0.5 * textRatio) * (1 + keywordRatio);

@@ -24,6 +24,47 @@ def parse_file(file_content: bytes, filename: str) -> dict[str, Any]:
         raise ValueError(f"Unsupported file format: {ext}. Use .xlsx, .xls, or .csv")
 
 
+_HEADER_KEYWORDS = frozenset([
+    "name", "registered name", "tin", "address", "date", "invoice",
+    "amount", "gross", "net", "tax", "vat", "rate", "total", "description",
+    "supplier", "customer", "buyer", "vendor", "payee",
+    "employee", "employer", "salary", "compensation",
+    "purchase", "sales", "revenue", "expense",
+    "debit", "credit", "balance", "reference",
+    "no.", "no", "number", "code", "type", "status", "remarks",
+    "period", "month", "year",
+    "exempt", "zero rated", "taxable", "vatable",
+    "input", "output", "withholding", "creditable",
+])
+
+
+def _looks_numeric(s: str) -> bool:
+    """Return True if the string looks like a number rather than a header label."""
+    cleaned = s.strip()
+    for sym in (",", "$", "₱", "PHP", "%"):
+        cleaned = cleaned.replace(sym, "")
+    cleaned = cleaned.strip()
+    if not cleaned:
+        return False
+    digit_dot = sum(1 for c in cleaned if c in "0123456789.-")
+    return digit_dot / len(cleaned) > 0.7
+
+
+def _is_sequential_numbers(values: list[str]) -> bool:
+    """Return True if the non-empty values form a consecutive integer sequence."""
+    nums = []
+    for v in values:
+        v = v.strip()
+        if not v:
+            continue
+        if not v.isdigit():
+            return False
+        nums.append(int(v))
+    if len(nums) < 3:
+        return False
+    return all(nums[i] == nums[i - 1] + 1 for i in range(1, len(nums)))
+
+
 def _detect_header_row(raw_df: pd.DataFrame) -> int:
     """Auto-detect the real header row in a DataFrame read with header=None.
 
@@ -32,7 +73,8 @@ def _detect_header_row(raw_df: pd.DataFrame) -> int:
     and then the actual column headers further down.
 
     Strategy: scan the first N rows and pick the one with the highest
-    ratio of non-empty, unique, string-like cells — that's the header.
+    score based on fill ratio, uniqueness, text ratio, and keyword matching.
+    Sequential numbering rows (1, 2, 3, 4) and all-numeric rows are skipped.
     """
     best_row = 0
     best_score = 0.0
@@ -41,25 +83,58 @@ def _detect_header_row(raw_df: pd.DataFrame) -> int:
     scan_limit = min(_HEADER_SCAN_LIMIT, len(raw_df))
     for i in range(scan_limit):
         row = raw_df.iloc[i]
-        non_empty = 0
-        values = set()
+        str_values = []
         for v in row:
             s = str(v).strip() if pd.notna(v) else ""
-            if s and s.lower() != "nan":
-                non_empty += 1
-                values.add(s)
+            if s.lower() == "nan":
+                s = ""
+            str_values.append(s)
 
-        if total_cols == 0:
+        # Skip sequential numbering rows (e.g. 1, 2, 3, 4, 5)
+        if _is_sequential_numbers(str_values):
+            continue
+
+        non_empty = 0
+        numeric_count = 0
+        keyword_hits = 0
+        values = set()
+
+        for s in str_values:
+            if not s:
+                continue
+            non_empty += 1
+            values.add(s)
+
+            if _looks_numeric(s):
+                numeric_count += 1
+
+            lower = s.lower()
+            if lower in _HEADER_KEYWORDS:
+                keyword_hits += 1
+            else:
+                for kw in _HEADER_KEYWORDS:
+                    if kw in lower:
+                        keyword_hits += 1
+                        break
+
+        if total_cols == 0 or non_empty == 0:
             continue
 
         fill_ratio = non_empty / total_cols
-        # Prefer rows where most cells are non-empty AND unique (real headers
-        # are distinct; merged title rows have one value repeated or mostly empty).
-        uniqueness = len(values) / max(non_empty, 1)
-        score = fill_ratio * uniqueness
+        if fill_ratio < _HEADER_MIN_FILL_RATIO:
+            continue
 
-        # Require minimum fill to even consider the row.
-        if fill_ratio >= _HEADER_MIN_FILL_RATIO and score > best_score:
+        uniqueness = len(values) / non_empty
+        text_ratio = 1.0 - numeric_count / non_empty
+
+        # Skip all-numeric rows — real headers always contain text
+        if text_ratio == 0:
+            continue
+
+        keyword_ratio = keyword_hits / non_empty
+        score = fill_ratio * uniqueness * (0.5 + 0.5 * text_ratio) * (1.0 + keyword_ratio)
+
+        if score > best_score:
             best_score = score
             best_row = i
 
