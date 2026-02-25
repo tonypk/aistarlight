@@ -1,3 +1,4 @@
+import logging
 import os
 import uuid
 
@@ -11,6 +12,8 @@ from backend.schemas.common import ok
 from backend.services.column_mapper import auto_map_columns
 from backend.services.data_processor import parse_file
 from backend.services.memory_manager import get_preference
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/data", tags=["data"])
 
@@ -49,6 +52,9 @@ async def upload_file(
     first_sheet = next(iter(sheets.values()), None)
     columns = first_sheet["columns"] if first_sheet else []
     sample_rows = first_sheet["preview"][:5] if first_sheet else []
+
+    # DEBUG: log detected columns for troubleshooting
+    logger.warning("UPLOAD DEBUG: file=%s columns=%s", file.filename, columns)
 
     return ok({
         "file_id": file_id,
