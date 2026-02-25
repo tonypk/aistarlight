@@ -17,64 +17,73 @@ export const REPORT_TYPES: ReportTypeOption[] = [
   { value: 'Bank_Statement', label: 'Bank Statement' },
 ]
 
-// BIR 2550M/Q fields cover: VAT return + SLS (Sales) + SLP (Purchases) + SLI (Importations)
-// Per RR 16-2005 Section 4.114-3, as amended by RR 1-2012
+// ===========================================================================
+// BIR 2550M/2550Q VAT Return — Official Form Fields
+// Per BIR Form 2550M/2550Q, RR 16-2005, RR 1-2012
+// Organized by: Sales (Output) → Purchases (Input) → VAT Deductions → Details
+// ===========================================================================
 const vatFields: TargetField[] = [
-  // --- Common / General ---
-  { value: 'date', label: 'Date', group: 'General' },
-  { value: 'taxable_month', label: 'Taxable Month', group: 'General' },
-  { value: 'description', label: 'Description', group: 'General' },
-  { value: 'tin', label: 'TIN (Taxpayer ID)', group: 'General' },
-  { value: 'registered_name', label: 'Registered Name', group: 'General' },
-  { value: 'supplier_name', label: 'Supplier/Customer Name', group: 'General' },
-  { value: 'address', label: 'Address', group: 'General' },
-  { value: 'invoice_number', label: 'Invoice/Receipt/OR Number', group: 'General' },
+  // --- 1. Sales / Output VAT (销售/输出 VAT) ---
+  { value: 'sales_date', label: 'Sales Date', group: 'Sales (Output)' },
+  { value: 'sales_invoice_number', label: 'Invoice/Receipt/OR Number', group: 'Sales (Output)' },
+  { value: 'customer_name', label: 'Customer Name', group: 'Sales (Output)' },
+  { value: 'customer_tin', label: 'Customer TIN', group: 'Sales (Output)' },
+  { value: 'customer_address', label: 'Customer Address', group: 'Sales (Output)' },
+  { value: 'gross_sales', label: 'Gross Sales Amount', group: 'Sales (Output)' },
+  { value: 'vatable_sales', label: 'Vatable Sales/Receipts', group: 'Sales (Output)' },
+  { value: 'sales_to_government', label: 'Sales to Government', group: 'Sales (Output)' },
+  { value: 'zero_rated_sales', label: 'Zero-Rated Sales/Receipts', group: 'Sales (Output)' },
+  { value: 'exempt_sales', label: 'Exempt Sales/Receipts', group: 'Sales (Output)' },
+  { value: 'total_sales', label: 'Total Sales/Receipts (Exclusive of VAT)', group: 'Sales (Output)' },
+  { value: 'output_tax', label: 'Output Tax for the Period', group: 'Sales (Output)' },
 
-  // --- Amount Fields ---
-  { value: 'amount', label: 'Amount', group: 'Amounts' },
-  { value: 'gross_amount', label: 'Gross Amount (VAT inclusive)', group: 'Amounts' },
-  { value: 'vat_amount', label: 'VAT Amount', group: 'Amounts' },
-  { value: 'taxable_amount', label: 'Taxable Amount (VAT exclusive)', group: 'Amounts' },
-  { value: 'exempt_amount', label: 'Exempt Amount', group: 'Amounts' },
-  { value: 'zero_rated_amount', label: 'Zero-Rated Amount', group: 'Amounts' },
+  // --- 2. Purchases / Input VAT (采购/进项 VAT) ---
+  { value: 'supplier_name', label: 'Supplier Name', group: 'Purchases (Input)' },
+  { value: 'supplier_tin', label: 'Supplier TIN', group: 'Purchases (Input)' },
+  { value: 'supplier_address', label: 'Supplier Address', group: 'Purchases (Input)' },
+  { value: 'purchase_date', label: 'Purchase Date', group: 'Purchases (Input)' },
+  { value: 'purchase_invoice_number', label: 'Purchase Invoice/OR Number', group: 'Purchases (Input)' },
+  { value: 'gross_purchase', label: 'Gross Purchase Amount', group: 'Purchases (Input)' },
+  { value: 'purchase_capital_goods_below_1m', label: 'Capital Goods (≤ ₱1M)', group: 'Purchases (Input)' },
+  { value: 'purchase_capital_goods_above_1m', label: 'Capital Goods (> ₱1M)', group: 'Purchases (Input)' },
+  { value: 'purchase_domestic_goods', label: 'Domestic Purchase of Goods (non-capital)', group: 'Purchases (Input)' },
+  { value: 'purchase_importation', label: 'Importation of Goods', group: 'Purchases (Input)' },
+  { value: 'purchase_domestic_services', label: 'Domestic Purchase of Services', group: 'Purchases (Input)' },
+  { value: 'purchase_non_resident_services', label: 'Services by Non-Residents', group: 'Purchases (Input)' },
+  { value: 'purchase_not_qualified', label: 'Purchases Not Qualified for Input Tax', group: 'Purchases (Input)' },
+  { value: 'input_tax', label: 'Input VAT Amount', group: 'Purchases (Input)' },
+  { value: 'input_tax_capital_goods', label: 'Input Tax on Capital Goods', group: 'Purchases (Input)' },
+  { value: 'input_tax_domestic_goods', label: 'Input Tax on Domestic Goods', group: 'Purchases (Input)' },
+  { value: 'input_tax_importation', label: 'Input Tax on Imported Goods', group: 'Purchases (Input)' },
+  { value: 'input_tax_domestic_services', label: 'Input Tax on Domestic Services', group: 'Purchases (Input)' },
+  { value: 'input_tax_non_resident_services', label: 'Input Tax on Non-Resident Services', group: 'Purchases (Input)' },
 
-  // --- VAT Classification ---
-  { value: 'vat_type', label: 'VAT Type (vatable/exempt/zero_rated/government)', group: 'Classification' },
-  { value: 'category', label: 'Category (goods/services/capital/imports)', group: 'Classification' },
+  // --- 3. VAT Deductions / Adjustments (VAT 抵扣细分) ---
+  { value: 'input_tax_carried_over', label: 'Input Tax Carried Over from Previous Period', group: 'VAT Deductions' },
+  { value: 'deferred_input_tax_capital', label: 'Deferred Input Tax — Capital Goods (over ₱1M)', group: 'VAT Deductions' },
+  { value: 'transitional_input_tax', label: 'Transitional Input Tax', group: 'VAT Deductions' },
+  { value: 'presumptive_input_tax', label: 'Presumptive Input Tax', group: 'VAT Deductions' },
+  { value: 'other_input_tax', label: 'Other Allowable Input Tax', group: 'VAT Deductions' },
+  { value: 'total_allowable_input_tax', label: 'Total Allowable Input Tax', group: 'VAT Deductions' },
 
-  // --- SLP: Summary List of Purchases (RR 16-2005 Sec 4.114-3) ---
-  { value: 'gross_purchase', label: 'Gross Purchase Amount', group: 'SLP (Purchases)' },
-  { value: 'exempt_purchase', label: 'Exempt Purchase Amount', group: 'SLP (Purchases)' },
-  { value: 'zero_rated_purchase', label: 'Zero-Rated Purchase Amount', group: 'SLP (Purchases)' },
-  { value: 'taxable_purchase', label: 'Taxable Purchase Amount', group: 'SLP (Purchases)' },
-  { value: 'purchase_services', label: 'Purchase of Services Amount', group: 'SLP (Purchases)' },
-  { value: 'purchase_goods', label: 'Purchase of Goods (non-capital)', group: 'SLP (Purchases)' },
-  { value: 'purchase_capital_goods', label: 'Purchase of Capital Goods', group: 'SLP (Purchases)' },
-  { value: 'input_tax', label: 'Input Tax (Creditable)', group: 'SLP (Purchases)' },
-  { value: 'gross_taxable_purchase', label: 'Gross Taxable Purchase', group: 'SLP (Purchases)' },
+  // --- 4. Common / Detail Fields (通用/明细) ---
+  { value: 'tin', label: 'TIN (Taxpayer ID)', group: 'Details' },
+  { value: 'registered_name', label: 'Registered Name', group: 'Details' },
+  { value: 'address', label: 'Address', group: 'Details' },
+  { value: 'description', label: 'Description / Remarks', group: 'Details' },
+  { value: 'taxable_month', label: 'Taxable Month/Quarter', group: 'Details' },
 
-  // --- SLS: Summary List of Sales (RR 16-2005 Sec 4.114-3) ---
-  { value: 'gross_sales', label: 'Gross Sales Amount', group: 'SLS (Sales)' },
-  { value: 'exempt_sales', label: 'Exempt Sales Amount', group: 'SLS (Sales)' },
-  { value: 'zero_rated_sales', label: 'Zero-Rated Sales Amount', group: 'SLS (Sales)' },
-  { value: 'taxable_sales', label: 'Taxable Sales Amount', group: 'SLS (Sales)' },
-  { value: 'output_tax', label: 'Output Tax (12%)', group: 'SLS (Sales)' },
-  { value: 'gross_taxable_sales', label: 'Gross Taxable Sales', group: 'SLS (Sales)' },
+  // --- 5. Importation Details (SLI 进口明细) ---
+  { value: 'import_entry_number', label: 'Import Entry Number', group: 'Importation (SLI)' },
+  { value: 'importation_date', label: 'Date of Importation', group: 'Importation (SLI)' },
+  { value: 'assessment_date', label: 'Assessment/Release Date', group: 'Importation (SLI)' },
+  { value: 'country_of_origin', label: 'Country of Origin', group: 'Importation (SLI)' },
+  { value: 'landed_cost', label: 'Total Landed Cost', group: 'Importation (SLI)' },
+  { value: 'dutiable_value', label: 'Dutiable Value', group: 'Importation (SLI)' },
+  { value: 'customs_charges', label: 'Charges Before Release from Customs', group: 'Importation (SLI)' },
+  { value: 'vat_paid_imports', label: 'VAT Paid on Imports', group: 'Importation (SLI)' },
 
-  // --- SLI: Summary List of Importations (RR 16-2005 Sec 4.114-3) ---
-  { value: 'import_entry_number', label: 'Import Entry Number', group: 'SLI (Importations)' },
-  { value: 'assessment_date', label: 'Assessment/Release Date', group: 'SLI (Importations)' },
-  { value: 'importation_date', label: 'Date of Importation', group: 'SLI (Importations)' },
-  { value: 'country_of_origin', label: 'Country of Origin', group: 'SLI (Importations)' },
-  { value: 'landed_cost', label: 'Total Landed Cost', group: 'SLI (Importations)' },
-  { value: 'dutiable_value', label: 'Dutiable Value', group: 'SLI (Importations)' },
-  { value: 'customs_charges', label: 'Charges Before Release from Customs', group: 'SLI (Importations)' },
-  { value: 'taxable_imports', label: 'Taxable Imports Amount', group: 'SLI (Importations)' },
-  { value: 'exempt_imports', label: 'Exempt Imports Amount', group: 'SLI (Importations)' },
-  { value: 'vat_paid', label: 'VAT Paid on Imports', group: 'SLI (Importations)' },
-  { value: 'vat_payment_date', label: 'Date of VAT Payment', group: 'SLI (Importations)' },
-
-  // --- EWT (Expanded Withholding Tax on purchases) ---
+  // --- 6. EWT (Expanded Withholding Tax) ---
   { value: 'ewt_rate', label: 'EWT Rate (%)', group: 'EWT' },
   { value: 'ewt_amount', label: 'EWT Amount', group: 'EWT' },
   { value: 'atc_code', label: 'ATC Code', group: 'EWT' },

@@ -29,8 +29,25 @@ const showPreview = ref(false)
 
 // --- Computed ---
 const currentTargetFields = computed<TargetField[]>(() => {
-  const fields = TARGET_FIELDS[uploadStore.reportType] ?? TARGET_FIELDS.BIR_2550M
-  return [...fields, { value: '_skip', label: '-- Skip --' }]
+  return TARGET_FIELDS[uploadStore.reportType] ?? TARGET_FIELDS.BIR_2550M
+})
+
+const groupedTargetFields = computed(() => {
+  const fields = currentTargetFields.value
+  const groups: { label: string; fields: TargetField[] }[] = []
+  const groupMap = new Map<string, TargetField[]>()
+
+  for (const f of fields) {
+    const g = f.group || 'Other'
+    if (!groupMap.has(g)) {
+      groupMap.set(g, [])
+    }
+    groupMap.get(g)!.push(f)
+  }
+  for (const [label, gFields] of groupMap) {
+    groups.push({ label, fields: gFields })
+  }
+  return groups
 })
 
 const currentReportLabel = computed(() => {
@@ -266,9 +283,14 @@ function isLowConfidence(col: string): boolean {
           <span class="sample">{{ uploadStore.sampleRows[0]?.[col] ?? '—' }}</span>
           <select v-model="mappings[col]">
             <option value="">-- Select --</option>
-            <option v-for="f in currentTargetFields" :key="f.value" :value="f.value">
-              {{ f.label }}
-            </option>
+            <template v-for="group in groupedTargetFields" :key="group.label">
+              <optgroup :label="group.label">
+                <option v-for="f in group.fields" :key="f.value" :value="f.value">
+                  {{ f.label }}
+                </option>
+              </optgroup>
+            </template>
+            <option value="_skip">-- Skip --</option>
           </select>
           <span v-if="aiSuggested" class="conf-value">
             <template v-if="getFieldConfidence(col) !== null">
