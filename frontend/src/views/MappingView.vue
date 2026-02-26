@@ -30,6 +30,9 @@ const templateSaving = ref(false)
 // Preview
 const showPreview = ref(false)
 
+// Data category (sales/purchases/general)
+const dataCategory = ref('')
+
 // Candidates & Conflicts (Phase 1 response)
 const candidates = ref<Record<string, FieldCandidate[]>>({})
 const conflicts = ref<ConflictGroup[]>([])
@@ -204,6 +207,7 @@ async function requestAiMapping() {
       columns: uploadStore.columns,
       sample_rows: uploadStore.sampleRows as Record<string, unknown>[],
       report_type: uploadStore.reportType,
+      data_category: dataCategory.value || undefined,
     })
     const data = res.data.data
     const suggested = data.mappings as Record<string, string>
@@ -399,6 +403,26 @@ function getFieldLabel(target: string): string {
         ({{ uploadStore.columns.length }} columns)
       </div>
 
+      <!-- Data category selector -->
+      <div class="category-bar">
+        <label class="category-label">Data type:</label>
+        <div class="category-options">
+          <button
+            v-for="opt in [
+              { value: '', label: 'Auto-detect' },
+              { value: 'sales', label: 'Sales (SLS)' },
+              { value: 'purchases', label: 'Purchases (SLP)' },
+            ]"
+            :key="opt.value"
+            class="category-btn"
+            :class="{ active: dataCategory === opt.value }"
+            @click="dataCategory = opt.value"
+          >
+            {{ opt.label }}
+          </button>
+        </div>
+      </div>
+
       <!-- Template loaded hint -->
       <div v-if="templateLoaded" class="template-hint">
         Using saved mapping template. Click "Auto-Map with AI" to get fresh suggestions.
@@ -549,6 +573,45 @@ function getFieldLabel(target: string): string {
   border-radius: 8px;
   margin-bottom: 16px;
   color: #166534;
+}
+
+/* Data category selector */
+.category-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.category-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+.category-options {
+  display: flex;
+  gap: 4px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 3px;
+}
+.category-btn {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  color: #6b7280;
+  transition: all 0.15s;
+}
+.category-btn:hover {
+  color: #374151;
+}
+.category-btn.active {
+  background: #fff;
+  color: #4f46e5;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* Template hint */

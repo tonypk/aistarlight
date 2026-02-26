@@ -5,6 +5,7 @@ export interface MappingRequest {
   columns: string[];
   sample_rows: Record<string, unknown>[];
   report_type?: string;
+  data_category?: string; // sales, purchases, general
 }
 
 export interface FieldCandidate {
