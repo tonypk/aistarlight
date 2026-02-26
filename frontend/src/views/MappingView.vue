@@ -2,9 +2,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { dataApi } from '../api/data'
+import type { FieldCandidate, ConflictGroup, MappingCorrectionItem } from '../api/data'
 import { useUploadStore } from '../stores/upload'
 import { TARGET_FIELDS, REPORT_TYPES } from '../config/targetFieldsByReportType'
 import type { TargetField } from '../config/targetFieldsByReportType'
+import SearchableFieldSelect from '../components/SearchableFieldSelect.vue'
+import DisambiguationPanel from '../components/DisambiguationPanel.vue'
 
 const router = useRouter()
 const uploadStore = useUploadStore()
@@ -24,8 +27,18 @@ const unmappedColumns = ref<string[]>([])
 const templateLoaded = ref(false)
 const templateSaving = ref(false)
 
-// Phase 4: Preview
+// Preview
 const showPreview = ref(false)
+
+// Candidates & Conflicts (Phase 1 response)
+const candidates = ref<Record<string, FieldCandidate[]>>({})
+const conflicts = ref<ConflictGroup[]>([])
+
+// Disambiguation (Phase 3)
+const disambiguatingTarget = ref<string | null>(null)
+
+// Correction tracking (Phase 4)
+const aiOriginalMappings = ref<Record<string, string>>({})
 
 // --- Computed ---
 const currentTargetFields = computed<TargetField[]>(() => {
@@ -61,6 +74,32 @@ const confidenceBadge = computed(() => {
   return { label: `${pct}%`, cls: 'badge-red' }
 })
 
+// Phase 2C: Duplicate/conflict detection (computed)
+const duplicateMappings = computed(() => {
+  const counts: Record<string, string[]> = {}
+  for (const [col, target] of Object.entries(mappings.value)) {
+    if (target && target !== '_skip' && target !== '') {
+      ;(counts[target] ??= []).push(col)
+    }
+  }
+  return Object.fromEntries(Object.entries(counts).filter(([, c]) => c.length > 1))
+})
+
+const hasConflicts = computed(() => Object.keys(duplicateMappings.value).length > 0)
+
+const conflictCount = computed(() => Object.keys(duplicateMappings.value).length)
+
+// Used fields set (for SearchableFieldSelect)
+const usedFieldsSet = computed(() => {
+  const used = new Set<string>()
+  for (const target of Object.values(mappings.value)) {
+    if (target && target !== '' && target !== '_skip') {
+      used.add(target)
+    }
+  }
+  return used
+})
+
 const previewRows = computed(() => {
   return uploadStore.sampleRows.slice(0, 5).map(row => {
     const out: Record<string, unknown> = {}
@@ -83,30 +122,45 @@ const previewColumns = computed(() => {
   return cols
 })
 
+// Disambiguation panel state
+const disambiguationProps = computed(() => {
+  const target = disambiguatingTarget.value
+  if (!target) return null
+
+  const competingCols = duplicateMappings.value[target] ?? []
+  const targetField = currentTargetFields.value.find(f => f.value === target)
+
+  return {
+    targetField: target,
+    targetLabel: targetField?.label ?? target,
+    competingColumns: competingCols,
+    sampleRows: uploadStore.sampleRows as Record<string, unknown>[],
+    candidates: candidates.value,
+    allTargetFields: currentTargetFields.value,
+  }
+})
+
 // --- Lifecycle ---
 onMounted(async () => {
   if (!uploadStore.hasFile) {
     router.push('/upload')
     return
   }
-  // Initialize empty mappings (immutable)
   const init: Record<string, string> = {}
   for (const col of uploadStore.columns) {
     init[col] = ''
   }
   mappings.value = init
-  // Phase 3: Try loading saved template
   await loadTemplate()
 })
 
-// --- Phase 3: Template ---
+// --- Template ---
 async function loadTemplate() {
   try {
     const res = await dataApi.getTemplate(uploadStore.reportType)
     const saved = res.data?.data?.column_mappings as Record<string, string> | undefined
     if (!saved || Object.keys(saved).length === 0) return
 
-    // Match saved mappings to current columns (immutable)
     const applied = { ...mappings.value }
     let matched = 0
     for (const col of uploadStore.columns) {
@@ -120,7 +174,7 @@ async function loadTemplate() {
       templateLoaded.value = true
     }
   } catch {
-    // No saved template — that's fine
+    // No saved template
   }
 }
 
@@ -135,13 +189,13 @@ async function saveTemplate() {
     }
     await dataApi.saveTemplate(uploadStore.reportType, toSave)
   } catch {
-    // Fire-and-forget — don't block the user
+    // Fire-and-forget
   } finally {
     templateSaving.value = false
   }
 }
 
-// --- Phase 1 + 2: AI Mapping ---
+// --- AI Mapping ---
 async function requestAiMapping() {
   aiLoading.value = true
   aiError.value = ''
@@ -163,13 +217,20 @@ async function requestAiMapping() {
     }
     mappings.value = updated
 
-    // Phase 2: Confidence data
+    // Save original AI mappings for correction tracking
+    aiOriginalMappings.value = { ...suggested }
+
+    // Confidence data
     overallConfidence.value = typeof data.confidence === 'number' ? data.confidence : 0
     fieldConfidence.value = data.field_confidence ?? {}
     unmappedColumns.value = Array.isArray(data.unmapped) ? data.unmapped : []
 
+    // Candidates & conflicts from backend
+    candidates.value = data.candidates ?? {}
+    conflicts.value = data.conflicts ?? []
+
     aiSuggested.value = true
-    templateLoaded.value = false // AI overrides template
+    templateLoaded.value = false
   } catch {
     aiError.value = 'AI mapping failed. Please map columns manually.'
   } finally {
@@ -177,9 +238,66 @@ async function requestAiMapping() {
   }
 }
 
-// --- Phase 4: Preview + Confirm ---
+// --- Sample data helpers ---
+function sampleTooltip(col: string): string {
+  const rows = uploadStore.sampleRows.slice(0, 3)
+  return rows
+    .map((r, i) => `Row ${i + 1}: ${r[col] ?? '--'}`)
+    .join('\n')
+}
+
+function sampleDisplay(col: string): string {
+  return String(uploadStore.sampleRows[0]?.[col] ?? '\u2014')
+}
+
+function extraSampleCount(): number {
+  return Math.min(uploadStore.sampleRows.length - 1, 2)
+}
+
+// --- Mapping update handler ---
+function updateMapping(col: string, value: string) {
+  mappings.value = { ...mappings.value, [col]: value }
+}
+
+// --- Conflict helpers ---
+function isConflictColumn(col: string): boolean {
+  const target = mappings.value[col]
+  if (!target || target === '' || target === '_skip') return false
+  return !!duplicateMappings.value[target]
+}
+
+function openDisambiguation(target: string) {
+  disambiguatingTarget.value = target
+}
+
+function handleDisambiguationResolve(selectedCol: string) {
+  const target = disambiguatingTarget.value
+  if (!target) return
+
+  // Keep the selected column mapped, clear others
+  const updated = { ...mappings.value }
+  for (const [col, t] of Object.entries(updated)) {
+    if (t === target && col !== selectedCol) {
+      updated[col] = ''
+    }
+  }
+  mappings.value = updated
+  disambiguatingTarget.value = null
+}
+
+// --- Confidence ---
+function getFieldConfidence(col: string): number | null {
+  if (!aiSuggested.value) return null
+  return fieldConfidence.value[col] ?? null
+}
+
+function isLowConfidence(col: string): boolean {
+  const fc = getFieldConfidence(col)
+  return fc !== null && fc < 0.6
+}
+
+// --- Preview + Confirm ---
 function requestPreview() {
-  // Validate at least one meaningful mapping
   let hasMeaningfulMapping = false
   for (const [, target] of Object.entries(mappings.value)) {
     if (target && target !== '' && target !== '_skip') {
@@ -207,19 +325,58 @@ function confirmMapping() {
     }
   }
   uploadStore.setMappings(finalMappings)
-  // Phase 3: Save template in background
+
+  // Save template in background
   saveTemplate()
+
+  // Phase 4: Record corrections (fire-and-forget)
+  recordCorrections(finalMappings)
+
   router.push('/classification')
 }
 
-function getFieldConfidence(col: string): number | null {
-  if (!aiSuggested.value) return null
-  return fieldConfidence.value[col] ?? null
+// Phase 4: Track and send corrections
+function recordCorrections(finalMappings: Record<string, string>) {
+  if (Object.keys(aiOriginalMappings.value).length === 0) return
+
+  const corrections: MappingCorrectionItem[] = []
+  for (const [col, newTarget] of Object.entries(finalMappings)) {
+    const oldTarget = aiOriginalMappings.value[col] ?? ''
+    if (oldTarget !== newTarget && (oldTarget !== '' || newTarget !== '')) {
+      const sampleValues = uploadStore.sampleRows
+        .slice(0, 3)
+        .map(r => r[col])
+        .filter(v => v != null)
+      corrections.push({
+        column_name: col,
+        old_target: oldTarget,
+        new_target: newTarget,
+        sample_values: sampleValues as unknown[],
+      })
+    }
+  }
+
+  // Also check columns that AI mapped but user removed
+  for (const [col, oldTarget] of Object.entries(aiOriginalMappings.value)) {
+    if (oldTarget && !finalMappings[col]) {
+      corrections.push({
+        column_name: col,
+        old_target: oldTarget,
+        new_target: '_skip',
+      })
+    }
+  }
+
+  if (corrections.length > 0) {
+    dataApi.recordMappingCorrections(uploadStore.reportType, corrections).catch(() => {
+      // Fire-and-forget
+    })
+  }
 }
 
-function isLowConfidence(col: string): boolean {
-  const fc = getFieldConfidence(col)
-  return fc !== null && fc < 0.6
+function getFieldLabel(target: string): string {
+  const f = currentTargetFields.value.find(t => t.value === target)
+  return f?.label ?? target
 }
 </script>
 
@@ -245,6 +402,23 @@ function isLowConfidence(col: string): boolean {
       <!-- Template loaded hint -->
       <div v-if="templateLoaded" class="template-hint">
         Using saved mapping template. Click "Auto-Map with AI" to get fresh suggestions.
+      </div>
+
+      <!-- Conflict banner -->
+      <div v-if="hasConflicts" class="conflict-banner">
+        <strong>{{ conflictCount }} conflict(s) detected:</strong>
+        Multiple columns are mapped to the same target field.
+        <div class="conflict-list">
+          <span
+            v-for="(cols, target) in duplicateMappings"
+            :key="String(target)"
+            class="conflict-item"
+          >
+            <strong>{{ getFieldLabel(String(target)) }}</strong>
+            ({{ cols.join(', ') }})
+            <button class="resolve-btn" @click="openDisambiguation(String(target))">Resolve</button>
+          </span>
+        </div>
       </div>
 
       <!-- AI button + confidence badge -->
@@ -277,26 +451,31 @@ function isLowConfidence(col: string): boolean {
           v-for="col in uploadStore.columns"
           :key="col"
           class="mapping-row"
-          :class="{ 'low-confidence': isLowConfidence(col) }"
+          :class="{
+            'low-confidence': isLowConfidence(col),
+            'conflict-row': isConflictColumn(col),
+          }"
         >
           <span class="source">{{ col }}</span>
-          <span class="sample">{{ uploadStore.sampleRows[0]?.[col] ?? '—' }}</span>
-          <select v-model="mappings[col]">
-            <option value="">-- Select --</option>
-            <template v-for="group in groupedTargetFields" :key="group.label">
-              <optgroup :label="group.label">
-                <option v-for="f in group.fields" :key="f.value" :value="f.value">
-                  {{ f.label }}
-                </option>
-              </optgroup>
-            </template>
-            <option value="_skip">-- Skip --</option>
-          </select>
+          <span class="sample" :title="sampleTooltip(col)">
+            {{ sampleDisplay(col) }}
+            <small v-if="uploadStore.sampleRows.length > 1" class="more">
+              +{{ extraSampleCount() }}
+            </small>
+          </span>
+          <SearchableFieldSelect
+            :modelValue="mappings[col] ?? ''"
+            @update:modelValue="updateMapping(col, $event)"
+            :groups="groupedTargetFields"
+            :usedFields="usedFieldsSet"
+            :candidates="candidates[col]"
+            :isConflict="isConflictColumn(col)"
+          />
           <span v-if="aiSuggested" class="conf-value">
             <template v-if="getFieldConfidence(col) !== null">
               {{ Math.round((getFieldConfidence(col) ?? 0) * 100) }}%
             </template>
-            <template v-else>—</template>
+            <template v-else>--</template>
           </span>
         </div>
       </div>
@@ -308,12 +487,18 @@ function isLowConfidence(col: string): boolean {
         <p class="unmapped-hint">These columns could not be automatically matched. Map them manually or skip them.</p>
       </div>
 
-      <button class="confirm-btn" @click="requestPreview" data-testid="mapping-preview-btn">
-        Preview Mapping
+      <button
+        class="confirm-btn"
+        @click="requestPreview"
+        data-testid="mapping-preview-btn"
+        :disabled="hasConflicts"
+        :title="hasConflicts ? 'Resolve all conflicts before proceeding' : ''"
+      >
+        {{ hasConflicts ? `Resolve ${conflictCount} Conflict(s) First` : 'Preview Mapping' }}
       </button>
     </template>
 
-    <!-- Phase 4: Preview -->
+    <!-- Preview -->
     <template v-else>
       <div class="preview-section">
         <h3>Mapping Preview</h3>
@@ -340,6 +525,14 @@ function isLowConfidence(col: string): boolean {
         </div>
       </div>
     </template>
+
+    <!-- Disambiguation Panel -->
+    <DisambiguationPanel
+      v-if="disambiguationProps"
+      v-bind="disambiguationProps"
+      @resolve="handleDisambiguationResolve"
+      @close="disambiguatingTarget = null"
+    />
   </div>
 </template>
 
@@ -367,6 +560,44 @@ function isLowConfidence(col: string): boolean {
   margin-bottom: 16px;
   color: #065f46;
   font-size: 14px;
+}
+
+/* Conflict banner */
+.conflict-banner {
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  color: #991b1b;
+  font-size: 14px;
+}
+.conflict-list {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.conflict-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fee2e2;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.resolve-btn {
+  padding: 2px 8px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.resolve-btn:hover {
+  background: #dc2626;
 }
 
 /* AI bar */
@@ -431,17 +662,26 @@ function isLowConfidence(col: string): boolean {
   color: #6b7280;
 }
 .source { font-weight: 500; }
-.sample { color: #888; font-size: 13px; }
-select {
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
+.sample {
+  color: #888;
+  font-size: 13px;
+  cursor: help;
+}
+.sample .more {
+  color: #a1a1aa;
+  margin-left: 4px;
+  font-size: 11px;
 }
 
 /* Low confidence highlight */
 .low-confidence {
   background: #fff7ed;
+}
+
+/* Conflict row highlight */
+.conflict-row {
+  background: #fef2f2;
+  border-left: 3px solid #ef4444;
 }
 
 /* Unmapped warning */
@@ -471,6 +711,10 @@ select {
   cursor: pointer;
 }
 .confirm-btn:hover { background: #4338ca; }
+.confirm-btn:disabled {
+  background: #9ca3af;
+  cursor: default;
+}
 
 /* Preview */
 .preview-section h3 { margin-bottom: 8px; }
