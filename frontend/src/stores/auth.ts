@@ -11,9 +11,12 @@ export const useAuthStore = defineStore("auth", () => {
   const user = ref<Record<string, string> | null>(null);
   const accessToken = ref(localStorage.getItem("access_token") || "");
   const companies = ref<Company[]>([]);
+  const userLoading = ref(false);
 
   const isAuthenticated = computed(() => !!accessToken.value);
-  const currentRole = computed(() => user.value?.role || "viewer");
+  const currentRole = computed(
+    () => user.value?.role || localStorage.getItem("user_role") || "viewer",
+  );
   const isOwnerOrAdmin = computed(() =>
     ["owner", "admin", "company_admin"].includes(currentRole.value),
   );
@@ -33,8 +36,17 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function fetchUser() {
-    const res = await authApi.me();
-    user.value = res.data.data;
+    if (userLoading.value) return;
+    userLoading.value = true;
+    try {
+      const res = await authApi.me();
+      user.value = res.data.data;
+      if (user.value?.role) {
+        localStorage.setItem("user_role", user.value.role);
+      }
+    } finally {
+      userLoading.value = false;
+    }
   }
 
   async function fetchCompanies() {
@@ -70,6 +82,13 @@ export const useAuthStore = defineStore("auth", () => {
     companies.value = [];
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_role");
+  }
+
+  async function initUser() {
+    if (isAuthenticated.value && !user.value) {
+      await fetchUser();
+    }
   }
 
   return {
@@ -79,11 +98,13 @@ export const useAuthStore = defineStore("auth", () => {
     isAuthenticated,
     currentRole,
     isOwnerOrAdmin,
+    userLoading,
     login,
     register,
     fetchUser,
     fetchCompanies,
     switchCompany,
     logout,
+    initUser,
   };
 });

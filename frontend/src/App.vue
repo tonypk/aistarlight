@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AppHeader from './components/layout/AppHeader.vue'
 import AppSidebar from './components/layout/AppSidebar.vue'
@@ -9,6 +9,10 @@ import { useAuthStore } from './stores/auth'
 const auth = useAuthStore()
 const route = useRoute()
 const showLayout = computed(() => auth.isAuthenticated && route.name !== 'login')
+
+onMounted(() => {
+  auth.initUser()
+})
 </script>
 
 <template>
