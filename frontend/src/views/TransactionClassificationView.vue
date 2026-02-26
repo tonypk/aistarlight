@@ -20,6 +20,7 @@ const page = ref(1)
 const selectedIds = ref<string[]>([])
 const classifyError = ref('')
 const listMode = ref(false)
+const dateWarnings = ref<Array<{ row: number; description: string; raw_date: string; message: string }>>([])
 
 const sessionId = computed(() => (route.query.session as string) || '')
 
@@ -39,13 +40,16 @@ onMounted(async () => {
       const now = new Date()
       const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
       const session = await store.createSession(period)
-      await store.addFile(
+      const addResult = await store.addFile(
         session.id,
         uploadStore.fileId!,
         'sales_record',
         null,
         uploadStore.confirmedMappings
       )
+      if (addResult?.warnings?.length) {
+        dateWarnings.value = addResult.warnings
+      }
       router.replace({ query: { session: session.id } })
       await loadData(session.id)
     } else {
@@ -244,6 +248,20 @@ const statusTextColors: Record<string, string> = {
 
       <p v-if="classifyError" class="error">{{ classifyError }}</p>
 
+      <!-- Date validation warnings -->
+      <div v-if="dateWarnings.length" class="warning-panel">
+        <div class="warning-header">
+          <span class="warning-icon">!</span>
+          <strong>{{ dateWarnings.length }} invalid date(s) found — please correct in your source file and re-upload</strong>
+          <button class="dismiss-btn" @click="dateWarnings = []">Dismiss</button>
+        </div>
+        <ul class="warning-list">
+          <li v-for="(w, idx) in dateWarnings" :key="idx">
+            Row {{ w.row }}<span v-if="w.description"> ({{ w.description }})</span>: date "<strong>{{ w.raw_date }}</strong>" is invalid
+          </li>
+        </ul>
+      </div>
+
       <TransactionSummaryCards :transactions="store.transactions" />
 
       <TransactionFiltersBar @update="onFiltersUpdate" />
@@ -394,4 +412,52 @@ const statusTextColors: Record<string, string> = {
 }
 .pagination button:disabled { opacity: 0.4; cursor: default; }
 .pagination span { font-size: 14px; color: #6b7280; }
+
+/* Date warning panel */
+.warning-panel {
+  background: #fffbeb;
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+.warning-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.warning-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: #f59e0b;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.warning-header strong { color: #92400e; font-size: 14px; }
+.dismiss-btn {
+  margin-left: auto;
+  padding: 4px 12px;
+  border: 1px solid #d97706;
+  border-radius: 6px;
+  background: transparent;
+  color: #92400e;
+  font-size: 12px;
+  cursor: pointer;
+}
+.dismiss-btn:hover { background: #fef3c7; }
+.warning-list {
+  margin: 0;
+  padding-left: 30px;
+  font-size: 13px;
+  color: #78350f;
+}
+.warning-list li { margin-bottom: 4px; }
+.warning-list strong { color: #dc2626; }
 </style>
