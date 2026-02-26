@@ -12,7 +12,7 @@ const aiAvailable = ref(true)
 onMounted(async () => {
   try {
     const res = await healthApi.getAIHealth()
-    aiAvailable.value = res.data.data?.ai_enabled ?? res.data?.ai_enabled ?? true
+    aiAvailable.value = res.data.data?.ai_enabled ?? true
   } catch {
     // Assume available if health check fails
   }
