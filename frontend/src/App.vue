@@ -44,9 +44,20 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   margin-left: 240px;
+  min-width: 0;
 }
 .content {
   padding: 24px;
   flex: 1;
+  overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+  .main-area {
+    margin-left: 0;
+  }
+  .content {
+    padding: 12px;
+  }
 }
 </style>

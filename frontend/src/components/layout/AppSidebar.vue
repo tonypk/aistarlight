@@ -221,4 +221,10 @@ nav::-webkit-scrollbar-track { background: transparent; }
   cursor: pointer;
 }
 .logout-btn:hover { background: rgba(255,255,255,0.1); }
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}
 </style>
