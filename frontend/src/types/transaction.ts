@@ -35,7 +35,7 @@ export interface Transaction {
   category: Category;
   tin: string | null;
   confidence: number;
-  classification_source: "ai" | "rule" | "user_override";
+  classification_source: "ai" | "rule" | "user_override" | "auto_confirmed";
   match_group_id: string | null;
   match_status: "unmatched" | "matched" | "partial" | "manual";
   // Withholding tax fields
@@ -128,5 +128,6 @@ export interface TransactionFilters {
   source_type?: string | null;
   match_status?: string | null;
   min_confidence?: number | null;
+  needs_review?: boolean | null;
   search?: string | null;
 }

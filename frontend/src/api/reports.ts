@@ -30,6 +30,8 @@ export const reportsApi = {
     client.get(`/reports/${id}/download`, { responseType: "blob" }),
   exportCsv: (id: string) =>
     client.get(`/reports/${id}/export-csv`, { responseType: "blob" }),
+  exportExcel: (id: string) =>
+    client.get(`/reports/${id}/excel`, { responseType: "blob" }),
   confirm: (id: string) => client.patch(`/reports/${id}/confirm`),
   edit: (id: string, data: ReportEditData) =>
     client.patch(`/reports/${id}/edit`, data),
@@ -38,4 +40,7 @@ export const reportsApi = {
   supportedForms: () => client.get("/reports/supported-forms"),
   auditLogs: (reportId: string, page = 1) =>
     client.get(`/audit/report/${reportId}`, { params: { page } }),
+  listApprovals: (id: string) => client.get(`/reports/${id}/approvals`),
+  amend: (id: string) => client.post(`/reports/${id}/amend`),
+  listAmendments: (id: string) => client.get(`/reports/${id}/amendments`),
 };

@@ -96,9 +96,28 @@ export const reconciliationApi = {
       params: { report_type: reportType },
     }),
 
+  // Batch update
+  bulkUpdateTransactions: (
+    sessionId: string,
+    items: Array<{
+      id: string;
+      vat_type?: string;
+      category?: string;
+      tin?: string;
+    }>,
+  ) =>
+    client.patch(`/reconciliation/sessions/${sessionId}/transactions/bulk`, {
+      items,
+    }),
+
   // Export
   exportCsv: (sessionId: string) =>
     client.get(`/reconciliation/sessions/${sessionId}/export`, {
+      responseType: "blob",
+    }),
+
+  exportExcel: (sessionId: string) =>
+    client.get(`/reconciliation/sessions/${sessionId}/export-excel`, {
       responseType: "blob",
     }),
 

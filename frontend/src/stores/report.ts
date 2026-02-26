@@ -123,6 +123,47 @@ export const useReportStore = defineStore("report", () => {
     }
   }
 
+  async function exportExcel(id: string) {
+    let url = "";
+    try {
+      const res = await reportsApi.exportExcel(id);
+      url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `report_${id}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch {
+      alert("Failed to export Excel. Please try again.");
+    } finally {
+      if (url) window.URL.revokeObjectURL(url);
+    }
+  }
+
+  async function amendReport(id: string) {
+    loading.value = true;
+    try {
+      const res = await reportsApi.amend(id);
+      const amended = res.data.data;
+      currentReport.value = amended;
+      await fetchReports();
+      return amended;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function fetchAmendments(id: string) {
+    const res = await reportsApi.listAmendments(id);
+    return res.data.data || [];
+  }
+
+  async function fetchApprovals(id: string) {
+    const res = await reportsApi.listApprovals(id);
+    return res.data.data || [];
+  }
+
   return {
     reports,
     currentReport,
@@ -136,5 +177,9 @@ export const useReportStore = defineStore("report", () => {
     fetchAuditLogs,
     downloadReport,
     exportCsv,
+    exportExcel,
+    amendReport,
+    fetchAmendments,
+    fetchApprovals,
   };
 });

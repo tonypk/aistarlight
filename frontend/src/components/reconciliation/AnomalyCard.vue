@@ -58,10 +58,25 @@ function resolve(status: string) {
     <p class="desc">{{ anomaly.description }}</p>
     <div v-if="anomaly.details" class="details">
       <template v-for="(val, key) in anomaly.details" :key="key">
-        <span v-if="typeof val !== 'object'" class="detail-item">
+        <span
+          v-if="typeof val !== 'object' && key !== 'ai_explanation' && key !== 'ai_resolution' && key !== 'bir_reference'"
+          class="detail-item"
+        >
           <strong>{{ key }}:</strong> {{ val }}
         </span>
       </template>
+    </div>
+
+    <!-- F5: AI Explanation -->
+    <div v-if="anomaly.details?.ai_explanation" class="ai-section">
+      <div class="ai-label">AI Analysis</div>
+      <p class="ai-explanation">{{ anomaly.details.ai_explanation }}</p>
+      <p v-if="anomaly.details.ai_resolution" class="ai-resolution">
+        <strong>Suggested Action:</strong> {{ anomaly.details.ai_resolution }}
+      </p>
+      <p v-if="anomaly.details.bir_reference" class="ai-bir-ref">
+        <strong>BIR Reference:</strong> {{ anomaly.details.bir_reference }}
+      </p>
     </div>
 
     <div v-if="anomaly.status === 'open'" class="actions">
@@ -160,4 +175,40 @@ function resolve(status: string) {
   color: #059669;
   font-style: italic;
 }
+
+/* F5: AI Explanation */
+.ai-section {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+}
+.ai-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0369a1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.ai-explanation {
+  font-size: 13px;
+  color: #0c4a6e;
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+.ai-resolution {
+  font-size: 12px;
+  color: #0e7490;
+  margin: 0 0 4px;
+}
+.ai-resolution strong { color: #0c4a6e; }
+.ai-bir-ref {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+  font-style: italic;
+}
+.ai-bir-ref strong { font-style: normal; color: #374151; }
 </style>
