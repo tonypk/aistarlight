@@ -20,6 +20,8 @@ const sessionId = ref('')
 const amountTolerance = ref(0.01)
 const dateTolerance = ref(3)
 const runAI = ref(true)
+const openingBalance = ref<string>('')
+const bankClosingBalance = ref<string>('')
 
 // Processing state
 const processing = ref(false)
@@ -142,6 +144,8 @@ async function startProcess() {
   formData.append('amount_tolerance', String(amountTolerance.value))
   formData.append('date_tolerance_days', String(dateTolerance.value))
   formData.append('run_ai_analysis', String(runAI.value))
+  if (openingBalance.value) formData.append('opening_balance', openingBalance.value)
+  if (bankClosingBalance.value) formData.append('bank_closing_balance', bankClosingBalance.value)
 
   try {
     const resp = await bankReconApi.process(formData)
@@ -407,6 +411,17 @@ function exportCSV() {
 
       <div class="form-row">
         <div class="form-group">
+          <label>Opening Balance (PHP)</label>
+          <input v-model="openingBalance" type="number" step="0.01" placeholder="e.g. 100000.00" />
+        </div>
+        <div class="form-group">
+          <label>Bank Closing Balance (PHP)</label>
+          <input v-model="bankClosingBalance" type="number" step="0.01" placeholder="From bank statement" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
           <label>Amount Tolerance (PHP)</label>
           <input v-model.number="amountTolerance" type="number" step="0.01" min="0" />
         </div>
@@ -613,6 +628,43 @@ function exportCSV() {
         <div class="summary-card">
           <h4>AI Suggestions</h4>
           <p>{{ acceptedSuggestions.length }} accepted, {{ pendingSuggestions.length }} pending</p>
+        </div>
+      </div>
+
+      <!-- Balance Tracking Result -->
+      <div v-if="(batch as any)?.balance_result" class="balance-result">
+        <h3>Balance Tracking</h3>
+        <div class="balance-grid">
+          <div class="balance-item">
+            <span class="balance-label">Opening Balance</span>
+            <span class="balance-value">{{ Number((batch as any).balance_result.opening_balance).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) }}</span>
+          </div>
+          <div class="balance-item">
+            <span class="balance-label">Total Credits</span>
+            <span class="balance-value credit">+{{ Number((batch as any).balance_result.total_credits).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) }}</span>
+          </div>
+          <div class="balance-item">
+            <span class="balance-label">Total Debits</span>
+            <span class="balance-value debit">-{{ Number((batch as any).balance_result.total_debits).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) }}</span>
+          </div>
+          <div class="balance-item">
+            <span class="balance-label">Computed Closing</span>
+            <span class="balance-value">{{ Number((batch as any).balance_result.computed_closing).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) }}</span>
+          </div>
+          <div v-if="(batch as any).balance_result.bank_closing_balance" class="balance-item">
+            <span class="balance-label">Bank Closing Balance</span>
+            <span class="balance-value">{{ Number((batch as any).balance_result.bank_closing_balance).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) }}</span>
+          </div>
+          <div class="balance-item" :class="(batch as any).balance_result.is_balanced ? 'balanced' : 'imbalanced'">
+            <span class="balance-label">Difference</span>
+            <span class="balance-value">{{ Number((batch as any).balance_result.balance_difference).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) }}</span>
+          </div>
+        </div>
+        <div v-if="(batch as any).balance_result.discrepancies?.length" class="discrepancies">
+          <div v-for="(d, i) in (batch as any).balance_result.discrepancies" :key="i"
+            class="discrepancy-item" :class="d.severity">
+            <strong>{{ d.type.replace(/_/g, ' ') }}</strong>: {{ d.description }}
+          </div>
         </div>
       </div>
 
@@ -1029,6 +1081,35 @@ function exportCSV() {
 .loading { text-align: center; padding: 24px; color: #64748b; }
 .empty { text-align: center; padding: 24px; color: #94a3b8; }
 .muted { color: #94a3b8; }
+
+/* Balance tracking */
+.balance-result { margin-bottom: 24px; }
+.balance-result h3 { font-size: 16px; margin-bottom: 12px; }
+.balance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.balance-item {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 12px;
+}
+.balance-item.balanced { background: #f0fdf4; border: 1px solid #86efac; }
+.balance-item.imbalanced { background: #fef2f2; border: 1px solid #fecaca; }
+.balance-label { display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; }
+.balance-value { font-size: 16px; font-weight: 600; color: #1e293b; font-family: monospace; }
+.balance-value.credit { color: #16a34a; }
+.balance-value.debit { color: #dc2626; }
+.discrepancies { display: flex; flex-direction: column; gap: 8px; }
+.discrepancy-item {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.discrepancy-item.medium { background: #fef9c3; color: #92400e; }
+.discrepancy-item.high { background: #fef2f2; color: #991b1b; }
 
 .step-content { animation: fadeIn 0.2s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

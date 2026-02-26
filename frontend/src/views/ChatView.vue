@@ -2,12 +2,20 @@
 import { nextTick, onMounted, ref } from 'vue'
 import ChatMessage from '../components/chat/ChatMessage.vue'
 import { useChatStore } from '../stores/chat'
+import { healthApi } from '../api/health'
 
 const chat = useChatStore()
 const input = ref('')
 const messagesEl = ref<HTMLElement | null>(null)
+const aiAvailable = ref(true)
 
 onMounted(async () => {
+  try {
+    const res = await healthApi.getAIHealth()
+    aiAvailable.value = res.data.data?.ai_enabled ?? res.data?.ai_enabled ?? true
+  } catch {
+    // Assume available if health check fails
+  }
   await chat.loadHistory()
   await nextTick()
   scrollToBottom()
@@ -33,6 +41,11 @@ async function handleSend() {
   <div class="chat-view">
     <h2>AI Tax Assistant</h2>
 
+    <div v-if="!aiAvailable" class="ai-offline-banner">
+      AI features are currently offline. The OPENAI_API_KEY has not been configured on the server.
+      Basic functionality is still available.
+    </div>
+
     <div class="chat-container">
       <div class="messages" ref="messagesEl">
         <div v-if="!chat.messages.length" class="welcome">
@@ -55,10 +68,10 @@ async function handleSend() {
       <form class="input-area" @submit.prevent="handleSend">
         <input
           v-model="input"
-          placeholder="Type your message..."
-          :disabled="chat.loading"
+          :placeholder="aiAvailable ? 'Type your message...' : 'AI is offline — messages may not get responses'"
+          :disabled="chat.loading || !aiAvailable"
         />
-        <button type="submit" :disabled="chat.loading || !input.trim()">Send</button>
+        <button type="submit" :disabled="chat.loading || !input.trim() || !aiAvailable">Send</button>
       </form>
     </div>
   </div>
@@ -66,6 +79,15 @@ async function handleSend() {
 
 <style scoped>
 .chat-view h2 { margin-bottom: 16px; }
+.ai-offline-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
 .chat-container {
   background: #fff;
   border-radius: 12px;

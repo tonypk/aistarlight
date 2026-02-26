@@ -2,6 +2,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { client } from '../api/client'
 import { reportsApi } from '../api/reports'
+import { healthApi, type AIHealthStatus } from '../api/health'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
@@ -37,6 +38,7 @@ interface CalendarEvent {
 const stats = ref<DashboardStats | null>(null)
 const recentReports = ref<ReportSummary[]>([])
 const deadlines = ref<CalendarEvent[]>([])
+const aiHealth = ref<AIHealthStatus | null>(null)
 const loading = ref(true)
 
 const urgentDeadlines = computed(() =>
@@ -50,14 +52,16 @@ const nextDeadlines = computed(() =>
 onMounted(async () => {
   if (!auth.user) await auth.fetchUser()
   try {
-    const [statsRes, reportsRes, calendarRes] = await Promise.all([
+    const [statsRes, reportsRes, calendarRes, aiRes] = await Promise.all([
       client.get('/dashboard/stats'),
       reportsApi.list(1, 5),
       client.get('/dashboard/calendar', { params: { months_ahead: 3 } }),
+      healthApi.getAIHealth().catch(() => null),
     ])
     stats.value = statsRes.data.data
     recentReports.value = reportsRes.data.data || []
     deadlines.value = calendarRes.data.data || []
+    if (aiRes) aiHealth.value = aiRes.data.data
   } catch {
     // First time user or API error
   } finally {
@@ -134,6 +138,21 @@ function formatDeadline(dateStr: string): string {
           <div class="stat-value">{{ stats.bank_recon_count }}</div>
           <div class="stat-label">Bank Recon</div>
         </div>
+      </div>
+    </div>
+
+    <!-- AI Status Card -->
+    <div v-if="aiHealth" class="ai-status-card" :class="{ enabled: aiHealth.ai_enabled, disabled: !aiHealth.ai_enabled }">
+      <div class="ai-status-indicator" :class="aiHealth.ai_enabled ? 'green' : 'red'"></div>
+      <div class="ai-status-info">
+        <strong>AI Features: {{ aiHealth.ai_enabled ? 'Online' : 'Offline' }}</strong>
+        <span v-if="aiHealth.ai_enabled" class="ai-provider">{{ aiHealth.provider }} / {{ aiHealth.model }}</span>
+        <span v-else class="ai-warning">OPENAI_API_KEY not configured</span>
+      </div>
+      <div v-if="aiHealth.ai_enabled" class="ai-features">
+        <span v-for="(on, name) in aiHealth.features" :key="name" class="feature-tag" :class="{ on, off: !on }">
+          {{ String(name).replace(/_/g, ' ') }}
+        </span>
       </div>
     </div>
 
@@ -450,6 +469,35 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
 .compliance-pill.good { background: #dcfce7; color: #16a34a; }
 .compliance-pill.warn { background: #fef9c3; color: #ca8a04; }
 .compliance-pill.bad { background: #fef2f2; color: #dc2626; }
+
+/* AI Status Card */
+.ai-status-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+.ai-status-card.enabled { border-color: #86efac; background: #f0fdf4; }
+.ai-status-card.disabled { border-color: #fecaca; background: #fef2f2; }
+.ai-status-indicator {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.ai-status-indicator.green { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,.4); }
+.ai-status-indicator.red { background: #ef4444; }
+.ai-status-info { flex: 1; }
+.ai-status-info strong { font-size: 14px; }
+.ai-provider { display: block; font-size: 12px; color: #6b7280; margin-top: 2px; }
+.ai-warning { display: block; font-size: 12px; color: #dc2626; margin-top: 2px; }
+.ai-features { display: flex; gap: 6px; flex-wrap: wrap; }
+.feature-tag {
+  padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: capitalize;
+}
+.feature-tag.on { background: #dcfce7; color: #16a34a; }
+.feature-tag.off { background: #f3f4f6; color: #9ca3af; }
 
 .muted { color: #94a3b8; }
 .loading-state { text-align: center; padding: 40px; color: #64748b; }

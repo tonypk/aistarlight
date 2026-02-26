@@ -19,6 +19,7 @@ const newValue = ref('')
 const reason = ref('')
 const saving = ref(false)
 const error = ref('')
+const learnedToast = ref('')
 
 async function handleSave() {
   if (!newValue.value.trim()) {
@@ -28,7 +29,7 @@ async function handleSave() {
   saving.value = true
   error.value = ''
   try {
-    await correctionsApi.create({
+    const res = await correctionsApi.create({
       entity_type: props.entityType,
       entity_id: props.entityId,
       field_name: props.fieldName,
@@ -36,6 +37,11 @@ async function handleSave() {
       new_value: newValue.value.trim(),
       reason: reason.value.trim() || undefined,
     })
+    const learnedRules = res.data?.data?.context_data?.auto_learned_rules
+    if (learnedRules && learnedRules > 0) {
+      learnedToast.value = `AI learned ${learnedRules} new pattern${learnedRules > 1 ? 's' : ''} from your corrections`
+      setTimeout(() => { learnedToast.value = '' }, 5000)
+    }
     emit('saved', newValue.value.trim())
     handleClose()
   } catch (e: unknown) {
@@ -55,6 +61,9 @@ function handleClose() {
 </script>
 
 <template>
+  <Teleport to="body">
+    <div v-if="learnedToast" class="learned-toast">{{ learnedToast }}</div>
+  </Teleport>
   <div v-if="visible" class="dialog-overlay" @click.self="handleClose">
     <div class="dialog">
       <div class="dialog-header">
@@ -203,5 +212,25 @@ function handleClose() {
 }
 .save-btn:disabled {
   opacity: 0.5;
+}
+</style>
+
+<style>
+.learned-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #065f46;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 2000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 </style>
