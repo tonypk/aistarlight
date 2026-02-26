@@ -25,6 +25,8 @@ const menuItems = [
   { name: 'General Ledger', path: '/general-ledger', icon: '📓', minRole: 'accountant' },
   { name: 'Financial Statements', path: '/statements', icon: '📊', minRole: 'accountant' },
   { name: 'Tax from GL', path: '/tax-bridge', icon: '🧮', minRole: 'accountant' },
+  { name: 'Penalty Calculator', path: '/penalty-calculator', icon: '⚠️', minRole: 'accountant' },
+  { name: 'Form Router', path: '/form-router', icon: '🗺️', minRole: 'viewer' },
   { name: 'Learning Insights', path: '/learning', icon: '🎓', minRole: 'viewer' },
   { name: 'AI Chat', path: '/chat', icon: '💬', minRole: 'viewer' },
   { name: 'Knowledge', path: '/knowledge', icon: '📚', minRole: 'viewer' },

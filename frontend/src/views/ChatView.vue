@@ -61,6 +61,7 @@ async function handleSend() {
           :key="i"
           :role="msg.role"
           :content="msg.content"
+          :sources="msg.sources"
         />
         <div v-if="chat.loading && !chat.messages.some(m => m.streaming)" class="typing">AI is thinking...</div>
       </div>

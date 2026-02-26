@@ -155,6 +155,18 @@ const router = createRouter({
       component: () => import("../views/TaxBridgeView.vue"),
       meta: { requiresAuth: true, title: "Tax from GL" },
     },
+    {
+      path: "/penalty-calculator",
+      name: "penalty-calculator",
+      component: () => import("../views/PenaltyCalculatorView.vue"),
+      meta: { requiresAuth: true, title: "Penalty Calculator" },
+    },
+    {
+      path: "/form-router",
+      name: "form-router",
+      component: () => import("../views/FormRouterView.vue"),
+      meta: { requiresAuth: true, title: "Form Router" },
+    },
   ],
 });
 
