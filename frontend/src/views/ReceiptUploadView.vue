@@ -33,11 +33,6 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/bmp', 'image/tiff', 'im
 const MAX_FILES = 50
 const STEPS = ['Compress', 'Upload', 'OCR', 'Parse', 'Report']
 
-const reportTypes = [
-  { value: 'BIR_2550M', label: 'BIR 2550M - Monthly VAT' },
-  { value: 'BIR_2550Q', label: 'BIR 2550Q - Quarterly VAT' },
-]
-
 // Default period to current month
 const now = new Date()
 const defaultPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
@@ -212,6 +207,36 @@ async function convertToTransactions() {
   }
 }
 
+const batchActionLoading = ref<string | null>(null)
+
+async function convertBatch(batch: any) {
+  if (!batch.id || !batch.session_id) return
+  batchActionLoading.value = `convert-${batch.id}`
+  try {
+    await accounting.convertReceiptToTransactions(batch.id, batch.session_id)
+    showHistory.value = false
+    router.push({ path: '/classification', query: { session: batch.session_id } })
+  } catch {
+    error.value = 'Failed to convert batch to transactions'
+  } finally {
+    batchActionLoading.value = null
+  }
+}
+
+async function generateJournalsForBatch(batch: any) {
+  if (!batch.session_id) return
+  batchActionLoading.value = `journal-${batch.id}`
+  try {
+    await accounting.generateJournalsFromSession(batch.session_id)
+    showHistory.value = false
+    router.push('/journal-entries')
+  } catch {
+    error.value = 'Failed to generate journal entries'
+  } finally {
+    batchActionLoading.value = null
+  }
+}
+
 function reset() {
   clearFiles()
   result.value = null
@@ -319,14 +344,6 @@ function reset() {
         <div class="param-group">
           <label>Tax Period</label>
           <input type="month" v-model="period" />
-        </div>
-        <div class="param-group">
-          <label>Report Type</label>
-          <select v-model="reportType">
-            <option v-for="rt in reportTypes" :key="rt.value" :value="rt.value">
-              {{ rt.label }}
-            </option>
-          </select>
         </div>
       </div>
 
@@ -467,12 +484,28 @@ function reset() {
                 <td>
                   <span class="status-badge" :class="'status-' + b.status">{{ b.status }}</span>
                 </td>
-                <td>
+                <td class="batch-actions">
                   <button v-if="b.report_id" class="btn-text" @click="goToReport(b.report_id); showHistory = false">
                     Report
                   </button>
                   <button v-if="b.session_id" class="btn-text" @click="goToSession(b.session_id); showHistory = false">
                     Transactions
+                  </button>
+                  <button
+                    v-if="b.status === 'completed' && b.session_id"
+                    class="btn-text btn-convert"
+                    :disabled="batchActionLoading === `convert-${b.id}`"
+                    @click="convertBatch(b)"
+                  >
+                    {{ batchActionLoading === `convert-${b.id}` ? 'Converting...' : 'Convert' }}
+                  </button>
+                  <button
+                    v-if="b.status === 'completed' && b.session_id"
+                    class="btn-text btn-journal"
+                    :disabled="batchActionLoading === `journal-${b.id}`"
+                    @click="generateJournalsForBatch(b)"
+                  >
+                    {{ batchActionLoading === `journal-${b.id}` ? 'Generating...' : 'Journal Entries' }}
                   </button>
                 </td>
               </tr>
@@ -733,6 +766,9 @@ function reset() {
   padding: 4px 8px;
 }
 .btn-text:hover { text-decoration: underline; }
+.btn-convert { color: #059669; }
+.btn-journal { color: #d97706; }
+.batch-actions { display: flex; gap: 4px; flex-wrap: wrap; }
 .process-btn { width: 100%; justify-content: center; }
 
 .spinner {

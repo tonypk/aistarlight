@@ -31,6 +31,8 @@ const reportTypes = [
   { value: 'BIR_2550Q', label: 'BIR 2550Q — Quarterly VAT' },
   { value: 'BIR_1601C', label: 'BIR 1601-C — Withholding Tax' },
   { value: 'BIR_0619E', label: 'BIR 0619-E — Expanded Withholding' },
+  { value: 'BIR_1701', label: 'BIR 1701 — Annual ITR (Individual)' },
+  { value: 'BIR_1702', label: 'BIR 1702 — Annual ITR (Corporate)' },
 ]
 
 // Generate recent periods (last 12 months)
