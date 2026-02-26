@@ -39,7 +39,7 @@ const defaultPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStar
 period.value = defaultPeriod
 
 const canProcess = computed(() =>
-  files.value.length > 0 && period.value && !processing.value && !compressing.value
+  files.value.length > 0 && !processing.value && !compressing.value
 )
 
 const successCount = computed(() =>
@@ -336,14 +336,6 @@ function reset() {
             </div>
             <button class="remove-btn" @click.stop="removeFile(i)">&times;</button>
           </div>
-        </div>
-      </div>
-
-      <!-- Parameters -->
-      <div class="params">
-        <div class="param-group">
-          <label>Tax Period</label>
-          <input type="month" v-model="period" />
         </div>
       </div>
 
