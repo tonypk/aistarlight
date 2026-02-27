@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { receiptsApi } from '@/api/receipts'
 import { compressBatch, type CompressResult } from '@/utils/imageCompressor'
 import { useAccountingStore } from '@/stores/accounting'
+import { currencySymbol } from '@/utils/currency'
 
 const router = useRouter()
 const accounting = useAccountingStore()
@@ -391,7 +392,7 @@ function reset() {
               <td class="cell-filename" :title="r.filename">{{ r.filename }}</td>
               <td>{{ r.vendor_name || '—' }}</td>
               <td class="cell-amount">
-                {{ r.total_amount ? `₱${Number(r.total_amount).toLocaleString('en', { minimumFractionDigits: 2 })}` : '—' }}
+                {{ r.total_amount ? `${currencySymbol()}${Number(r.total_amount).toLocaleString('en', { minimumFractionDigits: 2 })}` : '—' }}
               </td>
               <td>
                 <span class="badge" :class="'badge-' + (r.vat_type || 'unknown')">

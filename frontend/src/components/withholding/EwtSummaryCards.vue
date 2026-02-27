@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { EwtSummary } from '../../types/withholding'
+import { formatAmount as fmtCurrency, currencySymbol } from '@/utils/currency'
 
 defineProps<{
   summary: EwtSummary
 }>()
 
 function fmt(n: number): string {
-  return n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return fmtCurrency(n)
 }
 </script>
 
@@ -22,11 +23,11 @@ function fmt(n: number): string {
     </div>
     <div class="card">
       <div class="card-label">Total Income Subject to EWT</div>
-      <div class="card-value">PHP {{ fmt(summary.total_income) }}</div>
+      <div class="card-value">{{ currencySymbol() }} {{ fmt(summary.total_income) }}</div>
     </div>
     <div class="card accent">
       <div class="card-label">Total Tax Withheld</div>
-      <div class="card-value">PHP {{ fmt(summary.total_tax_withheld) }}</div>
+      <div class="card-value">{{ currencySymbol() }} {{ fmt(summary.total_tax_withheld) }}</div>
     </div>
   </div>
 </template>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { formsApi, type FormSection } from '../../api/forms'
+import { currencyLocale, currencySymbol } from '@/utils/currency'
 
 const props = defineProps<{
   data: Record<string, string> | null
@@ -111,7 +112,7 @@ const taxCredit = computed(() => props.data?.tax_credit_carried_forward || '0')
 function formatAmount(val: string): string {
   try {
     const num = parseFloat(val)
-    return num.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    return num.toLocaleString(currencyLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   } catch {
     return val
   }
@@ -174,7 +175,7 @@ function statusBadgeClass(status: string): string {
             >
               <td class="line-no">{{ field.line }}</td>
               <td class="label">{{ field.label }}</td>
-              <td class="value">PHP {{ formatAmount(data[field.id] || '0') }}</td>
+              <td class="value">{{ currencySymbol() }} {{ formatAmount(data[field.id] || '0') }}</td>
             </tr>
           </tbody>
         </table>
@@ -190,7 +191,7 @@ function statusBadgeClass(status: string): string {
             <tr v-for="item in section.items" :key="item.key" :class="{ total: isTotalField(item.key) }">
               <td class="line-no">{{ item.lineNo }}</td>
               <td class="label">{{ item.label }}</td>
-              <td class="value">PHP {{ formatAmount(item.value) }}</td>
+              <td class="value">{{ currencySymbol() }} {{ formatAmount(item.value) }}</td>
             </tr>
           </tbody>
         </table>
@@ -198,7 +199,7 @@ function statusBadgeClass(status: string): string {
     </template>
 
     <div v-if="parseFloat(taxCredit) > 0" class="credit-note">
-      Excess Input VAT / Tax Credit Carried Forward: PHP {{ formatAmount(taxCredit) }}
+      Excess Input VAT / Tax Credit Carried Forward: {{ currencySymbol() }} {{ formatAmount(taxCredit) }}
     </div>
   </div>
 </template>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAccountingStore } from '../stores/accounting'
+import { currencyLocale } from '@/utils/currency'
 
 const store = useAccountingStore()
 const activeTab = ref<'balance-sheet' | 'income-statement'>('balance-sheet')
@@ -18,7 +19,7 @@ function loadIS() {
 
 function fmt(val: string | undefined) {
   const n = parseFloat(val || '0')
-  return n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return n.toLocaleString(currencyLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 </script>
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Transaction } from '../../types/transaction'
+import { formatAmount as fmtCurrency, currencySymbol } from '@/utils/currency'
 
 const props = defineProps<{
   transactions: Transaction[]
@@ -36,7 +37,7 @@ const stats = computed(() => {
 })
 
 function fmt(n: number): string {
-  return n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return fmtCurrency(n)
 }
 </script>
 
@@ -45,7 +46,7 @@ function fmt(n: number): string {
     <div class="card">
       <div class="card-label">Total</div>
       <div class="card-value">{{ stats.total }}</div>
-      <div class="card-sub">PHP {{ fmt(stats.totalAmount) }}</div>
+      <div class="card-sub">{{ currencySymbol() }} {{ fmt(stats.totalAmount) }}</div>
     </div>
     <div class="card vatable">
       <div class="card-label">VATable</div>

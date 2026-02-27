@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import type { Transaction, VatType, Category } from '../../types/transaction'
 import ClassificationBadge from './ClassificationBadge.vue'
+import { currencyLocale } from '@/utils/currency'
 
 const props = defineProps<{
   transactions: Transaction[]
@@ -57,7 +58,7 @@ function cancelEdit() {
 }
 
 function formatAmount(amount: number): string {
-  return amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return amount.toLocaleString(currencyLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 </script>
 

@@ -80,7 +80,7 @@ const HEADER_KEYWORDS = new Set([
 function looksNumeric(s: string): boolean {
   let cleaned = s.trim();
   // Remove currency/formatting symbols (whole words, not character class)
-  for (const sym of [",", "$", "₱", "PHP", "%", " "]) {
+  for (const sym of [",", "$", "₱", "PHP", "S$", "SGD", "%", " "]) {
     cleaned = cleaned.split(sym).join("");
   }
   if (!cleaned) return false;

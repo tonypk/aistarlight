@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAccountingStore } from '../stores/accounting'
+import { currencyLocale } from '@/utils/currency'
 
 const store = useAccountingStore()
 
@@ -46,7 +47,7 @@ function fmt(val: string | undefined) {
   if (!val || val === '0') return '0.00'
   const n = parseFloat(val)
   if (isNaN(n)) return val
-  return n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return n.toLocaleString(currencyLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 // Display key fields based on form type

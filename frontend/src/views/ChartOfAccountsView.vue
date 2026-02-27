@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import { useAccountingStore } from '../stores/accounting'
+import { useAuthStore } from '@/stores/auth'
 
 const store = useAccountingStore()
+const auth = useAuthStore()
 const filterType = ref('')
 const search = ref('')
 
@@ -45,7 +47,7 @@ const groupedAccounts = computed(() => {
       <h1>Chart of Accounts</h1>
       <div class="actions">
         <button class="btn btn-secondary" @click="store.seedAccounts()" :disabled="store.loading" data-testid="coa-seed-btn">
-          Seed PH Standard COA
+          {{ auth.jurisdiction === 'SG' ? 'Seed SG Standard COA' : 'Seed PH Standard COA' }}
         </button>
       </div>
     </div>
@@ -61,7 +63,7 @@ const groupedAccounts = computed(() => {
     <div v-if="store.loading" class="loading">Loading accounts...</div>
 
     <div v-else-if="store.accounts.length === 0" class="empty">
-      <p>No accounts found. Seed the Philippine Standard Chart of Accounts to get started.</p>
+      <p>No accounts found. Seed the {{ auth.jurisdiction === 'SG' ? 'Singapore' : 'Philippine' }} Standard Chart of Accounts to get started.</p>
     </div>
 
     <div v-else class="account-groups" data-testid="coa-groups">

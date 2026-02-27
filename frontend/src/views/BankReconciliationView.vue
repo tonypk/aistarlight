@@ -7,6 +7,7 @@ import {
   type BankReconBatchListItem,
 } from '@/api/bankRecon'
 import { reconciliationApi } from '@/api/transactions'
+import { currencySymbol, formatCurrency } from '@/utils/currency'
 
 // Wizard steps
 const STEPS = ['Upload', 'Parsing', 'Matching', 'AI Analysis', 'Summary']
@@ -411,18 +412,18 @@ function exportCSV() {
 
       <div class="form-row">
         <div class="form-group">
-          <label>Opening Balance (PHP)</label>
+          <label>Opening Balance ({{ currencySymbol() }})</label>
           <input v-model="openingBalance" type="number" step="0.01" placeholder="e.g. 100000.00" />
         </div>
         <div class="form-group">
-          <label>Bank Closing Balance (PHP)</label>
+          <label>Bank Closing Balance ({{ currencySymbol() }})</label>
           <input v-model="bankClosingBalance" type="number" step="0.01" placeholder="From bank statement" />
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label>Amount Tolerance (PHP)</label>
+          <label>Amount Tolerance ({{ currencySymbol() }})</label>
           <input v-model.number="amountTolerance" type="number" step="0.01" min="0" />
         </div>
         <div class="form-group">
@@ -637,27 +638,27 @@ function exportCSV() {
         <div class="balance-grid">
           <div class="balance-item">
             <span class="balance-label">Opening Balance</span>
-            <span class="balance-value">{{ Number((batch as any).balance_result.opening_balance).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) }}</span>
+            <span class="balance-value">{{ formatCurrency(Number((batch as any).balance_result.opening_balance)) }}</span>
           </div>
           <div class="balance-item">
             <span class="balance-label">Total Credits</span>
-            <span class="balance-value credit">+{{ Number((batch as any).balance_result.total_credits).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) }}</span>
+            <span class="balance-value credit">+{{ formatCurrency(Number((batch as any).balance_result.total_credits)) }}</span>
           </div>
           <div class="balance-item">
             <span class="balance-label">Total Debits</span>
-            <span class="balance-value debit">-{{ Number((batch as any).balance_result.total_debits).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) }}</span>
+            <span class="balance-value debit">-{{ formatCurrency(Number((batch as any).balance_result.total_debits)) }}</span>
           </div>
           <div class="balance-item">
             <span class="balance-label">Computed Closing</span>
-            <span class="balance-value">{{ Number((batch as any).balance_result.computed_closing).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) }}</span>
+            <span class="balance-value">{{ formatCurrency(Number((batch as any).balance_result.computed_closing)) }}</span>
           </div>
           <div v-if="(batch as any).balance_result.bank_closing_balance" class="balance-item">
             <span class="balance-label">Bank Closing Balance</span>
-            <span class="balance-value">{{ Number((batch as any).balance_result.bank_closing_balance).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) }}</span>
+            <span class="balance-value">{{ formatCurrency(Number((batch as any).balance_result.bank_closing_balance)) }}</span>
           </div>
           <div class="balance-item" :class="(batch as any).balance_result.is_balanced ? 'balanced' : 'imbalanced'">
             <span class="balance-label">Difference</span>
-            <span class="balance-value">{{ Number((batch as any).balance_result.balance_difference).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }) }}</span>
+            <span class="balance-value">{{ formatCurrency(Number((batch as any).balance_result.balance_difference)) }}</span>
           </div>
         </div>
         <div v-if="(batch as any).balance_result.discrepancies?.length" class="discrepancies">

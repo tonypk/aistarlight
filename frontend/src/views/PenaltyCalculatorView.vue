@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { client } from '../api/client'
+import { currencySymbol, formatCurrency } from '@/utils/currency'
 
 interface PenaltyResult {
   surcharge: number
@@ -58,7 +59,7 @@ async function calculate() {
 }
 
 function formatPeso(val: number): string {
-  return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(val)
+  return formatCurrency(val)
 }
 </script>
 
@@ -83,7 +84,7 @@ function formatPeso(val: number): string {
         <input v-model.number="daysLate" type="number" min="1" />
       </div>
       <div class="field">
-        <label>Basic Tax Due (PHP)</label>
+        <label>Basic Tax Due ({{ currencySymbol() }})</label>
         <input v-model.number="taxDue" type="number" min="0" step="0.01" />
       </div>
     </div>

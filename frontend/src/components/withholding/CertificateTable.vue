@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { WithholdingCertificate } from '../../types/withholding'
+import { formatAmount as fmtCurrency, currencySymbol } from '@/utils/currency'
 
 defineProps<{
   certificates: WithholdingCertificate[]
@@ -9,7 +10,7 @@ const emit = defineEmits<{
 }>()
 
 function fmt(n: number): string {
-  return n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return fmtCurrency(n)
 }
 
 const statusColors: Record<string, string> = {
@@ -49,9 +50,9 @@ const statusTextColors: Record<string, string> = {
           <td>{{ c.quarter }}</td>
           <td class="mono">{{ c.atc_code }}</td>
           <td>{{ c.income_type }}</td>
-          <td class="num">PHP {{ fmt(c.income_amount) }}</td>
+          <td class="num">{{ currencySymbol() }} {{ fmt(c.income_amount) }}</td>
           <td class="num">{{ (c.ewt_rate * 100).toFixed(1) }}%</td>
-          <td class="num bold">PHP {{ fmt(c.tax_withheld) }}</td>
+          <td class="num bold">{{ currencySymbol() }} {{ fmt(c.tax_withheld) }}</td>
           <td>
             <span
               class="status-badge"

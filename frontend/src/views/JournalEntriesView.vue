@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useAccountingStore } from '../stores/accounting'
+import { currencyLocale } from '@/utils/currency'
 
 const store = useAccountingStore()
 const statusFilter = ref('')
@@ -42,7 +43,7 @@ async function reverseEntry(id: string) {
 
 function formatAmount(val: string) {
   const n = parseFloat(val || '0')
-  return n === 0 ? '' : n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return n === 0 ? '' : n.toLocaleString(currencyLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 const statusColors: Record<string, string> = {

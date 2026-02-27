@@ -5,6 +5,7 @@ import { useTransactionStore } from '../stores/transaction'
 import { useReportStore } from '../stores/report'
 import { useAccountingStore } from '../stores/accounting'
 import { reconciliationApi } from '../api/transactions'
+import { currencyLocale } from '@/utils/currency'
 import VATSummarySheet from '../components/reconciliation/VATSummarySheet.vue'
 import ReconciliationSummary from '../components/reconciliation/ReconciliationSummary.vue'
 import AnomalyList from '../components/reconciliation/AnomalyList.vue'
@@ -510,7 +511,7 @@ const statusTextColors: Record<string, string> = {
                 <td><input type="checkbox" :checked="selectedTxnIds.has(t.id)" @change="toggleSelect(t.id)" /></td>
                 <td>{{ t.date ? new Date(t.date).toLocaleDateString() : '-' }}</td>
                 <td class="desc-cell">{{ t.description || '-' }}</td>
-                <td class="amount-cell">{{ t.amount.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</td>
+                <td class="amount-cell">{{ t.amount.toLocaleString(currencyLocale(), { minimumFractionDigits: 2 }) }}</td>
                 <td><span class="tag">{{ t.vat_type }}</span></td>
                 <td><span class="tag">{{ t.category }}</span></td>
                 <td>
