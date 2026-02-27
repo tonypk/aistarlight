@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { VatSummary } from '../../types/transaction'
+import { currencyLocale } from '@/utils/currency'
 
 defineProps<{
   summary: VatSummary
@@ -8,7 +9,7 @@ defineProps<{
 function fmt(val: string | number): string {
   const n = typeof val === 'string' ? parseFloat(val) : val
   if (isNaN(n)) return '0.00'
-  return n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return n.toLocaleString(currencyLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 </script>
 
