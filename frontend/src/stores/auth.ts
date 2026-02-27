@@ -20,6 +20,10 @@ export const useAuthStore = defineStore("auth", () => {
   const isOwnerOrAdmin = computed(() =>
     ["owner", "admin", "company_admin"].includes(currentRole.value),
   );
+  const jurisdiction = computed(
+    () =>
+      user.value?.jurisdiction || localStorage.getItem("jurisdiction") || "PH",
+  );
 
   async function login(data: LoginData) {
     const res = await authApi.login(data);
@@ -27,6 +31,9 @@ export const useAuthStore = defineStore("auth", () => {
     accessToken.value = tokens.access_token;
     localStorage.setItem("access_token", tokens.access_token);
     localStorage.setItem("refresh_token", tokens.refresh_token);
+    if (tokens.jurisdiction) {
+      localStorage.setItem("jurisdiction", tokens.jurisdiction);
+    }
     await fetchUser();
   }
 
@@ -43,6 +50,9 @@ export const useAuthStore = defineStore("auth", () => {
       user.value = res.data.data;
       if (user.value?.role) {
         localStorage.setItem("user_role", user.value.role);
+      }
+      if (user.value?.jurisdiction) {
+        localStorage.setItem("jurisdiction", user.value.jurisdiction);
       }
     } finally {
       userLoading.value = false;
@@ -64,6 +74,9 @@ export const useAuthStore = defineStore("auth", () => {
     accessToken.value = tokens.access_token;
     localStorage.setItem("access_token", tokens.access_token);
     localStorage.setItem("refresh_token", tokens.refresh_token);
+    if (tokens.jurisdiction) {
+      localStorage.setItem("jurisdiction", tokens.jurisdiction);
+    }
     await fetchUser();
     await fetchCompanies();
   }
@@ -83,6 +96,7 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user_role");
+    localStorage.removeItem("jurisdiction");
   }
 
   async function initUser() {
@@ -98,6 +112,7 @@ export const useAuthStore = defineStore("auth", () => {
     isAuthenticated,
     currentRole,
     isOwnerOrAdmin,
+    jurisdiction,
     userLoading,
     login,
     register,

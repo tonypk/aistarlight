@@ -70,8 +70,8 @@ async function handleLogout() {
 <template>
   <aside class="sidebar">
     <div class="logo">
-      <h2>AIStarlight</h2>
-      <p class="tagline">Tax Filing Assistant</p>
+      <h2>AIStarlight <span class="jurisdiction-badge">{{ auth.jurisdiction }}</span></h2>
+      <p class="tagline">{{ auth.jurisdiction === 'SG' ? 'Singapore Tax Assistant' : 'Philippine Tax Assistant' }}</p>
     </div>
 
     <!-- Company Switcher -->
@@ -133,6 +133,15 @@ async function handleLogout() {
 }
 .logo h2 { font-size: 20px; margin: 0; }
 .tagline { font-size: 12px; color: #888; margin-top: 4px; }
+.jurisdiction-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(79, 70, 229, 0.4);
+  color: #a5b4fc;
+  vertical-align: middle;
+  margin-left: 4px;
+}
 
 .company-switcher {
   padding: 8px 16px;

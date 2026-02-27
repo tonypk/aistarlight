@@ -6,6 +6,7 @@ import ReportPreview from '../components/report/ReportPreview.vue'
 import { formsApi, type FormSummary } from '../api/forms'
 import { useReportStore } from '../stores/report'
 import { useUploadStore } from '../stores/upload'
+import { useAuthStore } from '../stores/auth'
 import { reconciliationApi } from '../api/transactions'
 
 interface SessionOption {
@@ -18,6 +19,7 @@ interface SessionOption {
 const router = useRouter()
 const reportStore = useReportStore()
 const uploadStore = useUploadStore()
+const authStore = useAuthStore()
 const period = ref(new Date().toISOString().slice(0, 7))
 const generating = ref(false)
 const transitioning = ref<string | null>(null)
@@ -51,7 +53,8 @@ const selectedSessionId = ref('')
 
 // Dynamic form type selection
 const availableForms = ref<FormSummary[]>([])
-const selectedFormType = ref('BIR_2550M')
+const defaultForm = authStore.jurisdiction === 'SG' ? 'IRAS_GST_F5' : 'BIR_2550M'
+const selectedFormType = ref(defaultForm)
 
 // Data source: 'session' | 'file' | 'none'
 const dataSource = computed(() => {
@@ -85,8 +88,11 @@ onMounted(async () => {
       selectedFormType.value = availableForms.value[0].form_type
     }
   } catch {
-    // Fallback: at minimum show BIR_2550M
-    availableForms.value = [{ form_type: 'BIR_2550M', name: 'Monthly Value-Added Tax Declaration', frequency: 'monthly' }]
+    // Fallback: show default form for jurisdiction
+    const fallback = authStore.jurisdiction === 'SG'
+      ? { form_type: 'IRAS_GST_F5', name: 'GST Return', frequency: 'quarterly' }
+      : { form_type: 'BIR_2550M', name: 'Monthly Value-Added Tax Declaration', frequency: 'monthly' }
+    availableForms.value = [fallback]
   }
 })
 

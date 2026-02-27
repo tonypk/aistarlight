@@ -11,6 +11,7 @@ const email = ref('')
 const password = ref('')
 const fullName = ref('')
 const companyName = ref('')
+const selectedJurisdiction = ref('PH')
 const error = ref('')
 const loading = ref(false)
 
@@ -24,6 +25,7 @@ async function handleSubmit() {
         password: password.value,
         full_name: fullName.value,
         company_name: companyName.value,
+        jurisdiction: selectedJurisdiction.value,
       })
     } else {
       await auth.login({ email: email.value, password: password.value })
@@ -42,7 +44,33 @@ async function handleSubmit() {
   <div class="login-page">
     <div class="login-card">
       <h1>AIStarlight</h1>
-      <p class="subtitle">Philippine Tax Filing Assistant</p>
+      <p class="subtitle">Smart Tax Filing System</p>
+
+      <div class="jurisdiction-selector">
+        <p class="jurisdiction-label">Select Your Country</p>
+        <div class="jurisdiction-options">
+          <button
+            type="button"
+            class="jurisdiction-btn"
+            :class="{ active: selectedJurisdiction === 'PH' }"
+            @click="selectedJurisdiction = 'PH'"
+            data-testid="jurisdiction-ph"
+          >
+            <span class="flag">PH</span>
+            <span class="country-name">Philippines</span>
+          </button>
+          <button
+            type="button"
+            class="jurisdiction-btn"
+            :class="{ active: selectedJurisdiction === 'SG' }"
+            @click="selectedJurisdiction = 'SG'"
+            data-testid="jurisdiction-sg"
+          >
+            <span class="flag">SG</span>
+            <span class="country-name">Singapore</span>
+          </button>
+        </div>
+      </div>
 
       <form @submit.prevent="handleSubmit">
         <div v-if="isRegister" class="field">
@@ -95,7 +123,50 @@ async function handleSubmit() {
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 h1 { text-align: center; color: #1a1a2e; font-size: 28px; }
-.subtitle { text-align: center; color: #888; margin-bottom: 32px; }
+.subtitle { text-align: center; color: #888; margin-bottom: 24px; }
+.jurisdiction-selector { margin-bottom: 24px; }
+.jurisdiction-label {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 10px;
+}
+.jurisdiction-options {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.jurisdiction-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 24px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 100px;
+}
+.jurisdiction-btn:hover {
+  border-color: #a5b4fc;
+  background: #f5f3ff;
+}
+.jurisdiction-btn.active {
+  border-color: #4f46e5;
+  background: #eef2ff;
+  box-shadow: 0 0 0 1px #4f46e5;
+}
+.jurisdiction-btn .flag {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+.jurisdiction-btn .country-name {
+  font-size: 12px;
+  color: #555;
+}
 .field { margin-bottom: 16px; }
 .field label { display: block; margin-bottom: 4px; font-size: 14px; color: #555; }
 .field input {

@@ -4,13 +4,16 @@ import { useRouter } from 'vue-router'
 import { dataApi } from '../api/data'
 import type { FieldCandidate, ConflictGroup, MappingCorrectionItem } from '../api/data'
 import { useUploadStore } from '../stores/upload'
-import { TARGET_FIELDS, REPORT_TYPES } from '../config/targetFieldsByReportType'
+import { useAuthStore } from '../stores/auth'
+import { TARGET_FIELDS, getReportTypes } from '../config/targetFieldsByReportType'
 import type { TargetField } from '../config/targetFieldsByReportType'
 import SearchableFieldSelect from '../components/SearchableFieldSelect.vue'
 import DisambiguationPanel from '../components/DisambiguationPanel.vue'
 
 const router = useRouter()
 const uploadStore = useUploadStore()
+const authStore = useAuthStore()
+const REPORT_TYPES = computed(() => getReportTypes(authStore.jurisdiction))
 
 // --- State ---
 const mappings = ref<Record<string, string>>({})
@@ -67,7 +70,7 @@ const groupedTargetFields = computed(() => {
 })
 
 const currentReportLabel = computed(() => {
-  return REPORT_TYPES.find(r => r.value === uploadStore.reportType)?.label ?? uploadStore.reportType
+  return REPORT_TYPES.value.find((r: { value: string }) => r.value === uploadStore.reportType)?.label ?? uploadStore.reportType
 })
 
 const confidenceBadge = computed(() => {

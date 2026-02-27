@@ -9,7 +9,8 @@ export interface ReportTypeOption {
   label: string;
 }
 
-export const REPORT_TYPES: ReportTypeOption[] = [
+// Philippines report types (BIR forms)
+export const REPORT_TYPES_PH: ReportTypeOption[] = [
   { value: "BIR_2550M", label: "BIR 2550M — Monthly VAT" },
   { value: "BIR_2550Q", label: "BIR 2550Q — Quarterly VAT" },
   { value: "BIR_1601C", label: "BIR 1601C — Withholding on Compensation" },
@@ -19,6 +20,25 @@ export const REPORT_TYPES: ReportTypeOption[] = [
   { value: "BIR_2316", label: "BIR 2316 — Certificate of Compensation" },
   { value: "Bank_Statement", label: "Bank Statement" },
 ];
+
+// Singapore report types (IRAS forms)
+export const REPORT_TYPES_SG: ReportTypeOption[] = [
+  { value: "IRAS_GST_F5", label: "GST F5 — GST Return" },
+  { value: "IRAS_FORM_C", label: "Form C — Corporate Income Tax" },
+  { value: "IRAS_FORM_CS", label: "Form C-S — Simplified Corporate Tax" },
+  { value: "IRAS_FORM_B", label: "Form B — Individual Income Tax" },
+  { value: "IRAS_IR8A", label: "IR8A — Employer Remuneration Return" },
+  { value: "IRAS_S45", label: "S45 — Withholding Tax" },
+  { value: "Bank_Statement", label: "Bank Statement" },
+];
+
+// Get report types based on jurisdiction
+export function getReportTypes(jurisdiction: string): ReportTypeOption[] {
+  return jurisdiction === "SG" ? REPORT_TYPES_SG : REPORT_TYPES_PH;
+}
+
+// Default export for backward compatibility
+export const REPORT_TYPES = REPORT_TYPES_PH;
 
 // ===========================================================================
 // BIR 2550M/2550Q VAT Return — Official Form Fields
@@ -1025,6 +1045,219 @@ export const TARGET_FIELDS: Record<string, TargetField[]> = {
       label: "Previous Employer Tax Withheld",
       group: "Previous Employer",
     },
+  ],
+
+  // ===========================================================================
+  // IRAS GST F5 — Goods and Services Tax Return (Singapore)
+  // Boxes 1-11 per IRAS GST F5 form
+  // ===========================================================================
+  IRAS_GST_F5: [
+    { value: "sales_date", label: "Sales/Supply Date", group: "Supplies" },
+    { value: "invoice_number", label: "Invoice Number", group: "Supplies" },
+    { value: "customer_name", label: "Customer Name", group: "Supplies" },
+    {
+      value: "standard_rated_supplies",
+      label: "Standard-Rated Supplies",
+      group: "Supplies",
+    },
+    {
+      value: "zero_rated_supplies",
+      label: "Zero-Rated Supplies",
+      group: "Supplies",
+    },
+    { value: "exempt_supplies", label: "Exempt Supplies", group: "Supplies" },
+    {
+      value: "total_supplies",
+      label: "Total Value of Supplies",
+      group: "Supplies",
+    },
+    {
+      value: "supply_type",
+      label: "Supply Type (standard/zero/exempt)",
+      group: "Supplies",
+    },
+    { value: "purchase_date", label: "Purchase Date", group: "Purchases" },
+    { value: "supplier_name", label: "Supplier Name", group: "Purchases" },
+    {
+      value: "taxable_purchases",
+      label: "Taxable Purchases",
+      group: "Purchases",
+    },
+    {
+      value: "gst_amount",
+      label: "GST Amount (Input Tax)",
+      group: "Purchases",
+    },
+    {
+      value: "input_tax_claimed",
+      label: "Input Tax Claimed",
+      group: "Purchases",
+    },
+    {
+      value: "bad_debt_relief",
+      label: "Bad Debt Relief",
+      group: "Adjustments",
+    },
+    {
+      value: "pre_registration_input_tax",
+      label: "Pre-Registration Input Tax",
+      group: "Adjustments",
+    },
+    {
+      value: "tourist_refund",
+      label: "Tourist Refund Scheme",
+      group: "Adjustments",
+    },
+    { value: "description", label: "Description / Remarks", group: "Details" },
+    { value: "uen", label: "UEN", group: "Details" },
+    { value: "period", label: "Accounting Period", group: "Details" },
+  ],
+
+  // ===========================================================================
+  // IRAS Form C — Corporate Income Tax (Singapore)
+  // Full form for companies with revenue > S$5M
+  // ===========================================================================
+  IRAS_FORM_C: [
+    { value: "revenue", label: "Revenue", group: "Income" },
+    { value: "cost_of_sales", label: "Cost of Sales", group: "Income" },
+    { value: "other_income", label: "Other Income", group: "Income" },
+    {
+      value: "operating_expenses",
+      label: "Operating Expenses",
+      group: "Expenses",
+    },
+    {
+      value: "non_deductible_expenses",
+      label: "Non-Deductible Expenses",
+      group: "Expenses",
+    },
+    {
+      value: "capital_allowances",
+      label: "Capital Allowances",
+      group: "Deductions",
+    },
+    { value: "donations", label: "Qualifying Donations", group: "Deductions" },
+    {
+      value: "losses_carried_forward",
+      label: "Losses Carried Forward",
+      group: "Deductions",
+    },
+    { value: "description", label: "Description / Remarks", group: "Details" },
+    { value: "uen", label: "UEN", group: "Details" },
+    { value: "period", label: "Year of Assessment", group: "Details" },
+  ],
+
+  // ===========================================================================
+  // IRAS Form C-S — Simplified Corporate Tax (Singapore)
+  // For companies with revenue <= S$5M
+  // ===========================================================================
+  IRAS_FORM_CS: [
+    { value: "revenue", label: "Revenue", group: "Income" },
+    { value: "total_expenses", label: "Total Expenses", group: "Expenses" },
+    {
+      value: "tax_adjustments",
+      label: "Tax Adjustments",
+      group: "Adjustments",
+    },
+    {
+      value: "capital_allowances",
+      label: "Capital Allowances",
+      group: "Deductions",
+    },
+    { value: "description", label: "Description / Remarks", group: "Details" },
+    { value: "uen", label: "UEN", group: "Details" },
+    { value: "period", label: "Year of Assessment", group: "Details" },
+  ],
+
+  // ===========================================================================
+  // IRAS Form B — Individual Income Tax (Singapore)
+  // Progressive tax brackets 0% - 24%
+  // ===========================================================================
+  IRAS_FORM_B: [
+    { value: "employment_income", label: "Employment Income", group: "Income" },
+    {
+      value: "trade_income",
+      label: "Trade / Business Income",
+      group: "Income",
+    },
+    { value: "rental_income", label: "Rental Income", group: "Income" },
+    { value: "other_income", label: "Other Income", group: "Income" },
+    {
+      value: "total_reliefs",
+      label: "Total Personal Reliefs",
+      group: "Reliefs",
+    },
+    { value: "donations", label: "Qualifying Donations", group: "Reliefs" },
+    { value: "description", label: "Description / Remarks", group: "Details" },
+    { value: "uen", label: "UEN / NRIC", group: "Details" },
+    { value: "period", label: "Year of Assessment", group: "Details" },
+  ],
+
+  // ===========================================================================
+  // IRAS IR8A — Return of Employee's Remuneration (Singapore)
+  // Employer files for each employee
+  // ===========================================================================
+  IRAS_IR8A: [
+    { value: "employee_name", label: "Employee Name", group: "Employee Info" },
+    {
+      value: "employee_id",
+      label: "Employee ID / NRIC",
+      group: "Employee Info",
+    },
+    {
+      value: "gross_salary",
+      label: "Gross Salary / Wages",
+      group: "Remuneration",
+    },
+    { value: "bonus", label: "Bonus", group: "Remuneration" },
+    { value: "director_fees", label: "Director Fees", group: "Remuneration" },
+    {
+      value: "other_allowances",
+      label: "Other Allowances",
+      group: "Remuneration",
+    },
+    {
+      value: "benefits_in_kind",
+      label: "Benefits-in-Kind",
+      group: "Remuneration",
+    },
+    { value: "employer_cpf", label: "Employer CPF Contribution", group: "CPF" },
+    { value: "employee_cpf", label: "Employee CPF Contribution", group: "CPF" },
+    { value: "description", label: "Description / Remarks", group: "Details" },
+    { value: "uen", label: "UEN", group: "Details" },
+    { value: "period", label: "Year of Assessment", group: "Details" },
+  ],
+
+  // ===========================================================================
+  // IRAS S45 — Withholding Tax on Non-Resident Payments (Singapore)
+  // Payer withholds tax on payments to non-residents
+  // ===========================================================================
+  IRAS_S45: [
+    {
+      value: "payee_name",
+      label: "Payee / Non-Resident Name",
+      group: "Payee Info",
+    },
+    {
+      value: "payee_country",
+      label: "Payee Country of Residence",
+      group: "Payee Info",
+    },
+    { value: "payment_date", label: "Payment Date", group: "Payment" },
+    { value: "payment_amount", label: "Payment Amount", group: "Payment" },
+    {
+      value: "income_type",
+      label: "Income Type (INT/ROY/TECH/DIR/RENT/SFC)",
+      group: "Payment",
+    },
+    {
+      value: "custom_rate",
+      label: "Treaty Rate (if applicable)",
+      group: "Payment",
+    },
+    { value: "description", label: "Description / Remarks", group: "Details" },
+    { value: "uen", label: "UEN", group: "Details" },
+    { value: "period", label: "Payment Period", group: "Details" },
   ],
 
   Bank_Statement: [

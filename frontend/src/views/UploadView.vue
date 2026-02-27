@@ -5,10 +5,13 @@ import { dataApi } from '../api/data'
 import { parseFileInBrowser, estimateJsonSize } from '../utils/fileParser'
 import FileUploader from '../components/upload/FileUploader.vue'
 import { useUploadStore } from '../stores/upload'
-import { REPORT_TYPES } from '../config/targetFieldsByReportType'
+import { useAuthStore } from '../stores/auth'
+import { getReportTypes } from '../config/targetFieldsByReportType'
 
 const router = useRouter()
 const uploadStore = useUploadStore()
+const authStore = useAuthStore()
+const REPORT_TYPES = computed(() => getReportTypes(authStore.jurisdiction))
 const uploading = ref(false)
 const uploadProgress = ref(0)
 const progressStage = ref('')
