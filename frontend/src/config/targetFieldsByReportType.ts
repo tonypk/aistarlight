@@ -29,6 +29,7 @@ export const REPORT_TYPES_SG: ReportTypeOption[] = [
   { value: "IRAS_FORM_B", label: "Form B — Individual Income Tax" },
   { value: "IRAS_IR8A", label: "IR8A — Employer Remuneration Return" },
   { value: "IRAS_S45", label: "S45 — Withholding Tax" },
+  { value: "IRAS_ECI", label: "ECI — Estimated Chargeable Income" },
   { value: "Bank_Statement", label: "Bank Statement" },
 ];
 
@@ -1258,6 +1259,45 @@ export const TARGET_FIELDS: Record<string, TargetField[]> = {
     { value: "description", label: "Description / Remarks", group: "Details" },
     { value: "uen", label: "UEN", group: "Details" },
     { value: "period", label: "Payment Period", group: "Details" },
+  ],
+
+  IRAS_ECI: [
+    { value: "revenue", label: "Revenue / Turnover", group: "Income" },
+    { value: "other_income", label: "Other Income", group: "Income" },
+    {
+      value: "total_expenses",
+      label: "Total Allowable Expenses",
+      group: "Expenses",
+    },
+    {
+      value: "adjusted_profit",
+      label: "Adjusted Profit After Deductions",
+      group: "Income",
+    },
+    {
+      value: "capital_allowances",
+      label: "Capital Allowances",
+      group: "Deductions",
+    },
+    {
+      value: "trade_losses",
+      label: "Trade Losses Brought Forward",
+      group: "Deductions",
+    },
+    { value: "donations", label: "Approved Donations", group: "Deductions" },
+    {
+      value: "estimated_chargeable_income",
+      label: "Estimated Chargeable Income",
+      group: "Tax",
+    },
+    { value: "estimated_tax", label: "Estimated Tax Payable", group: "Tax" },
+    { value: "uen", label: "UEN", group: "Details" },
+    { value: "company_name", label: "Company Name", group: "Details" },
+    {
+      value: "financial_year_end",
+      label: "Financial Year End",
+      group: "Details",
+    },
   ],
 
   Bank_Statement: [
