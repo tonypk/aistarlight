@@ -6,6 +6,7 @@ import CorrectionHistory from '../components/correction/CorrectionHistory.vue'
 import ValidationResultsPanel from '../components/report/ValidationResultsPanel.vue'
 import { formsApi, type FormSection } from '../api/forms'
 import { useReportStore } from '../stores/report'
+import { currencyLocale, currencySymbol } from '@/utils/currency'
 
 const route = useRoute()
 const router = useRouter()
@@ -114,7 +115,7 @@ const reportVersion = computed(() => {
 function formatAmount(val: string): string {
   try {
     const num = parseFloat(val)
-    return num.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    return num.toLocaleString(currencyLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   } catch {
     return val
   }
@@ -213,7 +214,7 @@ function handleBack() {
               />
             </template>
             <template v-else>
-              <span class="computed-value">PHP {{ formatAmount(editableFields[field.id]) }}</span>
+              <span class="computed-value">{{ currencySymbol() }} {{ formatAmount(editableFields[field.id]) }}</span>
             </template>
           </div>
           <span v-if="isModified(field.id)" class="change-indicator" title="Modified">*</span>

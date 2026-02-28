@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useWithholdingStore } from '../stores/withholding'
+import { useAuthStore } from '../stores/auth'
 import SupplierTable from '../components/supplier/SupplierTable.vue'
 import SupplierForm from '../components/supplier/SupplierForm.vue'
 import type { Supplier, SupplierCreateData } from '../types/withholding'
 
 const store = useWithholdingStore()
+const auth = useAuthStore()
+const isSG = computed(() => auth.jurisdiction === 'SG')
 const showForm = ref(false)
 const editingSupplier = ref<Supplier | null>(null)
 const searchQuery = ref('')
@@ -66,7 +69,7 @@ async function handleSearch() {
     <div class="search-bar">
       <input
         v-model="searchQuery"
-        placeholder="Search by name or TIN..."
+        :placeholder="isSG ? 'Search by name or UEN...' : 'Search by name or TIN...'"
         @keyup.enter="handleSearch"
       />
       <button class="btn" @click="handleSearch">Search</button>
@@ -78,6 +81,7 @@ async function handleSearch() {
         <h3>{{ editingSupplier ? 'Edit Supplier' : 'New Supplier' }}</h3>
         <SupplierForm
           :supplier="editingSupplier"
+          :jurisdiction="auth.jurisdiction"
           @submit="handleSubmit"
           @cancel="showForm = false"
         />
@@ -88,6 +92,7 @@ async function handleSearch() {
     <SupplierTable
       v-else
       :suppliers="store.suppliers"
+      :jurisdiction="auth.jurisdiction"
       @edit="openEdit"
       @delete="handleDelete"
     />

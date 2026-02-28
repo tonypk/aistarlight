@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useAuthStore } from '../stores/auth'
+
+const auth = useAuthStore()
+const isSG = computed(() => auth.jurisdiction === 'SG')
 
 const activeSection = ref('overview')
 
@@ -35,7 +39,7 @@ function scrollTo(id: string) {
   <div class="guide-view">
     <div class="guide-header">
       <h2>User Guide</h2>
-      <p class="subtitle">AIStarlight Philippine Tax Filing Assistant &mdash; Complete User Manual</p>
+      <p class="subtitle">AIStarlight {{ isSG ? 'Singapore' : 'Philippine' }} Tax Filing Assistant &mdash; Complete User Manual</p>
     </div>
 
     <div class="guide-layout">
@@ -57,7 +61,7 @@ function scrollTo(id: string) {
         <!-- 1. Overview -->
         <section id="overview">
           <h3>1. System Overview</h3>
-          <p>AIStarlight is an AI-powered Philippine tax filing assistant that helps you with the following:</p>
+          <p>AIStarlight is an AI-powered {{ isSG ? 'Singapore' : 'Philippine' }} tax filing assistant that helps you with the following:</p>
           <div class="feature-grid">
             <div class="feature-item">
               <span class="fi">📤</span>
@@ -70,35 +74,35 @@ function scrollTo(id: string) {
               <span class="fi">🤖</span>
               <div>
                 <strong>AI Column Mapping</strong>
-                <p>Automatically recognize column names and map them to BIR form fields</p>
+                <p>Automatically recognize column names and map them to {{ isSG ? 'IRAS' : 'BIR' }} form fields</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">🏷️</span>
               <div>
                 <strong>Transaction Classification</strong>
-                <p>AI-powered VAT type classification (Vatable / Exempt / Zero-rated)</p>
+                <p>AI-powered {{ isSG ? 'GST' : 'VAT' }} type classification ({{ isSG ? 'Standard-Rated / Zero-Rated / Exempt' : 'Vatable / Exempt / Zero-rated' }})</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">🔍</span>
               <div>
-                <strong>VAT Reconciliation</strong>
+                <strong>{{ isSG ? 'GST' : 'VAT' }} Reconciliation</strong>
                 <p>Cross-check sales and purchase records, detect anomalies</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">📋</span>
               <div>
-                <strong>BIR Reports</strong>
-                <p>Auto-calculate and generate BIR 2550M / 2550Q / 1601C / 0619E / 1701 / 1702 PDFs</p>
+                <strong>{{ isSG ? 'IRAS Reports' : 'BIR Reports' }}</strong>
+                <p>{{ isSG ? 'Auto-calculate and generate GST F5 / Form C / Form C-S / Form B / ECI reports' : 'Auto-calculate and generate BIR 2550M / 2550Q / 1601C / 0619E / 1701 / 1702 PDFs' }}</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">📑</span>
               <div>
                 <strong>Withholding Tax</strong>
-                <p>EWT classification, BIR 2307 certificate generation, SAWT summary</p>
+                <p>{{ isSG ? 'WHT classification, S45 certificate generation, WHT summary' : 'EWT classification, BIR 2307 certificate generation, SAWT summary' }}</p>
               </div>
             </div>
             <div class="feature-item">
@@ -110,7 +114,18 @@ function scrollTo(id: string) {
             </div>
           </div>
 
-          <div class="info-box">
+          <div class="info-box" v-if="isSG">
+            <strong>Supported IRAS Forms:</strong>
+            <ul>
+              <li><strong>GST F5</strong> &mdash; GST Return (Quarterly)</li>
+              <li><strong>Form C</strong> &mdash; Corporate Income Tax Return</li>
+              <li><strong>Form C-S</strong> &mdash; Simplified Corporate Tax Return</li>
+              <li><strong>Form B</strong> &mdash; Individual Income Tax Return</li>
+              <li><strong>ECI</strong> &mdash; Estimated Chargeable Income</li>
+              <li><strong>S45</strong> &mdash; Withholding Tax Certificate</li>
+            </ul>
+          </div>
+          <div class="info-box" v-else>
             <strong>Supported BIR Forms:</strong>
             <ul>
               <li><strong>BIR 2550M</strong> &mdash; Monthly Value-Added Tax Declaration</li>
@@ -134,7 +149,7 @@ function scrollTo(id: string) {
               <span class="step-num">1</span>
               <div>
                 <strong>Set Up Company Info</strong>
-                <p>Go to <router-link to="/settings">Settings</router-link> and fill in your company name, TIN number, and RDO code. This information will appear on your PDF reports.</p>
+                <p>Go to <router-link to="/settings">Settings</router-link> and fill in your company name, {{ isSG ? 'UEN' : 'TIN number, and RDO code' }}. This information will appear on your PDF reports.</p>
               </div>
             </div>
             <div class="step">
@@ -197,7 +212,7 @@ function scrollTo(id: string) {
               <span class="step-num">2</span>
               <div>
                 <strong>Select Period &amp; Report Type</strong>
-                <p>Choose the filing period (e.g., 2026-01) and report type (e.g., BIR 2550M). These determine how transactions are grouped.</p>
+                <p>Choose the filing period (e.g., 2026-01) and report type (e.g., {{ isSG ? 'GST F5' : 'BIR 2550M' }}). These determine how transactions are grouped.</p>
               </div>
             </div>
             <div class="step">
@@ -211,7 +226,7 @@ function scrollTo(id: string) {
               <span class="step-num">4</span>
               <div>
                 <strong>Review Results</strong>
-                <p>View extracted data for each receipt: vendor name, TIN, amounts, VAT type, and confidence scores. Navigate to the generated report or transaction list.</p>
+                <p>View extracted data for each receipt: vendor name, {{ isSG ? 'UEN' : 'TIN' }}, amounts, {{ isSG ? 'GST' : 'VAT' }} type, and confidence scores. Navigate to the generated report or transaction list.</p>
               </div>
             </div>
           </div>
@@ -219,8 +234,8 @@ function scrollTo(id: string) {
           <h4>How OCR Parsing Works</h4>
           <p>The system uses a two-layer approach to maximize accuracy while minimizing cost:</p>
           <ol>
-            <li><strong>Layer 1: Rule-based parsing (free, instant)</strong> &mdash; Regex patterns extract TIN numbers, dates, amounts (&#8369; / PHP), VAT type keywords, and receipt numbers. Cross-validates that vatable sales + VAT amount &asymp; total. Fields with confidence &ge; 85% are used directly.</li>
-            <li><strong>Layer 2: AI assist (only when needed)</strong> &mdash; Fields with low confidence (e.g., ambiguous vendor category, unclear VAT type) are sent to an AI model for resolution. Typically, standard BIR receipts require zero AI calls.</li>
+            <li><strong>Layer 1: Rule-based parsing (free, instant)</strong> &mdash; Regex patterns extract {{ isSG ? 'UEN' : 'TIN' }} numbers, dates, amounts ({{ isSG ? 'S$' : '&#8369; / PHP' }}), {{ isSG ? 'GST' : 'VAT' }} type keywords, and receipt numbers. Cross-validates that {{ isSG ? 'standard-rated' : 'vatable' }} sales + {{ isSG ? 'GST' : 'VAT' }} amount &asymp; total. Fields with confidence &ge; 85% are used directly.</li>
+            <li><strong>Layer 2: AI assist (only when needed)</strong> &mdash; Fields with low confidence (e.g., ambiguous vendor category, unclear {{ isSG ? 'GST' : 'VAT' }} type) are sent to an AI model for resolution. Typically, standard {{ isSG ? 'tax invoices' : 'BIR receipts' }} require zero AI calls.</li>
           </ol>
 
           <h4>Confidence Scores</h4>
@@ -279,8 +294,8 @@ function scrollTo(id: string) {
             </thead>
             <tbody>
               <tr><td>amount</td><td>Transaction amount</td><td>Yes</td></tr>
-              <tr><td>vat_amount</td><td>VAT amount</td><td>No (system can calculate at 12%)</td></tr>
-              <tr><td>vat_type</td><td>VAT type: vatable / exempt / zero_rated / government</td><td>No (AI can auto-classify)</td></tr>
+              <tr><td>vat_amount</td><td>{{ isSG ? 'GST' : 'VAT' }} amount</td><td>No (system can calculate at {{ isSG ? '9%' : '12%' }})</td></tr>
+              <tr><td>vat_type</td><td>{{ isSG ? 'GST type: standard_rated / zero_rated / exempt' : 'VAT type: vatable / exempt / zero_rated / government' }}</td><td>No (AI can auto-classify)</td></tr>
               <tr><td>date</td><td>Transaction date</td><td>No</td></tr>
               <tr><td>description</td><td>Transaction description</td><td>No (used for AI classification)</td></tr>
               <tr><td>category</td><td>Purchase category: goods / services / capital / imports</td><td>No</td></tr>
@@ -303,7 +318,7 @@ function scrollTo(id: string) {
           <h4>AI Auto-Classification</h4>
           <p>Click the "Classify" button and the AI will automatically:</p>
           <ul>
-            <li>Identify the VAT type for each transaction (Vatable / Exempt / Zero-rated / Government)</li>
+            <li>Identify the {{ isSG ? 'GST' : 'VAT' }} type for each transaction ({{ isSG ? 'Standard-Rated / Zero-Rated / Exempt' : 'Vatable / Exempt / Zero-rated / Government' }})</li>
             <li>Classify purchase categories (Goods / Services / Capital / Imports)</li>
             <li>Flag low-confidence classifications for manual review</li>
           </ul>
@@ -315,21 +330,21 @@ function scrollTo(id: string) {
 
         <!-- 7. Reconciliation -->
         <section id="reconciliation">
-          <h3>7. VAT Reconciliation</h3>
+          <h3>7. {{ isSG ? 'GST' : 'VAT' }} Reconciliation</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Reconciliation</strong></p>
 
           <h4>Reconciliation Process</h4>
           <ol>
             <li>After classification is complete, click "Reconcile" to start</li>
             <li>The system cross-checks sales and purchase records</li>
-            <li>Generates a VAT summary: Output VAT, Input VAT, Net VAT Payable</li>
+            <li>Generates a {{ isSG ? 'GST summary: Output Tax, Input Tax, Net GST' : 'VAT summary: Output VAT, Input VAT, Net VAT Payable' }}</li>
             <li>Detects anomalies: amount mismatches, missing transactions, duplicate records</li>
           </ol>
 
           <h4>After Reconciliation, You Can:</h4>
           <ul>
-            <li><strong>Generate BIR Report</strong> &mdash; Create a BIR 2550M/2550Q report directly from reconciliation data</li>
-            <li><strong>Export PDF</strong> &mdash; Download a full reconciliation report PDF (VAT summary, match statistics, anomaly list)</li>
+            <li><strong>{{ isSG ? 'Generate IRAS Report' : 'Generate BIR Report' }}</strong> &mdash; Create a {{ isSG ? 'GST F5 / Form C' : 'BIR 2550M/2550Q' }} report directly from reconciliation data</li>
+            <li><strong>Export PDF</strong> &mdash; Download a full reconciliation report PDF ({{ isSG ? 'GST' : 'VAT' }} summary, match statistics, anomaly list)</li>
             <li><strong>Export CSV</strong> &mdash; Download transaction data as CSV</li>
           </ul>
         </section>
@@ -377,7 +392,7 @@ function scrollTo(id: string) {
               <span class="step-num">2</span>
               <div>
                 <strong>Configure Settings</strong>
-                <p>Select the filing period, set amount tolerance (default PHP 0.01) and date tolerance (default 3 days). Optionally link to an existing reconciliation session to match against your accounting records.</p>
+                <p>Select the filing period, set amount tolerance (default {{ isSG ? 'SGD' : 'PHP' }} 0.01) and date tolerance (default 3 days). Optionally link to an existing reconciliation session to match against your accounting records.</p>
               </div>
             </div>
             <div class="step">
@@ -424,7 +439,7 @@ function scrollTo(id: string) {
 
           <h4>Generating a Report</h4>
           <ol>
-            <li>Select the <strong>Form Type</strong> (BIR 2550M / 2550Q / 1601C / 0619E / 1701 / 1702)</li>
+            <li>Select the <strong>Form Type</strong> ({{ isSG ? 'GST F5 / Form C / Form C-S / Form B / ECI' : 'BIR 2550M / 2550Q / 1601C / 0619E / 1701 / 1702' }})</li>
             <li>Select the <strong>Filing Period</strong> (month or quarter)</li>
             <li>Data source options:
               <ul>
@@ -452,7 +467,7 @@ function scrollTo(id: string) {
             <li><strong>Draft</strong> &mdash; Editable, fields can be modified</li>
             <li><strong>Review</strong> &mdash; Submitted for review, still editable</li>
             <li><strong>Approved</strong> &mdash; Approved for filing</li>
-            <li><strong>Filed</strong> &mdash; Submitted to BIR</li>
+            <li><strong>Filed</strong> &mdash; Submitted to {{ isSG ? 'IRAS' : 'BIR' }}</li>
             <li><strong>Archived</strong> &mdash; Stored for record-keeping</li>
           </ul>
         </section>
@@ -481,7 +496,7 @@ function scrollTo(id: string) {
           <h3>11. Filing Calendar</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Filing Calendar</strong></p>
 
-          <p>View upcoming BIR filing deadlines with color-coded status indicators:</p>
+          <p>View upcoming {{ isSG ? 'IRAS' : 'BIR' }} filing deadlines with color-coded status indicators:</p>
           <ul>
             <li><strong style="color: #ef4444;">Overdue</strong> &mdash; Past the deadline, needs immediate attention</li>
             <li><strong style="color: #f59e0b;">Upcoming</strong> &mdash; Due within 7 days</li>
@@ -489,7 +504,18 @@ function scrollTo(id: string) {
           </ul>
 
           <h4>Covered Forms</h4>
-          <table class="ref-table">
+          <table v-if="isSG" class="ref-table">
+            <thead>
+              <tr><th>Form</th><th>Frequency</th><th>Deadline</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>GST F5</td><td>Quarterly</td><td>1 month after quarter end</td></tr>
+              <tr><td>Form C / C-S</td><td>Annual</td><td>November 30</td></tr>
+              <tr><td>Form B</td><td>Annual</td><td>April 18 (e-filing)</td></tr>
+              <tr><td>ECI</td><td>Annual</td><td>3 months after FYE</td></tr>
+            </tbody>
+          </table>
+          <table v-else class="ref-table">
             <thead>
               <tr><th>Form</th><th>Frequency</th><th>Deadline</th></tr>
             </thead>
@@ -584,9 +610,9 @@ function scrollTo(id: string) {
 
           <h4>Managing Suppliers</h4>
           <ul>
-            <li><strong>Add Supplier</strong> &mdash; Enter TIN, name, address, and type (Individual / Corporation)</li>
-            <li><strong>Set Default EWT</strong> &mdash; Assign a default withholding tax rate and ATC code per supplier</li>
-            <li><strong>Auto-Matching</strong> &mdash; During EWT classification, the system automatically matches existing suppliers</li>
+            <li><strong>Add Supplier</strong> &mdash; Enter {{ isSG ? 'UEN' : 'TIN' }}, name, address, and type (Individual / Corporation)</li>
+            <li><strong>Set Default {{ isSG ? 'WHT' : 'EWT' }}</strong> &mdash; Assign a default withholding tax rate and {{ isSG ? 'WHT nature' : 'ATC code' }} per supplier</li>
+            <li><strong>Auto-Matching</strong> &mdash; During {{ isSG ? 'WHT' : 'EWT' }} classification, the system automatically matches existing suppliers</li>
           </ul>
 
           <h4>Supplier Field Reference</h4>
@@ -595,55 +621,68 @@ function scrollTo(id: string) {
               <tr><th>Field</th><th>Description</th></tr>
             </thead>
             <tbody>
-              <tr><td>TIN</td><td>Tax Identification Number</td></tr>
+              <tr><td>{{ isSG ? 'UEN' : 'TIN' }}</td><td>{{ isSG ? 'Unique Entity Number' : 'Tax Identification Number' }}</td></tr>
               <tr><td>Name</td><td>Full supplier name</td></tr>
               <tr><td>Type</td><td>Individual or Corporation</td></tr>
-              <tr><td>Default EWT Rate</td><td>Default withholding tax rate (e.g., 0.02 = 2%)</td></tr>
-              <tr><td>Default ATC Code</td><td>Default Alphanumeric Tax Code (e.g., WC050)</td></tr>
-              <tr><td>VAT Registered</td><td>Whether the supplier is VAT-registered</td></tr>
+              <tr><td>Default {{ isSG ? 'WHT' : 'EWT' }} Rate</td><td>Default withholding tax rate (e.g., 0.02 = 2%)</td></tr>
+              <tr><td>Default {{ isSG ? 'WHT Nature' : 'ATC Code' }}</td><td>{{ isSG ? 'Default WHT nature (e.g., INT, ROY, TECH)' : 'Default Alphanumeric Tax Code (e.g., WC050)' }}</td></tr>
+              <tr><td>{{ isSG ? 'GST Registered' : 'VAT Registered' }}</td><td>Whether the supplier is {{ isSG ? 'GST' : 'VAT' }}-registered</td></tr>
             </tbody>
           </table>
         </section>
 
         <!-- 15. Withholding Tax -->
         <section id="withholding">
-          <h3>15. Withholding Tax (EWT) Management</h3>
+          <h3>15. Withholding Tax ({{ isSG ? 'WHT' : 'EWT' }}) Management</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Withholding Tax</strong></p>
 
-          <h4>EWT Workflow</h4>
+          <h4>{{ isSG ? 'WHT' : 'EWT' }} Workflow</h4>
           <div class="steps">
             <div class="step">
               <span class="step-num">1</span>
               <div>
-                <strong>Classify EWT</strong>
-                <p>In a reconciliation session, click "Classify EWT" to automatically identify ATC codes and withholding tax rates for purchase transactions</p>
+                <strong>Classify {{ isSG ? 'WHT' : 'EWT' }}</strong>
+                <p>In a reconciliation session, click "Classify {{ isSG ? 'WHT' : 'EWT' }}" to automatically identify {{ isSG ? 'WHT nature codes' : 'ATC codes' }} and withholding tax rates for purchase transactions</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">2</span>
               <div>
-                <strong>Generate BIR 2307</strong>
-                <p>Click "Generate Certificates" to auto-group by supplier and period, generating BIR 2307 withholding tax certificate PDFs</p>
+                <strong>Generate {{ isSG ? 'S45 Certificate' : 'BIR 2307' }}</strong>
+                <p>Click "Generate Certificates" to auto-group by supplier and period, generating {{ isSG ? 'S45 WHT' : 'BIR 2307' }} withholding tax certificate PDFs</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">3</span>
               <div>
-                <strong>Download SAWT</strong>
-                <p>On the Withholding Tax page, select a period and download the SAWT summary (CSV or PDF format)</p>
+                <strong>Download {{ isSG ? 'WHT Summary' : 'SAWT' }}</strong>
+                <p>On the Withholding Tax page, select a period and download the {{ isSG ? 'WHT summary' : 'SAWT summary' }} (CSV or PDF format)</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">4</span>
               <div>
-                <strong>Generate BIR 0619-E</strong>
-                <p>On the Reports page, select BIR 0619-E to auto-summarize monthly EWT amounts</p>
+                <strong>{{ isSG ? 'WHT Reports' : 'Generate BIR 0619-E' }}</strong>
+                <p>{{ isSG ? 'Review and export WHT reports for IRAS submission' : 'On the Reports page, select BIR 0619-E to auto-summarize monthly EWT amounts' }}</p>
               </div>
             </div>
           </div>
 
-          <h4>Common ATC Code Reference</h4>
-          <table class="ref-table">
+          <h4>{{ isSG ? 'Common WHT Nature Reference' : 'Common ATC Code Reference' }}</h4>
+          <table v-if="isSG" class="ref-table">
+            <thead>
+              <tr><th>Nature</th><th>Description</th><th>Rate</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>INT</td><td>Interest</td><td>15%</td></tr>
+              <tr><td>ROY</td><td>Royalties</td><td>10%</td></tr>
+              <tr><td>TECH</td><td>Technical fees</td><td>10%</td></tr>
+              <tr><td>MGMT</td><td>Management fees</td><td>Prevailing rate</td></tr>
+              <tr><td>DIR</td><td>Director fees</td><td>22%</td></tr>
+              <tr><td>RENT</td><td>Rental of movable property</td><td>15%</td></tr>
+            </tbody>
+          </table>
+          <table v-else class="ref-table">
             <thead>
               <tr><th>ATC Code</th><th>Description</th><th>Rate</th></tr>
             </thead>
@@ -712,8 +751,15 @@ function scrollTo(id: string) {
           <h3>17. AI Tax Assistant</h3>
           <p>Navigate to: Sidebar &rarr; <strong>AI Chat</strong></p>
 
-          <p>You can ask the AI assistant any Philippine tax-related question in English or Chinese. For example:</p>
-          <ul>
+          <p>You can ask the AI assistant any {{ isSG ? 'Singapore' : 'Philippine' }} tax-related question in English or Chinese. For example:</p>
+          <ul v-if="isSG">
+            <li>"What is the deadline for filing GST F5?"</li>
+            <li>"When do I need to register for GST?"</li>
+            <li>"What is the WHT rate for royalty payments to non-residents?"</li>
+            <li>"How does the corporate tax rate work in Singapore?"</li>
+            <li>"What is the difference between Form C and Form C-S?"</li>
+          </ul>
+          <ul v-else>
             <li>"What is the deadline for filing BIR 2550M?"</li>
             <li>"Under what circumstances can I apply for a VAT refund?"</li>
             <li>"What is the withholding tax rate for professional service fees?"</li>
@@ -722,7 +768,7 @@ function scrollTo(id: string) {
           </ul>
 
           <div class="tip-box">
-            <strong>Tip:</strong> The AI assistant's answers are based on the Philippine NIRC, TRAIN Law, CREATE Act, and official BIR regulations. The system supports long-term memory &mdash; you can manage the AI's memory on the Memory page.
+            <strong>Tip:</strong> The AI assistant's answers are based on {{ isSG ? 'Singapore Income Tax Act, GST Act, and official IRAS guidelines' : 'the Philippine NIRC, TRAIN Law, CREATE Act, and official BIR regulations' }}. The system supports long-term memory &mdash; you can manage the AI's memory on the Memory page.
           </div>
         </section>
 
@@ -731,10 +777,18 @@ function scrollTo(id: string) {
           <h3>18. Knowledge Base</h3>
           <p>Navigate to: Sidebar &rarr; <strong>Knowledge</strong></p>
 
-          <p>The knowledge base contains structured data on Philippine tax laws and regulations, used to enhance the AI assistant's accuracy.</p>
+          <p>The knowledge base contains structured data on {{ isSG ? 'Singapore' : 'Philippine' }} tax laws and regulations, used to enhance the AI assistant's accuracy.</p>
 
           <h4>Built-in Knowledge</h4>
-          <ul>
+          <ul v-if="isSG">
+            <li>Income Tax Act &mdash; Corporate and individual tax provisions</li>
+            <li>GST Act &mdash; Goods and Services Tax regulations</li>
+            <li>IRAS e-Tax Guides &mdash; Detailed guidance on tax matters</li>
+            <li>Withholding Tax (S45) &mdash; Non-resident payment rules</li>
+            <li>IRAS form filling guides for all supported forms</li>
+            <li>Penalties and late filing consequences</li>
+          </ul>
+          <ul v-else>
             <li>NIRC (National Internal Revenue Code) &mdash; VAT-related sections</li>
             <li>TRAIN Law (RA 10963) &mdash; Tax Reform highlights</li>
             <li>CREATE Act (RA 11534) &mdash; Corporate income tax incentives</li>
@@ -767,17 +821,19 @@ function scrollTo(id: string) {
 
           <div class="faq-item">
             <h4>Q: What if the AI classification results are inaccurate?</h4>
-            <p>A: Manually override the classification. The system learns from your corrections and improves future accuracy. You can also set default EWT rates and ATC codes for suppliers.</p>
+            <p>A: Manually override the classification. The system learns from your corrections and improves future accuracy. You can also set default {{ isSG ? 'WHT rates and WHT nature codes' : 'EWT rates and ATC codes' }} for suppliers.</p>
           </div>
 
           <div class="faq-item">
-            <h4>Q: How do I change company information (TIN, RDO)?</h4>
+            <h4>Q: How do I change company information ({{ isSG ? 'UEN' : 'TIN, RDO' }})?</h4>
             <p>A: Go to the Settings page. New reports will use the updated information; previously generated reports are not affected.</p>
           </div>
 
           <div class="faq-item">
-            <h4>Q: What is the difference between BIR 2550M and 2550Q?</h4>
-            <p>A: BIR 2550M is the monthly VAT declaration and 2550Q is the quarterly VAT return. The calculation logic is the same; the difference is the filing period and data scope.</p>
+            <h4 v-if="!isSG">Q: What is the difference between BIR 2550M and 2550Q?</h4>
+            <p v-if="!isSG">A: BIR 2550M is the monthly VAT declaration and 2550Q is the quarterly VAT return. The calculation logic is the same; the difference is the filing period and data scope.</p>
+            <h4 v-if="isSG">Q: What is the difference between Form C and Form C-S?</h4>
+            <p v-if="isSG">A: Form C-S is a simplified tax return for companies with annual revenue &le; S$5M and only Singapore-sourced income. Form C is the full corporate tax return for all other companies.</p>
           </div>
 
           <div class="faq-item">
@@ -791,8 +847,8 @@ function scrollTo(id: string) {
           </div>
 
           <div class="faq-item">
-            <h4>Q: How do I generate an annual income tax return (BIR 1701 or 1702)?</h4>
-            <p>A: Go to Reports, select BIR 1701 (Individual) or BIR 1702 (Corporate), and provide income data via manual entry. The system calculates graduated tax (1701) or RCIT vs MCIT (1702) automatically. Download the generated PDF for review.</p>
+            <h4>Q: How do I generate an annual income tax return ({{ isSG ? 'Form B or Form C' : 'BIR 1701 or 1702' }})?</h4>
+            <p>A: Go to Reports, select {{ isSG ? 'Form B (Individual) or Form C (Corporate)' : 'BIR 1701 (Individual) or BIR 1702 (Corporate)' }}, and provide income data via manual entry. The system calculates {{ isSG ? 'progressive tax (Form B) or 17% corporate tax with partial exemption (Form C)' : 'graduated tax (1701) or RCIT vs MCIT (1702)' }} automatically. Download the generated PDF for review.</p>
           </div>
 
           <div class="faq-item">

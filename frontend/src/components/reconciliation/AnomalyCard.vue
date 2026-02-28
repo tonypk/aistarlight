@@ -1,6 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { Anomaly } from '../../types/transaction'
+import { useAuthStore } from '../../stores/auth'
+
+const auth = useAuthStore()
+const isSG = computed(() => auth.jurisdiction === 'SG')
 
 const props = defineProps<{
   anomaly: Anomaly
@@ -19,16 +23,16 @@ const severityColors: Record<string, { bg: string; text: string; border: string 
   low: { bg: '#f0fdf4', text: '#166534', border: '#bbf7d0' },
 }
 
-const typeLabels: Record<string, string> = {
+const typeLabels = computed<Record<string, string>>(() => ({
   duplicate: 'Duplicate Transaction',
-  vat_mismatch: 'VAT Mismatch',
-  incomplete_tin: 'Missing TIN',
+  vat_mismatch: isSG.value ? 'GST Mismatch' : 'VAT Mismatch',
+  incomplete_tin: isSG.value ? 'Missing UEN' : 'Missing TIN',
   unusual_amount: 'Unusual Amount',
   missing_invoice: 'Missing Invoice',
   unmatched_deposit: 'Unmatched Deposit',
   unmatched_payment: 'Unmatched Payment',
   period_mismatch: 'Period Mismatch',
-}
+}))
 
 function resolve(status: string) {
   emit('resolve', props.anomaly.id, status, resolveNote.value || undefined)
@@ -75,7 +79,7 @@ function resolve(status: string) {
         <strong>Suggested Action:</strong> {{ anomaly.details.ai_resolution }}
       </p>
       <p v-if="anomaly.details.bir_reference" class="ai-bir-ref">
-        <strong>BIR Reference:</strong> {{ anomaly.details.bir_reference }}
+        <strong>{{ isSG ? 'IRAS Reference:' : 'BIR Reference:' }}</strong> {{ anomaly.details.bir_reference }}
       </p>
     </div>
 

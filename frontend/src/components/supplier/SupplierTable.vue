@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { Supplier } from '../../types/withholding'
 
-defineProps<{
+const props = defineProps<{
   suppliers: Supplier[]
+  jurisdiction?: string
 }>()
+
+const isSG = computed(() => props.jurisdiction === 'SG')
 const emit = defineEmits<{
   edit: [supplier: Supplier]
   delete: [id: string]
@@ -15,12 +19,12 @@ const emit = defineEmits<{
     <table>
       <thead>
         <tr>
-          <th>TIN</th>
+          <th>{{ isSG ? 'UEN' : 'TIN' }}</th>
           <th>Name</th>
           <th>Type</th>
-          <th>Default ATC</th>
-          <th>Default Rate</th>
-          <th>VAT Reg.</th>
+          <th>{{ isSG ? 'WHT Nature' : 'Default ATC' }}</th>
+          <th>{{ isSG ? 'WHT Rate' : 'EWT Rate' }}</th>
+          <th>{{ isSG ? 'GST Reg.' : 'VAT Reg.' }}</th>
           <th>Actions</th>
         </tr>
       </thead>

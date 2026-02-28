@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { WithholdingCertificate } from '../../types/withholding'
 import { formatAmount as fmtCurrency, currencySymbol } from '@/utils/currency'
 
-defineProps<{
+const props = defineProps<{
   certificates: WithholdingCertificate[]
+  jurisdiction?: string
 }>()
+
+const isSG = computed(() => props.jurisdiction === 'SG')
 const emit = defineEmits<{
   download: [certId: string]
 }>()
@@ -32,7 +36,7 @@ const statusTextColors: Record<string, string> = {
         <tr>
           <th>Supplier</th>
           <th>Quarter</th>
-          <th>ATC Code</th>
+          <th>{{ isSG ? 'WHT Nature' : 'ATC Code' }}</th>
           <th>Income Type</th>
           <th>Income Amount</th>
           <th>Rate</th>

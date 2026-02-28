@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useWithholdingStore } from '../stores/withholding'
+import { useAuthStore } from '../stores/auth'
 import EwtSummaryCards from '../components/withholding/EwtSummaryCards.vue'
 import CertificateTable from '../components/withholding/CertificateTable.vue'
 
 const store = useWithholdingStore()
+const auth = useAuthStore()
+const isSG = computed(() => auth.jurisdiction === 'SG')
 
 const selectedPeriod = ref('')
 const error = ref('')
@@ -54,7 +57,7 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
   try {
     await store.downloadSawt(selectedPeriod.value, format)
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'SAWT download failed'
+    error.value = e?.response?.data?.error ?? (isSG.value ? 'WHT summary download failed' : 'SAWT download failed')
   }
 }
 </script>
@@ -62,7 +65,7 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
 <template>
   <div class="withholding-view">
     <div class="view-header">
-      <h2>Withholding Tax Dashboard</h2>
+      <h2>{{ isSG ? 'Withholding Tax (S45) Dashboard' : 'Withholding Tax Dashboard' }}</h2>
       <div class="header-actions">
         <router-link to="/suppliers" class="btn">Manage Suppliers</router-link>
       </div>
@@ -79,26 +82,30 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
         </select>
       </div>
       <div class="control-actions">
-        <button class="btn" @click="handleDownloadSawt('csv')">Download SAWT (CSV)</button>
-        <button class="btn" @click="handleDownloadSawt('pdf')">Download SAWT (PDF)</button>
+        <button class="btn" @click="handleDownloadSawt('csv')">{{ isSG ? 'Download WHT Summary (CSV)' : 'Download SAWT (CSV)' }}</button>
+        <button class="btn" @click="handleDownloadSawt('pdf')">{{ isSG ? 'Download WHT Summary (PDF)' : 'Download SAWT (PDF)' }}</button>
       </div>
     </div>
 
-    <!-- EWT Summary Cards -->
-    <EwtSummaryCards v-if="store.ewtSummary" :summary="store.ewtSummary" />
+    <!-- EWT/WHT Summary Cards -->
+    <EwtSummaryCards v-if="store.ewtSummary" :summary="store.ewtSummary" :jurisdiction="auth.jurisdiction" />
 
     <div v-if="!store.ewtSummary && !store.loading" class="empty-state">
       <p>No withholding tax data for this period.</p>
       <p class="hint">
-        To generate data: Go to Reconciliation, classify transactions for EWT, then generate BIR 2307 certificates.
+        {{ isSG
+          ? 'To generate data: Go to Reconciliation, classify transactions for WHT, then generate S45 certificates.'
+          : 'To generate data: Go to Reconciliation, classify transactions for EWT, then generate BIR 2307 certificates.'
+        }}
       </p>
     </div>
 
     <!-- Certificates -->
     <div class="section" v-if="store.certificates.length > 0">
-      <h3>BIR 2307 Certificates</h3>
+      <h3>{{ isSG ? 'S45 WHT Certificates' : 'BIR 2307 Certificates' }}</h3>
       <CertificateTable
         :certificates="store.certificates"
+        :jurisdiction="auth.jurisdiction"
         @download="handleDownloadCert"
       />
     </div>

@@ -194,7 +194,7 @@ function formatDeadline(dateStr: string): string {
           <router-link to="/reports" class="card">
             <span class="card-icon">📋</span>
             <h3>Generate Report</h3>
-            <p>Create BIR 2550M and more</p>
+            <p>{{ auth.jurisdiction === 'SG' ? 'Create GST F5 and more' : 'Create BIR 2550M and more' }}</p>
           </router-link>
           <router-link to="/bank-reconciliation" class="card">
             <span class="card-icon">🏦</span>
@@ -214,7 +214,7 @@ function formatDeadline(dateStr: string): string {
           <router-link to="/withholding" class="card">
             <span class="card-icon">📑</span>
             <h3>Withholding Tax</h3>
-            <p>EWT, BIR 2307 & SAWT</p>
+            <p>{{ auth.jurisdiction === 'SG' ? 'WHT & S45 Certificates' : 'EWT, BIR 2307 & SAWT' }}</p>
           </router-link>
         </div>
       </div>

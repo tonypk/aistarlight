@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { client } from '../api/client'
+import { useAuthStore } from '../stores/auth'
+import { getReportTypes } from '../config/targetFieldsByReportType'
 
 interface ComparisonRow {
   field: string
@@ -19,21 +21,16 @@ interface CompareResult {
   comparison: ComparisonRow[]
 }
 
+const auth = useAuthStore()
+
 const periodA = ref('')
 const periodB = ref('')
-const reportType = ref('BIR_2550M')
 const loading = ref(false)
 const result = ref<CompareResult | null>(null)
 const error = ref('')
 
-const reportTypes = [
-  { value: 'BIR_2550M', label: 'BIR 2550M — Monthly VAT' },
-  { value: 'BIR_2550Q', label: 'BIR 2550Q — Quarterly VAT' },
-  { value: 'BIR_1601C', label: 'BIR 1601-C — Withholding Tax' },
-  { value: 'BIR_0619E', label: 'BIR 0619-E — Expanded Withholding' },
-  { value: 'BIR_1701', label: 'BIR 1701 — Annual ITR (Individual)' },
-  { value: 'BIR_1702', label: 'BIR 1702 — Annual ITR (Corporate)' },
-]
+const reportTypes = computed(() => getReportTypes(auth.jurisdiction))
+const reportType = ref(auth.jurisdiction === 'SG' ? 'IRAS_GST_F5' : 'BIR_2550M')
 
 // Generate recent periods (last 12 months)
 function recentPeriods(): string[] {

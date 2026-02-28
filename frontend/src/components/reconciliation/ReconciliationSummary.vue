@@ -1,5 +1,11 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { ReconciliationComparison } from '../../types/transaction'
+import { currencyLocale, currencySymbol } from '@/utils/currency'
+import { useAuthStore } from '../../stores/auth'
+
+const auth = useAuthStore()
+const isSG = computed(() => auth.jurisdiction === 'SG')
 
 defineProps<{
   comparison: ReconciliationComparison
@@ -14,10 +20,10 @@ defineProps<{
 function fmt(val: string | number): string {
   const n = typeof val === 'string' ? parseFloat(val) : val
   if (isNaN(n)) return '0.00'
-  return n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return n.toLocaleString(currencyLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-const lineLabels: Record<string, string> = {
+const lineLabelsPH: Record<string, string> = {
   vatable_sales: 'Line 1 — Vatable Sales',
   sales_to_government: 'Line 2 — Sales to Government',
   zero_rated_sales: 'Line 3 — Zero Rated Sales',
@@ -32,6 +38,17 @@ const lineLabels: Record<string, string> = {
   input_vat_imports: 'Line 10 — Input VAT Imports',
   total_input_vat: 'Line 11 — Total Input VAT',
 }
+
+const lineLabelsSG: Record<string, string> = {
+  vatable_sales: 'Box 1 — Standard-Rated Supplies',
+  zero_rated_sales: 'Box 2 — Zero-Rated Supplies',
+  vat_exempt_sales: 'Box 3 — Exempt Supplies',
+  total_sales: 'Box 4 — Total Supplies',
+  output_vat: 'Box 6 — Output Tax',
+  total_input_vat: 'Box 7 — Input Tax',
+}
+
+const lineLabels = computed(() => isSG.value ? lineLabelsSG : lineLabelsPH)
 </script>
 
 <template>
@@ -84,7 +101,7 @@ const lineLabels: Record<string, string> = {
     <div class="totals">
       <span>{{ comparison.matched_lines }}/{{ comparison.total_lines }} lines match</span>
       <span v-if="comparison.fully_matched" class="all-match">All lines match!</span>
-      <span v-else class="total-diff">Total difference: PHP {{ fmt(comparison.total_difference) }}</span>
+      <span v-else class="total-diff">Total difference: {{ currencySymbol() }} {{ fmt(comparison.total_difference) }}</span>
     </div>
   </div>
 </template>

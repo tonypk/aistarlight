@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { client } from '../api/client'
 import { currencySymbol, formatCurrency } from '@/utils/currency'
+import { useAuthStore } from '../stores/auth'
+import { getReportTypes } from '../config/targetFieldsByReportType'
 
 interface PenaltyResult {
   surcharge: number
@@ -17,7 +19,10 @@ interface PenaltyResult {
   }
 }
 
-const formType = ref('BIR_2550M')
+const auth = useAuthStore()
+const isSG = computed(() => auth.jurisdiction === 'SG')
+
+const formType = ref(auth.jurisdiction === 'SG' ? 'IRAS_GST_F5' : 'BIR_2550M')
 const period = ref('')
 const daysLate = ref(30)
 const taxDue = ref(0)
@@ -25,14 +30,7 @@ const result = ref<PenaltyResult | null>(null)
 const loading = ref(false)
 const error = ref('')
 
-const formTypes = [
-  { value: 'BIR_2550M', label: 'BIR 2550M - Monthly VAT' },
-  { value: 'BIR_2550Q', label: 'BIR 2550Q - Quarterly VAT' },
-  { value: 'BIR_1601C', label: 'BIR 1601C - Withholding Tax (Compensation)' },
-  { value: 'BIR_0619E', label: 'BIR 0619E - Expanded Withholding Tax' },
-  { value: 'BIR_1701', label: 'BIR 1701 - Annual ITR (Individual)' },
-  { value: 'BIR_1702', label: 'BIR 1702 - Annual ITR (Corporate)' },
-]
+const formTypes = computed(() => getReportTypes(auth.jurisdiction).filter(r => r.value !== 'Bank_Statement'))
 
 async function calculate() {
   if (!period.value || daysLate.value <= 0 || taxDue.value <= 0) {
@@ -66,7 +64,7 @@ function formatPeso(val: number): string {
 <template>
   <div class="penalty-calc">
     <h2>Penalty Calculator</h2>
-    <p class="subtitle">Calculate surcharge, interest, and compromise penalties for late BIR filings</p>
+    <p class="subtitle">{{ isSG ? 'Calculate late filing penalties for IRAS returns' : 'Calculate surcharge, interest, and compromise penalties for late BIR filings' }}</p>
 
     <div class="form-grid">
       <div class="field">

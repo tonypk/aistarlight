@@ -4,17 +4,20 @@ import { useRouter } from 'vue-router'
 import { receiptsApi } from '@/api/receipts'
 import { compressBatch, type CompressResult } from '@/utils/imageCompressor'
 import { useAccountingStore } from '@/stores/accounting'
+import { useAuthStore } from '@/stores/auth'
 import { currencySymbol } from '@/utils/currency'
 
 const router = useRouter()
 const accounting = useAccountingStore()
+const auth = useAuthStore()
+const isSG = computed(() => auth.jurisdiction === 'SG')
 const converting = ref(false)
 
 // State
 const files = ref<File[]>([])
 const previews = ref<{ name: string; url: string; size: string; originalSize: string; compressed: boolean }[]>([])
 const period = ref('')
-const reportType = ref('BIR_2550M')
+const reportType = ref(auth.jurisdiction === 'SG' ? 'IRAS_GST_F5' : 'BIR_2550M')
 const processing = ref(false)
 const compressing = ref(false)
 const compressProgress = ref({ done: 0, total: 0 })
@@ -250,7 +253,7 @@ function reset() {
   <div class="receipt-upload">
     <div class="page-header">
       <h1>Receipt Scanner</h1>
-      <p class="subtitle">Upload receipt images for automatic OCR, parsing, and BIR report generation</p>
+      <p class="subtitle">Upload receipt images for automatic OCR, parsing, and {{ isSG ? 'IRAS' : 'BIR' }} report generation</p>
       <button class="btn-secondary" @click="loadHistory">View History</button>
     </div>
 

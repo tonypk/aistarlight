@@ -6,6 +6,7 @@ import { useReportStore } from '../stores/report'
 import { useAccountingStore } from '../stores/accounting'
 import { reconciliationApi } from '../api/transactions'
 import { currencyLocale } from '@/utils/currency'
+import { useAuthStore } from '../stores/auth'
 import VATSummarySheet from '../components/reconciliation/VATSummarySheet.vue'
 import ReconciliationSummary from '../components/reconciliation/ReconciliationSummary.vue'
 import AnomalyList from '../components/reconciliation/AnomalyList.vue'
@@ -15,6 +16,8 @@ const route = useRoute()
 const store = useTransactionStore()
 const reportStore = useReportStore()
 const accounting = useAccountingStore()
+const auth = useAuthStore()
+const isSG = computed(() => auth.jurisdiction === 'SG')
 
 const selectedReportId = ref<string>('')
 const reconError = ref('')
@@ -188,7 +191,7 @@ async function onResolveAnomaly(id: string, status: string, note?: string) {
   await store.resolveAnomaly(sessionId.value, id, status, note)
 }
 
-const generateReportType = ref('BIR_2550M')
+const generateReportType = ref(isSG.value ? 'IRAS_GST_F5' : 'BIR_2550M')
 const generatingReport = ref(false)
 const exportingPdf = ref(false)
 
@@ -294,7 +297,7 @@ const statusTextColors: Record<string, string> = {
     <!-- Session List Mode -->
     <template v-if="listMode">
       <div class="view-header">
-        <h2>VAT Reconciliation</h2>
+        <h2>{{ isSG ? 'GST Reconciliation' : 'VAT Reconciliation' }}</h2>
         <button class="btn primary" @click="goToClassification">Go to Classification</button>
       </div>
 
@@ -338,7 +341,7 @@ const statusTextColors: Record<string, string> = {
     <template v-else>
       <div class="view-header">
         <div>
-          <h2>VAT Reconciliation</h2>
+          <h2>{{ isSG ? 'GST Reconciliation' : 'VAT Reconciliation' }}</h2>
           <p class="desc" v-if="store.currentSession" data-testid="recon-status">
             Period: {{ store.currentSession.period }}
             | Status: {{ store.currentSession.status }}
@@ -389,10 +392,16 @@ const statusTextColors: Record<string, string> = {
           </button>
         </div>
         <div class="control-row" v-if="store.currentSession?.status === 'completed'">
-          <label>Generate BIR Report:</label>
+          <label>{{ isSG ? 'Generate IRAS Report:' : 'Generate BIR Report:' }}</label>
           <select v-model="generateReportType">
-            <option value="BIR_2550M">BIR 2550M (Monthly)</option>
-            <option value="BIR_2550Q">BIR 2550Q (Quarterly)</option>
+            <template v-if="isSG">
+              <option value="IRAS_GST_F5">GST F5 (Quarterly)</option>
+              <option value="IRAS_FORM_C">Form C (Annual)</option>
+            </template>
+            <template v-else>
+              <option value="BIR_2550M">BIR 2550M (Monthly)</option>
+              <option value="BIR_2550Q">BIR 2550Q (Quarterly)</option>
+            </template>
           </select>
           <button
             class="btn primary"

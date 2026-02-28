@@ -1,6 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { client } from '../api/client'
+import { useAuthStore } from '../stores/auth'
+
+const auth = useAuthStore()
+const isSG = computed(() => auth.jurisdiction === 'SG')
 
 interface FormRec {
   form_type: string
@@ -59,13 +63,13 @@ function freqClass(freq: string): string {
 <template>
   <div class="form-router">
     <h2>Form Router</h2>
-    <p class="subtitle">Find out which BIR forms your company needs to file</p>
+    <p class="subtitle">Find out which {{ isSG ? 'IRAS' : 'BIR' }} forms your company needs to file</p>
 
     <div class="profile-form">
       <div class="field">
         <label>
           <input type="checkbox" v-model="vatRegistered" />
-          VAT Registered
+          {{ isSG ? 'GST Registered' : 'VAT Registered' }}
         </label>
       </div>
       <div class="field">

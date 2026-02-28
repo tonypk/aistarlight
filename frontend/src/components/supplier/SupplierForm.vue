@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Supplier, SupplierCreateData } from '../../types/withholding'
 
 const props = defineProps<{
   supplier?: Supplier | null
+  jurisdiction?: string
 }>()
+
+const isSG = computed(() => props.jurisdiction === 'SG')
 const emit = defineEmits<{
   submit: [data: SupplierCreateData]
   cancel: []
@@ -43,8 +46,8 @@ function handleSubmit() {
 <template>
   <form class="supplier-form" @submit.prevent="handleSubmit">
     <div class="form-row">
-      <label>TIN *</label>
-      <input v-model="form.tin" placeholder="e.g. 123-456-789-000" required />
+      <label>{{ isSG ? 'UEN *' : 'TIN *' }}</label>
+      <input v-model="form.tin" :placeholder="isSG ? 'e.g. 201234567X' : 'e.g. 123-456-789-000'" required />
     </div>
     <div class="form-row">
       <label>Name *</label>
@@ -62,17 +65,17 @@ function handleSubmit() {
       </select>
     </div>
     <div class="form-row">
-      <label>Default EWT Rate</label>
-      <input v-model.number="form.default_ewt_rate" type="number" step="0.01" min="0" max="1" placeholder="e.g. 0.02 for 2%" />
+      <label>{{ isSG ? 'Default WHT Rate' : 'Default EWT Rate' }}</label>
+      <input v-model.number="form.default_ewt_rate" type="number" step="0.01" min="0" max="1" :placeholder="isSG ? 'e.g. 0.15 for 15%' : 'e.g. 0.02 for 2%'" />
     </div>
     <div class="form-row">
-      <label>Default ATC Code</label>
-      <input v-model="form.default_atc_code" placeholder="e.g. WC120" />
+      <label>{{ isSG ? 'Default WHT Nature' : 'Default ATC Code' }}</label>
+      <input v-model="form.default_atc_code" :placeholder="isSG ? 'e.g. INT, ROY, TECH' : 'e.g. WC120'" />
     </div>
     <div class="form-row">
       <label>
         <input type="checkbox" v-model="form.is_vat_registered" />
-        VAT Registered
+        {{ isSG ? 'GST Registered' : 'VAT Registered' }}
       </label>
     </div>
     <div class="form-actions">

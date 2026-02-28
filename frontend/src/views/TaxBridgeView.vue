@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useAccountingStore } from '../stores/accounting'
+import { useAuthStore } from '../stores/auth'
 import { currencyLocale } from '@/utils/currency'
 
 const store = useAccountingStore()
+const auth = useAuthStore()
+const isSG = computed(() => auth.jurisdiction === 'SG')
 
-const formType = ref('BIR_2550M')
-const periodMonth = ref(new Date().toISOString().slice(0, 7))
-const year = ref(new Date().getFullYear())
+interface FormTypeOption { value: string; label: string; period: string }
 
-const formTypes = [
+const formTypesPH: FormTypeOption[] = [
   { value: 'BIR_2550M', label: 'BIR 2550M - Monthly VAT', period: 'month' },
   { value: 'BIR_2550Q', label: 'BIR 2550Q - Quarterly VAT', period: 'month' },
   { value: 'BIR_0619E', label: 'BIR 0619E - Monthly EWT', period: 'month' },
@@ -17,10 +18,24 @@ const formTypes = [
   { value: 'BIR_1702', label: 'BIR 1702 - Annual Corporate IT', period: 'year' },
 ]
 
-const selectedForm = ref(formTypes[0])
+const formTypesSG: FormTypeOption[] = [
+  { value: 'IRAS_GST_F5', label: 'GST F5 - GST Return', period: 'month' },
+  { value: 'IRAS_FORM_C', label: 'Form C - Corporate Income Tax', period: 'year' },
+  { value: 'IRAS_FORM_CS', label: 'Form C-S - Simplified Corporate Tax', period: 'year' },
+  { value: 'IRAS_FORM_B', label: 'Form B - Individual Income Tax', period: 'year' },
+  { value: 'IRAS_ECI', label: 'ECI - Estimated Chargeable Income', period: 'year' },
+]
+
+const formTypes = computed(() => isSG.value ? formTypesSG : formTypesPH)
+
+const formType = ref(isSG.value ? 'IRAS_GST_F5' : 'BIR_2550M')
+const periodMonth = ref(new Date().toISOString().slice(0, 7))
+const year = ref(new Date().getFullYear())
+
+const selectedForm = ref(formTypes.value[0])
 
 function onFormChange() {
-  selectedForm.value = formTypes.find(f => f.value === formType.value) || formTypes[0]
+  selectedForm.value = formTypes.value.find(f => f.value === formType.value) || formTypes.value[0]
 }
 
 function getPeriodDates() {
@@ -90,10 +105,38 @@ const resultDisplayConfig: Record<string, { label: string; key: string }[]> = {
     { label: 'Tax Due', key: 'tax_due' },
     { label: 'Total Amount Due', key: 'total_amount_due' },
   ],
+  // Singapore forms
+  IRAS_GST_F5: [
+    { label: 'Box 1 - Standard-Rated Supplies', key: 'box_1_standard_rated' },
+    { label: 'Box 2 - Zero-Rated Supplies', key: 'box_2_zero_rated' },
+    { label: 'Box 3 - Exempt Supplies', key: 'box_3_exempt' },
+    { label: 'Box 4 - Total Supplies', key: 'box_4_total_supplies' },
+    { label: 'Box 6 - Output Tax', key: 'box_6_output_tax' },
+    { label: 'Box 7 - Input Tax', key: 'box_7_input_tax' },
+    { label: 'Box 8 - Net GST', key: 'box_8_net_gst' },
+  ],
+  IRAS_FORM_C: [
+    { label: 'Revenue', key: 'revenue' },
+    { label: 'Cost of Sales', key: 'cost_of_sales' },
+    { label: 'Gross Profit', key: 'gross_profit' },
+    { label: 'Operating Expenses', key: 'total_deductions' },
+    { label: 'Chargeable Income', key: 'chargeable_income' },
+    { label: 'Tax @ 17%', key: 'tax_due' },
+    { label: 'Total Amount Due', key: 'total_amount_due' },
+  ],
+  IRAS_FORM_B: [
+    { label: 'Employment Income', key: 'employment_income' },
+    { label: 'Trade Income', key: 'trade_income' },
+    { label: 'Total Income', key: 'total_income' },
+    { label: 'Deductions & Reliefs', key: 'total_deductions' },
+    { label: 'Chargeable Income', key: 'chargeable_income' },
+    { label: 'Tax Due', key: 'tax_due' },
+  ],
 }
 
 function getDisplayFields() {
-  return resultDisplayConfig[formType.value] || resultDisplayConfig['BIR_2550M']
+  const defaultKey = isSG.value ? 'IRAS_GST_F5' : 'BIR_2550M'
+  return resultDisplayConfig[formType.value] || resultDisplayConfig[defaultKey]
 }
 </script>
 
@@ -101,13 +144,13 @@ function getDisplayFields() {
   <div class="page">
     <div class="page-header">
       <h1>Tax Calculation from GL</h1>
-      <p class="subtitle">Auto-populate BIR tax forms from General Ledger balances</p>
+      <p class="subtitle">{{ isSG ? 'Auto-populate IRAS tax forms from General Ledger balances' : 'Auto-populate BIR tax forms from General Ledger balances' }}</p>
     </div>
 
     <div class="form-card">
       <div class="form-row">
         <label>
-          BIR Form
+          {{ isSG ? 'Tax Form' : 'BIR Form' }}
           <select v-model="formType" @change="onFormChange" class="select">
             <option v-for="f in formTypes" :key="f.value" :value="f.value">{{ f.label }}</option>
           </select>
@@ -133,7 +176,7 @@ function getDisplayFields() {
       <div class="result-header">
         <h2>{{ store.taxResult.form_type }} Calculation Result</h2>
         <div class="result-actions">
-          <button v-if="formType === 'BIR_2550M'" class="btn btn-secondary" @click="exportDAT">
+          <button v-if="formType === 'BIR_2550M' && !isSG" class="btn btn-secondary" @click="exportDAT">
             Export DAT File
           </button>
         </div>

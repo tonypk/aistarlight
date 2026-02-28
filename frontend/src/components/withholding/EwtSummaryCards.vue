@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { EwtSummary } from '../../types/withholding'
 import { formatAmount as fmtCurrency, currencySymbol } from '@/utils/currency'
 
-defineProps<{
+const props = defineProps<{
   summary: EwtSummary
+  jurisdiction?: string
 }>()
+
+const isSG = computed(() => props.jurisdiction === 'SG')
 
 function fmt(n: number): string {
   return fmtCurrency(n)
@@ -22,7 +26,7 @@ function fmt(n: number): string {
       <div class="card-value">{{ summary.total_certificates }}</div>
     </div>
     <div class="card">
-      <div class="card-label">Total Income Subject to EWT</div>
+      <div class="card-label">{{ isSG ? 'Total Income Subject to WHT' : 'Total Income Subject to EWT' }}</div>
       <div class="card-value">{{ currencySymbol() }} {{ fmt(summary.total_income) }}</div>
     </div>
     <div class="card accent">
