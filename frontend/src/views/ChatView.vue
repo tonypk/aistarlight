@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref, computed } from 'vue'
 import ChatMessage from '../components/chat/ChatMessage.vue'
 import { useChatStore } from '../stores/chat'
 import { healthApi } from '../api/health'
+import { useAuthStore } from '../stores/auth'
 
+const auth = useAuthStore()
+const isSG = computed(() => auth.jurisdiction === 'SG')
 const chat = useChatStore()
 const input = ref('')
 const messagesEl = ref<HTMLElement | null>(null)
@@ -49,8 +52,14 @@ async function handleSend() {
     <div class="chat-container">
       <div class="messages" ref="messagesEl">
         <div v-if="!chat.messages.length" class="welcome">
-          <p>Ask me anything about Philippine tax filing!</p>
-          <div class="suggestions">
+          <p v-if="isSG">Ask me anything about Singapore tax filing!</p>
+          <p v-else>Ask me anything about Philippine tax filing!</p>
+          <div v-if="isSG" class="suggestions">
+            <button @click="input = 'How do I file GST F5?'">How to file GST F5?</button>
+            <button @click="input = 'What is the GST rate in Singapore?'">SG GST rate?</button>
+            <button @click="input = 'Help me generate this quarter\'s GST report'">Generate GST report</button>
+          </div>
+          <div v-else class="suggestions">
             <button @click="input = 'How do I file BIR 2550M?'">How to file BIR 2550M?</button>
             <button @click="input = 'What is the VAT rate in the Philippines?'">PH VAT rate?</button>
             <button @click="input = 'Help me generate this month\'s VAT report'">Generate VAT report</button>
