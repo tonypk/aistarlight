@@ -15,6 +15,7 @@ export const useUploadStore = defineStore("upload", () => {
   const sheets = ref<Record<string, SheetData>>({});
   const confirmedMappings = ref<Record<string, string>>({});
   const reportType = ref("BIR_2550M");
+  const dataCategory = ref<string>("");
 
   const hasFile = computed(() => !!fileId.value);
   const hasMappings = computed(
@@ -40,6 +41,10 @@ export const useUploadStore = defineStore("upload", () => {
     confirmedMappings.value = { ...mappings };
   }
 
+  function setDataCategory(category: string) {
+    dataCategory.value = category;
+  }
+
   function setReportType(type: string) {
     reportType.value = type;
   }
@@ -51,6 +56,7 @@ export const useUploadStore = defineStore("upload", () => {
     sampleRows.value = [];
     sheets.value = {};
     confirmedMappings.value = {};
+    dataCategory.value = "";
     // reportType intentionally NOT reset — user selects it before upload
   }
 
@@ -62,10 +68,12 @@ export const useUploadStore = defineStore("upload", () => {
     sheets,
     confirmedMappings,
     reportType,
+    dataCategory,
     hasFile,
     hasMappings,
     setUploadResult,
     setMappings,
+    setDataCategory,
     setReportType,
     clear,
   };

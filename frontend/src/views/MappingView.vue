@@ -332,6 +332,7 @@ function confirmMapping() {
     }
   }
   uploadStore.setMappings(finalMappings)
+  uploadStore.setDataCategory(dataCategory.value)
 
   // Save template in background
   saveTemplate()
