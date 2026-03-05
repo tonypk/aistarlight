@@ -140,9 +140,9 @@ async function loadSessionData(sid: string) {
   if (store.currentSession?.reconciliation_result) {
     store.reconciliationResult = { ...store.currentSession.reconciliation_result }
   }
-  if (store.currentSession?.summary) {
-    store.summary = { ...store.currentSession.summary }
-  }
+  // Always regenerate summary from fresh DB data (not stale cached session.summary)
+  // This ensures user edits to vat_type/category are reflected immediately
+  await store.fetchSummary(sid)
   if (store.currentSession?.report_id) {
     selectedReportId.value = store.currentSession.report_id
   }

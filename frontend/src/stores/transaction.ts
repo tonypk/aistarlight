@@ -151,6 +151,8 @@ export const useTransactionStore = defineStore("transaction", () => {
     transactions.value = transactions.value.map((t) =>
       t.id === txnId ? { ...updated } : t,
     );
+    // Invalidate cached summary so next fetch/display uses fresh data
+    summary.value = null;
     return updated;
   }
 
@@ -225,7 +227,15 @@ export const useTransactionStore = defineStore("transaction", () => {
         date_tolerance_days: dateTolerance,
       });
       reconciliationResult.value = { ...res.data.data };
+      // Update summary from reconciliation result so VAT display reflects latest data
+      if (res.data.data?.summary) {
+        summary.value = { ...res.data.data.summary };
+      }
       await fetchSession(sessionId);
+      // Also sync summary from refreshed session (in case reconciliation result format differs)
+      if (currentSession.value?.summary) {
+        summary.value = { ...currentSession.value.summary };
+      }
       return res.data.data;
     } finally {
       loading.value = false;
