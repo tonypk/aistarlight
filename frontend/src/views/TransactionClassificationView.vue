@@ -41,14 +41,17 @@ onMounted(async () => {
       const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
       const session = await store.createSession(period)
 
-      // Determine source_type from user's data category selection or infer from mappings
+      // Determine source_type from user's data category selection or infer from mappings.
+      // For combined files, use 'combined' — the backend detects per-row source type.
       let sourceType = 'sales_record'
-      if (uploadStore.dataCategory === 'purchases') {
+      if (uploadStore.dataCategory === 'combined') {
+        sourceType = 'combined'
+      } else if (uploadStore.dataCategory === 'purchases') {
         sourceType = 'purchase_record'
       } else if (uploadStore.dataCategory === 'sales') {
         sourceType = 'sales_record'
       } else {
-        // Auto-detect: check if mappings contain purchase-specific fields
+        // Auto-detect from mapped field names
         const mappingValues = Object.values(uploadStore.confirmedMappings)
         const hasPurchaseFields = mappingValues.some(v =>
           v.startsWith('purchase_') || v.startsWith('supplier_') ||
@@ -58,7 +61,9 @@ onMounted(async () => {
           v.startsWith('sales_') || v.startsWith('customer_') ||
           v.startsWith('output_tax') || v === 'gross_sales' || v.startsWith('vatable_sales')
         )
-        if (hasPurchaseFields && !hasSalesFields) {
+        if (hasPurchaseFields && hasSalesFields) {
+          sourceType = 'combined'
+        } else if (hasPurchaseFields && !hasSalesFields) {
           sourceType = 'purchase_record'
         }
       }

@@ -416,6 +416,7 @@ function getFieldLabel(target: string): string {
               { value: '', label: 'Auto-detect' },
               { value: 'sales', label: 'Sales (SLS)' },
               { value: 'purchases', label: 'Purchases (SLP)' },
+              { value: 'combined', label: 'Combined (Sales + Purchases)' },
             ]"
             :key="opt.value"
             class="category-btn"
