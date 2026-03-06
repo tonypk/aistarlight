@@ -68,6 +68,13 @@ export interface Anomaly {
   created_at: string;
 }
 
+export interface ValidationWarning {
+  code: string;
+  severity: "error" | "warning" | "info";
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface VatSummary {
   period: string;
   vatable_sales: string;
@@ -89,6 +96,7 @@ export interface VatSummary {
     by_vat_type: Record<string, number>;
     by_category: Record<string, number>;
   };
+  validation_warnings?: ValidationWarning[];
 }
 
 export interface ComparisonLine {

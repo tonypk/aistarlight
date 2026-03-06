@@ -7,20 +7,50 @@ import { useAuthStore } from '../../stores/auth'
 const auth = useAuthStore()
 const isSG = computed(() => auth.jurisdiction === 'SG')
 
-defineProps<{
+const props = defineProps<{
   summary: VatSummary
 }>()
+
+const validationWarnings = computed(() => props.summary.validation_warnings ?? [])
+const hasErrors = computed(() => validationWarnings.value.some(w => w.severity === 'error'))
 
 function fmt(val: string | number): string {
   const n = typeof val === 'string' ? parseFloat(val) : val
   if (isNaN(n)) return '0.00'
   return n.toLocaleString(currencyLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
+
+function severityIcon(severity: string): string {
+  switch (severity) {
+    case 'error': return '!!'
+    case 'warning': return '!'
+    default: return 'i'
+  }
+}
 </script>
 
 <template>
   <div class="vat-sheet">
     <h3>{{ isSG ? 'GST Summary' : 'VAT Summary' }} — {{ summary.period }}</h3>
+
+    <!-- Validation Warnings -->
+    <div v-if="validationWarnings.length" class="validation-panel" :class="{ 'has-errors': hasErrors }">
+      <div class="validation-header">
+        <span class="validation-title-icon" :class="hasErrors ? 'error' : 'warning'">
+          {{ hasErrors ? '!!' : '!' }}
+        </span>
+        <strong>AI Validation: {{ validationWarnings.length }} issue(s) detected</strong>
+      </div>
+      <div
+        v-for="(w, idx) in validationWarnings"
+        :key="idx"
+        class="validation-item"
+        :class="w.severity"
+      >
+        <span class="severity-icon" :class="w.severity">{{ severityIcon(w.severity) }}</span>
+        <span class="validation-msg">{{ w.message }}</span>
+      </div>
+    </div>
 
     <!-- Singapore GST layout -->
     <template v-if="isSG">
@@ -112,4 +142,75 @@ h3 { margin: 0 0 16px; font-size: 18px; color: #111827; }
 .val { font-variant-numeric: tabular-nums; }
 .net .row.total { background: #eef2ff; color: #4f46e5; font-size: 16px; }
 .stats { font-size: 12px; color: #9ca3af; text-align: right; padding-top: 8px; }
+
+/* Validation warnings */
+.validation-panel {
+  border: 1px solid #f59e0b;
+  background: #fffbeb;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+.validation-panel.has-errors {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+.validation-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.validation-header strong {
+  font-size: 14px;
+  color: #92400e;
+}
+.validation-panel.has-errors .validation-header strong {
+  color: #991b1b;
+}
+.validation-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.validation-title-icon.error { background: #ef4444; }
+.validation-title-icon.warning { background: #f59e0b; }
+.validation-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.validation-item + .validation-item {
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+.severity-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.severity-icon.error { background: #ef4444; }
+.severity-icon.warning { background: #f59e0b; }
+.severity-icon.info { background: #3b82f6; }
+.validation-msg { color: #374151; }
+.validation-item.error .validation-msg { color: #991b1b; }
+.validation-item.warning .validation-msg { color: #78350f; }
+.validation-item.info .validation-msg { color: #1e3a5f; }
 </style>
