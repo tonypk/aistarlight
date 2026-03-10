@@ -12,6 +12,20 @@ const { suggestedAgent } = useRouteAgent()
 const input = ref('')
 const messagesEl = ref<HTMLElement | null>(null)
 
+const agentIcons: Record<string, string> = {
+  general: '\u{1F4AC}',
+  filing: '\u{1F4CB}',
+  recon: '\u{1F50D}',
+  journal: '\u{1F4DD}',
+  compliance: '\u2705',
+  classifier: '\u{1F3F7}\uFE0F',
+}
+
+function handleSampleQuestion(q: string) {
+  input.value = q
+  handleSend()
+}
+
 onMounted(() => {
   agentStore.loadAgents()
 })
@@ -126,7 +140,22 @@ watch(() => agentStore.messages.length, async () => {
 
       <div class="messages" ref="messagesEl">
         <div v-if="!agentStore.messages.length" class="empty-state">
-          <p>Ask {{ agentStore.activeAgentInfo?.name || 'the AI' }} anything...</p>
+          <div class="empty-icon" :style="{ color: agentStore.activeAgentInfo?.color || '#4f46e5' }">
+            {{ agentIcons[agentStore.activeAgent] || '&#129302;' }}
+          </div>
+          <h4 class="empty-title">{{ agentStore.activeAgentInfo?.name || 'AI Assistant' }}</h4>
+          <p class="empty-hint">{{ agentStore.activeAgentInfo?.hint || 'Ask me anything...' }}</p>
+          <div class="sample-questions" v-if="agentStore.activeAgentInfo?.sample_questions?.length">
+            <button
+              v-for="(q, qi) in agentStore.activeAgentInfo.sample_questions"
+              :key="qi"
+              class="sample-chip"
+              :style="{ '--agent-color': agentStore.activeAgentInfo?.color || '#4f46e5' }"
+              @click="handleSampleQuestion(q)"
+            >
+              {{ q }}
+            </button>
+          </div>
           <p class="empty-context" v-if="getRouteContext().current_page">
             Context: <code>{{ getRouteContext().current_page }}</code>
           </p>
@@ -302,13 +331,58 @@ watch(() => agentStore.messages.length, async () => {
 
 .empty-state {
   text-align: center;
-  color: #9ca3af;
-  padding: 40px 20px;
-  font-size: 14px;
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.empty-icon {
+  font-size: 36px;
+  line-height: 1;
+}
+.empty-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+.empty-hint {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+.sample-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  width: 100%;
+}
+.sample-chip {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #374151;
+  text-align: left;
+  font-family: inherit;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+.sample-chip:hover {
+  background: color-mix(in srgb, var(--agent-color, #4f46e5) 8%, white);
+  border-color: var(--agent-color, #4f46e5);
+  color: var(--agent-color, #4f46e5);
 }
 .empty-context {
   font-size: 12px;
-  margin-top: 8px;
+  margin-top: 4px;
+  color: #9ca3af;
 }
 .empty-context code {
   background: #eef2ff;

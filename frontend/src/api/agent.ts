@@ -5,6 +5,10 @@ export interface AgentInfo {
   name: string;
   description: string;
   icon: string;
+  color: string;
+  hint: string;
+  sample_questions: string[];
+  recommended: boolean;
   workflow_types: string[];
 }
 

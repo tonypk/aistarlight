@@ -4,12 +4,12 @@ import { useAgentStore } from '../../stores/agent'
 const agentStore = useAgentStore()
 
 const agentIcons: Record<string, string> = {
-  general: '💬',
-  filing: '📋',
-  recon: '🔍',
-  journal: '📝',
-  compliance: '✅',
-  classifier: '🏷️',
+  general: '\u{1F4AC}',
+  filing: '\u{1F4CB}',
+  recon: '\u{1F50D}',
+  journal: '\u{1F4DD}',
+  compliance: '\u2705',
+  classifier: '\u{1F3F7}\uFE0F',
 }
 </script>
 
@@ -20,11 +20,17 @@ const agentIcons: Record<string, string> = {
       :key="a.id"
       class="agent-tab"
       :class="{ active: agentStore.activeAgent === a.id }"
+      :style="{
+        '--agent-color': a.color || '#4f46e5',
+        borderColor: agentStore.activeAgent === a.id ? (a.color || '#4f46e5') : undefined,
+        background: agentStore.activeAgent === a.id ? (a.color || '#4f46e5') : undefined,
+      }"
       :title="a.description"
       @click="agentStore.switchAgent(a.id)"
     >
-      <span class="agent-icon">{{ agentIcons[a.id] || '🤖' }}</span>
+      <span class="agent-icon">{{ agentIcons[a.id] || '\u{1F916}' }}</span>
       <span class="agent-name">{{ a.name }}</span>
+      <span v-if="a.recommended && agentStore.activeAgent !== a.id" class="recommended-dot" :style="{ background: a.color || '#4f46e5' }"></span>
     </button>
   </div>
 </template>
@@ -54,16 +60,24 @@ const agentIcons: Record<string, string> = {
   white-space: nowrap;
   transition: all 0.15s;
   color: #374151;
+  position: relative;
 }
 .agent-tab:hover {
-  border-color: #4f46e5;
-  background: #eef2ff;
+  border-color: var(--agent-color, #4f46e5);
+  background: color-mix(in srgb, var(--agent-color, #4f46e5) 8%, white);
 }
 .agent-tab.active {
-  border-color: #4f46e5;
-  background: #4f46e5;
   color: white;
 }
 .agent-icon { font-size: 14px; }
 .agent-name { font-weight: 500; }
+.recommended-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid white;
+}
 </style>
