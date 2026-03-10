@@ -78,7 +78,7 @@ async function handleLogout() {
   <aside class="sidebar">
     <div class="logo">
       <h2>AIStarlight <span class="jurisdiction-badge">{{ auth.jurisdiction }}</span></h2>
-      <p class="tagline">{{ auth.jurisdiction === 'SG' ? 'Singapore Tax Assistant' : 'Philippine Tax Assistant' }}</p>
+      <p class="tagline">{{ { SG: 'Singapore Tax Assistant', LK: 'Sri Lanka Tax Assistant' }[auth.jurisdiction] ?? 'Philippine Tax Assistant' }}</p>
     </div>
 
     <!-- Company Switcher -->

@@ -33,9 +33,29 @@ export const REPORT_TYPES_SG: ReportTypeOption[] = [
   { value: "Bank_Statement", label: "Bank Statement" },
 ];
 
+// Sri Lanka report types (IRD forms)
+export const REPORT_TYPES_LK: ReportTypeOption[] = [
+  { value: "IRDSL_VAT_RETURN", label: "VAT Return — Monthly/Quarterly" },
+  { value: "IRDSL_CIT", label: "CIT — Corporate Income Tax" },
+  { value: "IRDSL_IT_RETURN", label: "IT Return — Individual Income Tax" },
+  { value: "IRDSL_PAYE", label: "PAYE — Pay-As-You-Earn" },
+  { value: "IRDSL_WHT", label: "WHT — Withholding Tax" },
+  { value: "IRDSL_APIT", label: "APIT — Advanced Personal Income Tax" },
+  { value: "IRDSL_SSCL", label: "SSCL — Social Security Contribution Levy" },
+  { value: "IRDSL_SVAT", label: "SVAT — Simplified VAT Declaration" },
+  { value: "Bank_Statement", label: "Bank Statement" },
+];
+
 // Get report types based on jurisdiction
 export function getReportTypes(jurisdiction: string): ReportTypeOption[] {
-  return jurisdiction === "SG" ? REPORT_TYPES_SG : REPORT_TYPES_PH;
+  switch (jurisdiction) {
+    case "SG":
+      return REPORT_TYPES_SG;
+    case "LK":
+      return REPORT_TYPES_LK;
+    default:
+      return REPORT_TYPES_PH;
+  }
 }
 
 // Default export for backward compatibility

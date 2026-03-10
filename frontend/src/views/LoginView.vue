@@ -69,6 +69,16 @@ async function handleSubmit() {
             <span class="flag">SG</span>
             <span class="country-name">Singapore</span>
           </button>
+          <button
+            type="button"
+            class="jurisdiction-btn"
+            :class="{ active: selectedJurisdiction === 'LK' }"
+            @click="selectedJurisdiction = 'LK'"
+            data-testid="jurisdiction-lk"
+          >
+            <span class="flag">LK</span>
+            <span class="country-name">Sri Lanka</span>
+          </button>
         </div>
       </div>
 
