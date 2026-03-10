@@ -8,12 +8,17 @@ const ROUTE_AGENT_MAP: Record<string, string> = {
   "/classification": "classifier",
   "/journal-entries": "journal",
   "/general-ledger": "journal",
+  "/accounts": "journal",
   "/statements": "filing",
   "/tax-bridge": "filing",
   "/calendar": "compliance",
   "/penalty-calculator": "compliance",
   "/form-router": "filing",
   "/chat": "general",
+  "/withholding": "classifier",
+  "/suppliers": "classifier",
+  "/receipts": "classifier",
+  "/upload": "general",
 };
 
 export function useRouteAgent() {
@@ -29,5 +34,12 @@ export function useRouteAgent() {
     return "general";
   });
 
-  return { suggestedAgent };
+  const workflowType = computed(() => {
+    const path = route.path;
+    // Strip leading slash and take first segment
+    const segment = path.split("/").filter(Boolean)[0];
+    return segment || "";
+  });
+
+  return { suggestedAgent, workflowType };
 }

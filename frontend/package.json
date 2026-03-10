@@ -12,7 +12,11 @@
     "test:e2e:ui": "npx playwright test --ui"
   },
   "dependencies": {
+    "@types/dompurify": "^3.0.5",
+    "@types/markdown-it": "^14.1.2",
     "axios": "^1.7.9",
+    "dompurify": "^3.3.2",
+    "markdown-it": "^14.1.1",
     "pinia": "^2.3.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",

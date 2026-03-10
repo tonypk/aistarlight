@@ -22,7 +22,13 @@ export interface AgentStreamEvent {
   done?: boolean;
   content?: string;
   error?: string;
-  tool_calls?: Array<{ tool_name?: string; tool_id?: string; result?: string }>;
+  thread_id?: string;
+  tool_calls?: Array<{
+    tool_name?: string;
+    tool_id?: string;
+    result?: string;
+    status?: string;
+  }>;
   actions?: unknown;
   citations?: unknown;
 }
@@ -39,7 +45,9 @@ export interface ThreadInfo {
 
 export const agentApi = {
   list: (workflowType?: string) =>
-    client.get("/agents", { params: workflowType ? { workflow_type: workflowType } : {} }),
+    client.get("/agents", {
+      params: workflowType ? { workflow_type: workflowType } : {},
+    }),
 
   get: (agentId: string) => client.get(`/agents/${agentId}`),
 
@@ -50,7 +58,7 @@ export const agentApi = {
 
   async *stream(
     agentId: string,
-    data: AgentStreamRequest
+    data: AgentStreamRequest,
   ): AsyncGenerator<AgentStreamEvent> {
     const token = localStorage.getItem("access_token");
     const response = await fetch(`/api/v1/agents/${agentId}/stream`, {
