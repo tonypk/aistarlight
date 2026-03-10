@@ -43,16 +43,12 @@ jobs:
           key: ${{ secrets.GCE_SSH_KEY }}
           script: |
             set -euo pipefail
-            FRONTEND_DIR=/home/anna/aistarlight
-            COMPOSE_DIR=/home/anna/aistarlight-go
-            COMPOSE="sudo docker compose -p aistarlight -f docker-compose.prod.yml"
+            COMPOSE="sudo docker compose --project-directory /home/anna/aistarlight-go -p aistarlight -f /home/anna/aistarlight-go/docker-compose.prod.yml"
 
             # Pull latest frontend code
-            cd "$FRONTEND_DIR"
-            sudo -u anna git pull origin main
+            sudo -u anna bash -c 'cd /home/anna/aistarlight && git pull origin main'
 
             # Rebuild and restart frontend container
-            cd "$COMPOSE_DIR"
             $COMPOSE build --no-cache frontend
             $COMPOSE up -d frontend
 
