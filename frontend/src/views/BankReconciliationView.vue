@@ -8,6 +8,7 @@ import {
 } from '@/api/bankRecon'
 import { reconciliationApi } from '@/api/transactions'
 import { currencySymbol, formatCurrency } from '@/utils/currency'
+import InlineAIHint from '../components/ai/InlineAIHint.vue'
 
 // Wizard steps
 const STEPS = ['Upload', 'Parsing', 'Matching', 'AI Analysis', 'Summary']
@@ -306,6 +307,7 @@ function exportCSV() {
   <div class="bank-recon">
     <div class="header">
       <h1>Bank & Billing Reconciliation</h1>
+      <InlineAIHint agent="recon" message="AI can help match bank transactions automatically" action-label="Ask Recon Agent" />
       <div class="header-actions">
         <button class="btn btn-outline" @click="showHistory = !showHistory; if (showHistory) loadHistory()">
           {{ showHistory ? 'Hide' : 'Show' }} History

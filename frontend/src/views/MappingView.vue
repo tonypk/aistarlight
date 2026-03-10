@@ -9,6 +9,7 @@ import { TARGET_FIELDS, getReportTypes } from '../config/targetFieldsByReportTyp
 import type { TargetField } from '../config/targetFieldsByReportType'
 import SearchableFieldSelect from '../components/SearchableFieldSelect.vue'
 import DisambiguationPanel from '../components/DisambiguationPanel.vue'
+import InlineAIHint from '../components/ai/InlineAIHint.vue'
 
 const router = useRouter()
 const uploadStore = useUploadStore()
@@ -391,6 +392,7 @@ function getFieldLabel(target: string): string {
 <template>
   <div class="mapping-view">
     <h2>Column Mapping</h2>
+    <InlineAIHint agent="general" message="AI can answer questions about column mappings" action-label="Ask AI" />
     <p class="desc">
       Map your spreadsheet columns to
       <strong>{{ currentReportLabel }}</strong> fields

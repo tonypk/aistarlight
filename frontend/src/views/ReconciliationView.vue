@@ -10,6 +10,7 @@ import { useAuthStore } from '../stores/auth'
 import VATSummarySheet from '../components/reconciliation/VATSummarySheet.vue'
 import ReconciliationSummary from '../components/reconciliation/ReconciliationSummary.vue'
 import AnomalyList from '../components/reconciliation/AnomalyList.vue'
+import InlineAIHint from '../components/ai/InlineAIHint.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -298,6 +299,7 @@ const statusTextColors: Record<string, string> = {
     <template v-if="listMode">
       <div class="view-header">
         <h2>{{ isSG ? 'GST Reconciliation' : 'VAT Reconciliation' }}</h2>
+        <InlineAIHint agent="recon" message="AI can explain discrepancies and match transactions" action-label="Ask Recon Agent" />
         <button class="btn primary" @click="goToClassification">Go to Classification</button>
       </div>
 

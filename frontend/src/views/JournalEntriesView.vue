@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useAccountingStore } from '../stores/accounting'
 import { currencyLocale } from '@/utils/currency'
+import InlineAIHint from '../components/ai/InlineAIHint.vue'
 
 const store = useAccountingStore()
 const statusFilter = ref('')
@@ -57,6 +58,7 @@ const statusColors: Record<string, string> = {
   <div class="page">
     <div class="page-header">
       <h1>Journal Entries</h1>
+      <InlineAIHint agent="journal" message="AI can help create and explain journal entries" action-label="Ask Journal Agent" />
     </div>
 
     <div class="filters">

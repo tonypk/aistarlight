@@ -9,6 +9,7 @@ import TransactionFiltersBar from '../components/transaction/TransactionFilters.
 import TransactionTable from '../components/transaction/TransactionTable.vue'
 import BulkActionBar from '../components/transaction/BulkActionBar.vue'
 import type { TransactionFilters } from '../types/transaction'
+import InlineAIHint from '../components/ai/InlineAIHint.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -187,6 +188,7 @@ const statusTextColors: Record<string, string> = {
     <template v-if="listMode">
       <div class="view-header">
         <h2>Transaction Classification</h2>
+        <InlineAIHint agent="classifier" message="AI can classify transactions and explain VAT categories" action-label="Ask Classifier" />
         <button class="nav-btn" @click="goToUpload">Upload New Data</button>
       </div>
 
