@@ -26,6 +26,20 @@ function handleSampleQuestion(q: string) {
   handleSend()
 }
 
+function handleRetry(msgIndex: number) {
+  // Find the user message before this assistant message
+  for (let i = msgIndex - 1; i >= 0; i--) {
+    if (agentStore.messages[i].role === 'user') {
+      const content = agentStore.messages[i].content
+      // Remove the failed assistant message
+      agentStore.messages = agentStore.messages.filter((_, idx) => idx !== msgIndex)
+      const ctx = getRouteContext()
+      agentStore.sendMessage(content, ctx)
+      break
+    }
+  }
+}
+
 onMounted(() => {
   agentStore.loadAgents()
 })
@@ -164,6 +178,7 @@ watch(() => agentStore.messages.length, async () => {
           v-for="(msg, i) in agentStore.messages"
           :key="i"
           :message="msg"
+          @retry="handleRetry(i)"
         />
       </div>
 
@@ -183,6 +198,7 @@ watch(() => agentStore.messages.length, async () => {
           {{ agentStore.loading ? '...' : '&#9654;' }}
         </button>
       </div>
+      <div class="shortcut-hint">Press <kbd>Esc</kbd> to close &middot; <kbd>&#8984;K</kbd> to toggle</div>
     </aside>
   </Transition>
 </template>
@@ -428,6 +444,21 @@ watch(() => agentStore.messages.length, async () => {
 }
 .send-btn:hover:not(:disabled) {
   background: #4338ca;
+}
+
+.shortcut-hint {
+  text-align: center;
+  font-size: 11px;
+  color: #9ca3af;
+  padding: 4px 16px 8px;
+}
+.shortcut-hint kbd {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 10px;
+  font-family: inherit;
 }
 
 /* Slide animation */

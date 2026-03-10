@@ -3,11 +3,18 @@ import { ref, computed } from "vue";
 import { agentApi } from "../api/agent";
 import type { AgentInfo, ThreadInfo } from "../api/agent";
 
+export interface ActionButton {
+  label: string;
+  route: string;
+  type: string;
+}
+
 export interface AgentMessage {
   role: "user" | "assistant";
   content: string;
   streaming?: boolean;
   executingTool?: string;
+  error?: boolean;
   sources?: Array<{
     text: string;
     section?: string;
@@ -15,6 +22,7 @@ export interface AgentMessage {
     category?: string;
   }>;
   toolCalls?: Array<{ tool_name?: string; tool_id?: string; result?: string }>;
+  actions?: ActionButton[];
 }
 
 export const useAgentStore = defineStore("agent", () => {
@@ -110,6 +118,7 @@ export const useAgentStore = defineStore("agent", () => {
     try {
       let fullContent = "";
       let toolCalls: AgentMessage["toolCalls"] = [];
+      let actions: ActionButton[] = [];
       for await (const chunk of agentApi.stream(activeAgent.value, {
         content,
         thread_id: activeThreadId.value ?? undefined,
@@ -134,7 +143,6 @@ export const useAgentStore = defineStore("agent", () => {
             result?: string;
             status?: string;
           }>;
-          // Check if this is an "executing" event or a completed results event
           const isExecuting = calls.some((tc) => tc.status === "executing");
           if (isExecuting) {
             const toolNames = calls
@@ -148,8 +156,10 @@ export const useAgentStore = defineStore("agent", () => {
             toolCalls = calls;
           }
         }
+        if (chunk.actions) {
+          actions = chunk.actions as ActionButton[];
+        }
         if (chunk.done) {
-          // Capture thread_id from done event
           if (chunk.thread_id && !activeThreadId.value) {
             activeThreadId.value = chunk.thread_id;
           }
@@ -161,7 +171,13 @@ export const useAgentStore = defineStore("agent", () => {
 
       messages.value = messages.value.map((m, i) =>
         i === assistantIdx
-          ? { role: "assistant", content: fullContent, toolCalls, sources }
+          ? {
+              role: "assistant",
+              content: fullContent,
+              toolCalls,
+              sources,
+              actions: actions.length > 0 ? actions : undefined,
+            }
           : m,
       );
     } catch {
@@ -170,6 +186,7 @@ export const useAgentStore = defineStore("agent", () => {
           ? {
               role: "assistant",
               content: "Sorry, something went wrong. Please try again.",
+              error: true,
             }
           : m,
       );
@@ -212,7 +229,35 @@ function extractSources(
   const sources: NonNullable<AgentMessage["sources"]> = [];
   for (const tc of toolCalls) {
     if (!tc.result) continue;
-    // Try to extract structured citations from tool results
+    // Try structured JSON first (lookup_tax_rule returns {answer, sources})
+    try {
+      const parsed = JSON.parse(tc.result);
+      if (Array.isArray(parsed.sources)) {
+        for (const s of parsed.sources) {
+          const src: NonNullable<AgentMessage["sources"]>[number] = {
+            text: s.text || s.source || "",
+          };
+          if (s.section_ref || s.section)
+            src.section = s.section_ref || s.section;
+          if (s.law) src.law = s.law;
+          if (s.category) src.category = s.category;
+          if (
+            !sources.some(
+              (e) =>
+                e.section === src.section &&
+                e.law === src.law &&
+                e.text === src.text,
+            )
+          ) {
+            sources.push(src);
+          }
+        }
+        continue;
+      }
+    } catch {
+      // Not JSON, fall through to regex
+    }
+    // Regex fallback for non-structured results
     const sectionMatches = tc.result.match(/Section\s+[\d.]+/gi);
     if (sectionMatches) {
       for (const m of sectionMatches) {
@@ -231,7 +276,6 @@ function extractSources(
         }
       }
     }
-    // If tool returned data but no specific citations, show tool name as source
     if (sources.length === 0 && tc.result.length > 10 && tc.tool_name) {
       sources.push({
         text: tc.result.substring(0, 100),

@@ -1,14 +1,34 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import type { AgentMessage } from '../../stores/agent'
 import { renderMarkdown } from '../../utils/markdown'
 
 const props = defineProps<{ message: AgentMessage }>()
+const emit = defineEmits<{ retry: [content: string] }>()
+const router = useRouter()
+const copied = ref(false)
 
 const renderedContent = computed(() => {
   if (props.message.role === 'user') return props.message.content
   return renderMarkdown(props.message.content)
 })
+
+function copyMessage() {
+  navigator.clipboard.writeText(props.message.content).then(() => {
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 1500)
+  })
+}
+
+function handleRetry() {
+  // Find the previous user message in parent
+  emit('retry', '')
+}
+
+function handleAction(route: string) {
+  router.push(route)
+}
 </script>
 
 <template>
@@ -43,12 +63,44 @@ const renderedContent = computed(() => {
         Executing {{ message.executingTool }}...
       </div>
 
+      <!-- Action buttons -->
+      <div v-if="message.actions?.length" class="msg-actions">
+        <button
+          v-for="(action, i) in message.actions"
+          :key="i"
+          class="action-btn"
+          @click="handleAction(action.route)"
+        >
+          {{ action.label }} &rarr;
+        </button>
+      </div>
+
       <!-- Sources / Citations -->
       <div v-if="message.sources?.length" class="msg-sources">
         <span v-for="(src, i) in message.sources" :key="i" class="source-badge" :title="src.text">
           {{ src.section || src.law || src.category || 'Source' }}
         </span>
       </div>
+
+      <!-- Copy button (assistant only, on hover) -->
+      <button
+        v-if="message.role === 'assistant' && message.content && !message.streaming"
+        class="msg-copy-btn"
+        :class="{ copied }"
+        @click="copyMessage"
+        :title="copied ? 'Copied!' : 'Copy message'"
+      >
+        {{ copied ? '&#10003;' : '&#128203;' }}
+      </button>
+
+      <!-- Retry button for errors -->
+      <button
+        v-if="message.error"
+        class="retry-btn"
+        @click="handleRetry"
+      >
+        &#8635; Retry
+      </button>
     </div>
   </div>
 </template>
@@ -71,6 +123,7 @@ const renderedContent = computed(() => {
   font-size: 14px;
   line-height: 1.5;
   word-break: break-word;
+  position: relative;
 }
 .user .msg-bubble {
   background: #4f46e5;
@@ -83,6 +136,60 @@ const renderedContent = computed(() => {
   border-bottom-left-radius: 4px;
 }
 .user-text { white-space: pre-wrap; }
+
+/* Copy button */
+.msg-copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(255,255,255,0.8);
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  color: #6b7280;
+}
+.msg-bubble:hover .msg-copy-btn { opacity: 1; }
+.msg-copy-btn:hover { background: white; border-color: #4f46e5; color: #4f46e5; }
+.msg-copy-btn.copied { color: #059669; border-color: #059669; opacity: 1; }
+
+/* Retry button */
+.retry-btn {
+  margin-top: 8px;
+  padding: 4px 12px;
+  background: white;
+  border: 1px solid #dc2626;
+  color: #dc2626;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+}
+.retry-btn:hover { background: #fef2f2; }
+
+/* Action buttons */
+.msg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.action-btn {
+  padding: 6px 14px;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.action-btn:hover { background: #4338ca; }
 
 /* Markdown body styles */
 .markdown-body :deep(p) { margin: 0 0 8px; }
