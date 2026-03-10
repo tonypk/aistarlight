@@ -2,9 +2,11 @@
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import { useAgentStore } from '../../stores/agent'
 
 const router = useRouter()
 const auth = useAuthStore()
+const agentStore = useAgentStore()
 
 // Role-based menu: minRole defines minimum access level
 const menuItems = [
@@ -28,7 +30,12 @@ const menuItems = [
   { name: 'Penalty Calculator', path: '/penalty-calculator', icon: '⚠️', minRole: 'accountant' },
   { name: 'Form Router', path: '/form-router', icon: '🗺️', minRole: 'viewer' },
   { name: 'Learning Insights', path: '/learning', icon: '🎓', minRole: 'viewer' },
+  { name: 'divider', path: '', icon: '', minRole: 'viewer', divider: true, label: 'AI Agents' },
   { name: 'AI Chat', path: '/chat', icon: '💬', minRole: 'viewer' },
+  { name: 'Filing Agent', path: '', icon: '📋', minRole: 'viewer', agentId: 'filing' },
+  { name: 'Recon Agent', path: '', icon: '🔍', minRole: 'viewer', agentId: 'recon' },
+  { name: 'Journal Agent', path: '', icon: '📝', minRole: 'viewer', agentId: 'journal' },
+  { name: 'Compliance Agent', path: '', icon: '✅', minRole: 'viewer', agentId: 'compliance' },
   { name: 'Knowledge', path: '/knowledge', icon: '📚', minRole: 'viewer' },
   { name: 'Memory', path: '/memory', icon: '🧠', minRole: 'admin' },
   { name: 'User Guide', path: '/guide', icon: '📖', minRole: 'viewer' },
@@ -89,8 +96,16 @@ async function handleLogout() {
     </div>
 
     <nav>
-      <template v-for="item in visibleMenuItems" :key="item.path || item.label">
+      <template v-for="item in visibleMenuItems" :key="item.path || item.label || item.name">
         <div v-if="item.divider" class="nav-divider">{{ item.label }}</div>
+        <button
+          v-else-if="item.agentId"
+          class="nav-item nav-agent-btn"
+          @click="agentStore.openPanel(item.agentId)"
+        >
+          <span class="icon">{{ item.icon }}</span>
+          {{ item.name }}
+        </button>
         <router-link
           v-else
           :to="item.path"
@@ -232,6 +247,16 @@ nav::-webkit-scrollbar-track { background: transparent; }
   cursor: pointer;
 }
 .logout-btn:hover { background: rgba(255,255,255,0.1); }
+
+.nav-agent-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
 
 @media (max-width: 768px) {
   .sidebar {

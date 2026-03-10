@@ -4,6 +4,8 @@ import { useRoute } from 'vue-router'
 import AppHeader from './components/layout/AppHeader.vue'
 import AppSidebar from './components/layout/AppSidebar.vue'
 import ToastContainer from './components/layout/ToastContainer.vue'
+import AIPanel from './components/ai/AIPanel.vue'
+import AITrigger from './components/ai/AITrigger.vue'
 import { useAuthStore } from './stores/auth'
 
 const auth = useAuthStore()
@@ -30,6 +32,11 @@ onMounted(() => {
       <router-view />
     </template>
     <ToastContainer />
+    <!-- Global AI Layer -->
+    <template v-if="showLayout">
+      <AITrigger />
+      <AIPanel />
+    </template>
   </div>
 </template>
 
