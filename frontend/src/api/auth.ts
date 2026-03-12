@@ -20,6 +20,14 @@ export interface Company {
   tin_number: string | null;
 }
 
+export interface CreateMemberData {
+  email: string;
+  password: string;
+  full_name: string;
+  telegram_username?: string;
+  role?: string;
+}
+
 export const authApi = {
   login: (data: LoginData) => client.post("/auth/login", data),
   register: (data: RegisterData) => client.post("/auth/register", data),
@@ -32,4 +40,8 @@ export const authApi = {
     client.post("/auth/switch-company", { tenant_id: tenantId }),
   inviteMember: (email: string, role: string) =>
     client.post("/auth/invite", { email, role }),
+  createMember: (data: CreateMemberData) =>
+    client.post("/auth/create-member", data),
+  getTelegramStatus: () => client.get("/telegram/status"),
+  generateTelegramLink: () => client.post("/telegram/link-token"),
 };

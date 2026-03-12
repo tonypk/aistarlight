@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import { client } from '../api/client'
-import { authApi } from '../api/auth'
+import { authApi, type CreateMemberData } from '../api/auth'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
@@ -24,6 +24,8 @@ interface TeamMember {
   full_name: string
   role: string
   created_at: string | null
+  telegram_username: string | null
+  telegram_linked: boolean
 }
 const teamMembers = ref<TeamMember[]>([])
 const teamLoading = ref(false)
@@ -33,7 +35,44 @@ const inviting = ref(false)
 const inviteMsg = ref('')
 const inviteErr = ref('')
 
+// Create Member
+const showCreateMember = ref(false)
+const createForm = ref<CreateMemberData>({
+  email: '',
+  password: '',
+  full_name: '',
+  telegram_username: '',
+  role: 'member',
+})
+const autoPassword = ref(true)
+const creating = ref(false)
+const createResult = ref<{
+  email: string
+  password: string
+  api_key: string
+  deep_link?: string
+} | null>(null)
+const createErr = ref('')
+
+// Telegram binding (current user)
+const tgStatus = ref<{
+  linked: boolean
+  username?: string
+  bot_name?: string
+  linked_at?: string
+} | null>(null)
+const tgLoading = ref(false)
+const tgLink = ref('')
+const tgLinkLoading = ref(false)
+
 const isOwnerOrAdmin = computed(() => ['owner', 'admin', 'company_admin'].includes(auth.currentRole))
+
+function generatePassword(length = 12): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$'
+  const array = new Uint8Array(length)
+  crypto.getRandomValues(array)
+  return Array.from(array, (b) => chars[b % chars.length]).join('')
+}
 
 onMounted(async () => {
   const res = await client.get('/settings/company')
@@ -44,7 +83,7 @@ onMounted(async () => {
     rdo_code: data.rdo_code || '',
     vat_classification: data.vat_classification || 'vat_registered',
   }
-  await fetchTeam()
+  await Promise.all([fetchTeam(), fetchTelegramStatus()])
 })
 
 async function fetchTeam() {
@@ -54,6 +93,18 @@ async function fetchTeam() {
     teamMembers.value = res.data.data || []
   } finally {
     teamLoading.value = false
+  }
+}
+
+async function fetchTelegramStatus() {
+  tgLoading.value = true
+  try {
+    const res = await authApi.getTelegramStatus()
+    tgStatus.value = res.data.data
+  } catch {
+    tgStatus.value = null
+  } finally {
+    tgLoading.value = false
   }
 }
 
@@ -92,6 +143,71 @@ async function handleInvite() {
     inviteErr.value = err.response?.data?.error || 'Failed to invite member'
   } finally {
     inviting.value = false
+  }
+}
+
+async function handleCreateMember() {
+  creating.value = true
+  createErr.value = ''
+  createResult.value = null
+  try {
+    const password = autoPassword.value ? generatePassword() : createForm.value.password
+    const data: CreateMemberData = {
+      email: createForm.value.email,
+      password,
+      full_name: createForm.value.full_name,
+      role: createForm.value.role || 'member',
+    }
+    if (createForm.value.telegram_username) {
+      data.telegram_username = createForm.value.telegram_username
+    }
+    const res = await authApi.createMember(data)
+    const result = res.data.data
+    createResult.value = {
+      email: data.email,
+      password,
+      api_key: result.api_key,
+      deep_link: result.deep_link,
+    }
+    // Reset form
+    createForm.value = { email: '', password: '', full_name: '', telegram_username: '', role: 'member' }
+    await fetchTeam()
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { error?: string } } }
+    createErr.value = err.response?.data?.error || 'Failed to create member'
+  } finally {
+    creating.value = false
+  }
+}
+
+async function copyCreateResult() {
+  if (!createResult.value) return
+  const lines = [
+    `Email: ${createResult.value.email}`,
+    `Password: ${createResult.value.password}`,
+    `API Key: ${createResult.value.api_key}`,
+  ]
+  if (createResult.value.deep_link) {
+    lines.push(`Telegram Link: ${createResult.value.deep_link}`)
+  }
+  await navigator.clipboard.writeText(lines.join('\n'))
+}
+
+async function handleConnectTelegram() {
+  tgLinkLoading.value = true
+  try {
+    const res = await authApi.generateTelegramLink()
+    tgLink.value = res.data.data.deep_link
+  } catch {
+    tgLink.value = ''
+  } finally {
+    tgLinkLoading.value = false
+  }
+}
+
+async function copyTelegramLink() {
+  if (tgLink.value) {
+    await navigator.clipboard.writeText(tgLink.value)
   }
 }
 
@@ -141,12 +257,117 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
       </form>
     </div>
 
+    <!-- Telegram Bot Binding (all users) -->
+    <div class="section-card">
+      <h3>Telegram Bot</h3>
+      <div v-if="tgLoading" class="loading">Loading...</div>
+      <template v-else-if="tgStatus">
+        <div v-if="tgStatus.linked" class="tg-status tg-linked">
+          <span class="status-dot green"></span>
+          <span>Connected as <strong>@{{ tgStatus.username }}</strong></span>
+          <span v-if="tgStatus.linked_at" class="tg-date">
+            since {{ new Date(tgStatus.linked_at).toLocaleDateString() }}
+          </span>
+        </div>
+        <div v-else class="tg-status tg-unlinked">
+          <span class="status-dot gray"></span>
+          <span>Not connected</span>
+          <button
+            class="primary-btn tg-btn"
+            :disabled="tgLinkLoading"
+            @click="handleConnectTelegram"
+          >
+            {{ tgLinkLoading ? 'Generating...' : 'Connect Telegram' }}
+          </button>
+        </div>
+        <div v-if="tgLink" class="tg-link-box">
+          <p>Open this link to connect your Telegram account:</p>
+          <div class="tg-link-row">
+            <a :href="tgLink" target="_blank" class="tg-deep-link">{{ tgLink }}</a>
+            <button class="copy-btn" @click="copyTelegramLink" title="Copy link">Copy</button>
+          </div>
+        </div>
+      </template>
+    </div>
+
     <!-- Team Management -->
     <div class="section-card">
       <h3>Team Members</h3>
 
+      <!-- Create Member Form (admin-only) -->
+      <div v-if="isOwnerOrAdmin" class="create-member-section">
+        <button
+          class="secondary-btn"
+          @click="showCreateMember = !showCreateMember"
+        >
+          {{ showCreateMember ? 'Cancel' : '+ Create Member' }}
+        </button>
+
+        <div v-if="showCreateMember" class="create-form">
+          <div class="field">
+            <label>Full Name</label>
+            <input v-model="createForm.full_name" required placeholder="John Doe" />
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input v-model="createForm.email" type="email" required placeholder="user@example.com" />
+          </div>
+          <div class="field">
+            <label>
+              <input type="checkbox" v-model="autoPassword" /> Auto-generate password
+            </label>
+            <input
+              v-if="!autoPassword"
+              v-model="createForm.password"
+              type="text"
+              placeholder="Min 8 characters"
+              minlength="8"
+            />
+          </div>
+          <div class="field">
+            <label>Telegram Username (optional)</label>
+            <input v-model="createForm.telegram_username" placeholder="@username" />
+          </div>
+          <div class="field">
+            <label>Role</label>
+            <select v-model="createForm.role">
+              <option value="member">Member</option>
+              <option value="accountant">Accountant</option>
+              <option value="viewer">Viewer</option>
+              <option value="company_admin">Admin</option>
+            </select>
+          </div>
+          <button
+            class="primary-btn"
+            :disabled="creating || !createForm.email || !createForm.full_name"
+            @click="handleCreateMember"
+          >
+            {{ creating ? 'Creating...' : 'Create Member' }}
+          </button>
+          <p v-if="createErr" class="error-msg">{{ createErr }}</p>
+        </div>
+
+        <!-- Result Card -->
+        <div v-if="createResult" class="result-card">
+          <h4>Member Created Successfully</h4>
+          <div class="result-row"><span class="result-label">Email:</span> {{ createResult.email }}</div>
+          <div class="result-row"><span class="result-label">Password:</span> <code>{{ createResult.password }}</code></div>
+          <div class="result-row"><span class="result-label">API Key:</span> <code class="api-code">{{ createResult.api_key }}</code></div>
+          <div v-if="createResult.deep_link" class="result-row">
+            <span class="result-label">Telegram:</span>
+            <a :href="createResult.deep_link" target="_blank" class="tg-deep-link">{{ createResult.deep_link }}</a>
+          </div>
+          <div class="result-actions">
+            <button class="primary-btn" @click="copyCreateResult">Copy All</button>
+            <button class="secondary-btn" @click="createResult = null">Dismiss</button>
+          </div>
+          <p class="warn">Save these credentials - they won't be shown again!</p>
+        </div>
+      </div>
+
       <!-- Invite Form (admin/owner only) -->
       <div v-if="isOwnerOrAdmin" class="invite-form">
+        <p class="desc">Or invite an existing user by email:</p>
         <div class="invite-row">
           <input
             v-model="inviteEmail"
@@ -179,12 +400,13 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
             <th>Name</th>
             <th>Email</th>
             <th>Role</th>
+            <th>Telegram</th>
             <th>Joined</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="m in teamMembers" :key="m.id">
-            <td>{{ m.full_name || '—' }}</td>
+            <td>{{ m.full_name || '\u2014' }}</td>
             <td>{{ m.email }}</td>
             <td>
               <select
@@ -195,11 +417,22 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
               >
                 <option value="viewer">Viewer</option>
                 <option value="accountant">Accountant</option>
-                <option value="admin">Admin</option>
+                <option value="member">Member</option>
+                <option value="company_admin">Admin</option>
               </select>
               <span v-else class="role-badge" :class="m.role">{{ m.role }}</span>
             </td>
-            <td>{{ m.created_at ? new Date(m.created_at).toLocaleDateString() : '—' }}</td>
+            <td>
+              <span v-if="m.telegram_linked" class="tg-cell">
+                <span class="status-dot green"></span>
+                {{ m.telegram_username ? '@' + m.telegram_username : 'Linked' }}
+              </span>
+              <span v-else class="tg-cell">
+                <span class="status-dot gray"></span>
+                <span class="muted">Not linked</span>
+              </span>
+            </td>
+            <td>{{ m.created_at ? new Date(m.created_at).toLocaleDateString() : '\u2014' }}</td>
           </tr>
         </tbody>
       </table>
@@ -227,7 +460,7 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
   padding: 24px;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  max-width: 700px;
+  max-width: 800px;
   margin-bottom: 24px;
 }
 .section-card h3 {
@@ -239,12 +472,16 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 .settings-form { max-width: 500px; }
 .field { margin-bottom: 16px; }
 .field label { display: block; margin-bottom: 4px; font-size: 14px; color: #555; }
-.field input, .field select {
+.field input[type="text"],
+.field input[type="email"],
+.field input:not([type]),
+.field select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 14px;
+  box-sizing: border-box;
 }
 
 .primary-btn {
@@ -259,8 +496,106 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 .primary-btn:hover { background: #4338ca; }
 .primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
+.secondary-btn {
+  padding: 10px 24px;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.secondary-btn:hover { background: #e5e7eb; }
+
 .success-msg { color: #059669; margin-left: 12px; font-size: 14px; }
 .error-msg { color: #ef4444; font-size: 14px; margin-top: 8px; }
+
+/* Create Member */
+.create-member-section { margin-bottom: 20px; }
+.create-form {
+  margin-top: 16px;
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 8px;
+  max-width: 500px;
+}
+
+.result-card {
+  margin-top: 16px;
+  padding: 20px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  max-width: 500px;
+}
+.result-card h4 { margin: 0 0 12px; color: #065f46; }
+.result-row {
+  margin-bottom: 8px;
+  font-size: 14px;
+  word-break: break-all;
+}
+.result-label { font-weight: 600; margin-right: 4px; }
+.result-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.api-code { font-size: 12px; }
+
+/* Telegram */
+.tg-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.tg-btn { margin-left: auto; }
+.tg-date { color: #6b7280; font-size: 13px; }
+.tg-link-box {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f0fdf4;
+  border-radius: 8px;
+}
+.tg-link-box p { font-size: 13px; color: #555; margin-bottom: 8px; }
+.tg-link-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.tg-deep-link {
+  color: #4f46e5;
+  font-size: 13px;
+  word-break: break-all;
+}
+.copy-btn {
+  padding: 4px 12px;
+  background: #e5e7eb;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.copy-btn:hover { background: #d1d5db; }
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot.green { background: #10b981; }
+.status-dot.gray { background: #9ca3af; }
+
+.tg-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.muted { color: #9ca3af; }
 
 /* Invite */
 .invite-form { margin-bottom: 20px; }
@@ -317,13 +652,14 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
   text-transform: uppercase;
 }
 .role-badge.owner { background: #fef3c7; color: #92400e; }
-.role-badge.admin { background: #dbeafe; color: #1e40af; }
+.role-badge.admin, .role-badge.company_admin { background: #dbeafe; color: #1e40af; }
 .role-badge.accountant { background: #d1fae5; color: #065f46; }
 .role-badge.viewer { background: #f3f4f6; color: #6b7280; }
+.role-badge.member { background: #e0e7ff; color: #3730a3; }
 
 .loading { color: #888; padding: 20px 0; }
 .empty { color: #888; font-size: 14px; }
-.desc { color: #888; margin-bottom: 16px; font-size: 14px; }
+.desc { color: #888; margin-bottom: 12px; font-size: 14px; }
 
 /* API */
 .api-btn {
