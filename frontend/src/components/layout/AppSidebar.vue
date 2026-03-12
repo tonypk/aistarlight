@@ -9,35 +9,53 @@ const auth = useAuthStore()
 const agentStore = useAgentStore()
 
 // Role-based menu: minRole defines minimum access level
+// Sections follow accounting workflow: Input → Process → Record → Report → File → AI Assist
 const menuItems = [
+  // Top — always visible
   { name: 'Dashboard', path: '/', icon: '📊', minRole: 'viewer' },
+  { name: 'AI Chat', path: '/chat', icon: '💬', minRole: 'viewer' },
+
+  // Data Input
+  { name: 'divider', path: '', icon: '', minRole: 'accountant', divider: true, label: 'Data Input' },
   { name: 'Upload Data', path: '/upload', icon: '📤', minRole: 'accountant' },
   { name: 'Receipt Scanner', path: '/receipts', icon: '🧾', minRole: 'accountant' },
   { name: 'Transactions', path: '/transactions', icon: '💳', minRole: 'viewer' },
+  { name: 'Suppliers', path: '/suppliers', icon: '🏢', minRole: 'accountant' },
+
+  // Processing
+  { name: 'divider', path: '', icon: '', minRole: 'accountant', divider: true, label: 'Processing' },
   { name: 'Classification', path: '/classification', icon: '🏷️', minRole: 'accountant' },
   { name: 'Reconciliation', path: '/reconciliation', icon: '🔍', minRole: 'accountant' },
   { name: 'Bank Recon', path: '/bank-reconciliation', icon: '🏦', minRole: 'accountant' },
-  { name: 'Reports', path: '/reports', icon: '📋', minRole: 'viewer' },
-  { name: 'Filing Calendar', path: '/calendar', icon: '📅', minRole: 'viewer' },
-  { name: 'Period Compare', path: '/compare', icon: '⚖️', minRole: 'viewer' },
-  { name: 'Suppliers', path: '/suppliers', icon: '🏢', minRole: 'accountant' },
   { name: 'Withholding Tax', path: '/withholding', icon: '📑', minRole: 'accountant' },
-  { name: 'divider', path: '', icon: '', minRole: 'accountant', divider: true, label: 'Accounting' },
+
+  // Ledger
+  { name: 'divider', path: '', icon: '', minRole: 'accountant', divider: true, label: 'Ledger' },
   { name: 'Chart of Accounts', path: '/accounts', icon: '📒', minRole: 'accountant' },
   { name: 'Journal Entries', path: '/journal-entries', icon: '📝', minRole: 'accountant' },
   { name: 'General Ledger', path: '/general-ledger', icon: '📓', minRole: 'accountant' },
   { name: 'Financial Statements', path: '/statements', icon: '📊', minRole: 'accountant' },
+
+  // Tax & Filing
+  { name: 'divider', path: '', icon: '', minRole: 'viewer', divider: true, label: 'Tax & Filing' },
   { name: 'Tax from GL', path: '/tax-bridge', icon: '🧮', minRole: 'accountant' },
-  { name: 'Penalty Calculator', path: '/penalty-calculator', icon: '⚠️', minRole: 'accountant' },
+  { name: 'Reports', path: '/reports', icon: '📋', minRole: 'viewer' },
   { name: 'Form Router', path: '/form-router', icon: '🗺️', minRole: 'viewer' },
-  { name: 'Learning Insights', path: '/learning', icon: '🎓', minRole: 'viewer' },
-  { name: 'divider', path: '', icon: '', minRole: 'viewer', divider: true, label: 'AI Agents' },
-  { name: 'AI Chat', path: '/chat', icon: '💬', minRole: 'viewer' },
+  { name: 'Filing Calendar', path: '/calendar', icon: '📅', minRole: 'viewer' },
+  { name: 'Penalty Calculator', path: '/penalty-calculator', icon: '⚠️', minRole: 'accountant' },
+
+  // AI & Insights
+  { name: 'divider', path: '', icon: '', minRole: 'viewer', divider: true, label: 'AI & Insights' },
   { name: 'Filing Agent', path: '', icon: '📋', minRole: 'viewer', agentId: 'filing' },
   { name: 'Recon Agent', path: '', icon: '🔍', minRole: 'viewer', agentId: 'recon' },
   { name: 'Journal Agent', path: '', icon: '📝', minRole: 'viewer', agentId: 'journal' },
   { name: 'Compliance Agent', path: '', icon: '✅', minRole: 'viewer', agentId: 'compliance' },
   { name: 'Knowledge', path: '/knowledge', icon: '📚', minRole: 'viewer' },
+  { name: 'Learning Insights', path: '/learning', icon: '🎓', minRole: 'viewer' },
+  { name: 'Period Compare', path: '/compare', icon: '⚖️', minRole: 'viewer' },
+
+  // System (bottom pinned)
+  { name: 'divider', path: '', icon: '', minRole: 'admin', divider: true, label: 'System' },
   { name: 'Memory', path: '/memory', icon: '🧠', minRole: 'admin' },
   { name: 'User Guide', path: '/guide', icon: '📖', minRole: 'viewer' },
   { name: 'Settings', path: '/settings', icon: '⚙️', minRole: 'admin' },
