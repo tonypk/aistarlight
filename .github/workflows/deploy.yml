@@ -43,16 +43,17 @@ jobs:
           key: ${{ secrets.GCE_SSH_KEY }}
           script: |
             set -euo pipefail
-            COMPOSE="sudo docker compose --project-directory /home/anna/aistarlight-go -p aistarlight -f /home/anna/aistarlight-go/docker-compose.prod.yml"
 
             # Pull latest frontend code
-            sudo -u anna bash -c 'cd /home/anna/aistarlight && git pull origin main'
+            cd /home/anna/aistarlight
+            sudo -u anna git pull origin main
 
             # Rebuild and restart frontend container
-            $COMPOSE build --no-cache frontend
-            $COMPOSE up -d frontend
+            cd /home/anna/aistarlight-go
+            sudo docker compose -f docker-compose.prod.yml build --no-cache frontend
+            sudo docker compose -f docker-compose.prod.yml up -d frontend
 
             # Reload nginx to pick up new container IP
-            $COMPOSE exec -T nginx nginx -s reload 2>/dev/null || true
+            sudo docker compose -f docker-compose.prod.yml exec -T nginx nginx -s reload 2>/dev/null || true
 
             echo "Frontend deploy complete: $(date)"
