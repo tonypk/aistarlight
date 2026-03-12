@@ -1,20 +1,31 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAccountingStore } from '../stores/accounting'
 import { currencyLocale } from '@/utils/currency'
 import InlineAIHint from '../components/ai/InlineAIHint.vue'
 
+const route = useRoute()
+const router = useRouter()
 const store = useAccountingStore()
 const statusFilter = ref('')
 const page = ref(1)
 const selectedEntry = ref<string | null>(null)
+const highlightId = ref<string | null>(null)
 
-onMounted(() => {
-  loadEntries()
+onMounted(async () => {
+  if (route.query.highlight) {
+    highlightId.value = route.query.highlight as string
+  }
+  await loadEntries()
+  // Auto-expand highlighted entry
+  if (highlightId.value) {
+    viewEntry(highlightId.value)
+  }
 })
 
-function loadEntries() {
-  store.fetchJournalEntries(page.value, 20, statusFilter.value || undefined)
+async function loadEntries() {
+  await store.fetchJournalEntries(page.value, 20, statusFilter.value || undefined)
 }
 
 function viewEntry(id: string) {
@@ -86,6 +97,9 @@ const statusColors: Record<string, string> = {
         <span>Status: <span class="status" :style="{ color: statusColors[store.currentJournal.status] }">{{ store.currentJournal.status }}</span></span>
         <span v-if="store.currentJournal.reference">Ref: {{ store.currentJournal.reference }}</span>
         <span v-if="store.currentJournal.description">{{ store.currentJournal.description }}</span>
+        <span v-if="store.currentJournal.source_type === 'transaction' && store.currentJournal.source_id">
+          Source: <a class="source-link" @click="router.push({ path: '/transactions', query: { highlight: store.currentJournal.source_id } })">Transaction {{ store.currentJournal.source_id.slice(0, 8) }}...</a>
+        </span>
       </div>
       <table class="table lines-table">
         <thead>
@@ -116,11 +130,18 @@ const statusColors: Record<string, string> = {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="je in store.journalEntries" :key="je.id" @click="viewEntry(je.id)" class="clickable">
+        <tr v-for="je in store.journalEntries" :key="je.id" @click="viewEntry(je.id)" class="clickable" :class="{ 'highlight-row': highlightId === je.id }">
           <td class="mono">{{ je.entry_number }}</td>
           <td>{{ je.entry_date?.slice(0, 10) }}</td>
           <td>{{ je.description || je.reference || '-' }}</td>
-          <td>{{ je.source_type || 'manual' }}</td>
+          <td>
+            <a
+              v-if="je.source_type === 'transaction' && je.source_id"
+              class="source-link"
+              @click.stop="router.push({ path: '/transactions', query: { highlight: je.source_id } })"
+            >{{ je.source_type }}</a>
+            <span v-else>{{ je.source_type || 'manual' }}</span>
+          </td>
           <td>
             <span class="status-badge" :class="'status-' + je.status">{{ je.status }}</span>
           </td>
@@ -177,4 +198,8 @@ const statusColors: Record<string, string> = {
 .pagination { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 20px; }
 .pagination button { padding: 6px 14px; border: 1px solid #e5e7eb; border-radius: 4px; background: #fff; cursor: pointer; }
 .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+.source-link { color: #4f46e5; cursor: pointer; text-decoration: none; font-weight: 500; }
+.source-link:hover { text-decoration: underline; }
+.highlight-row { background: #fef9c3 !important; animation: highlight-fade 3s ease-out forwards; }
+@keyframes highlight-fade { 0% { background: #fef9c3; } 100% { background: transparent; } }
 </style>

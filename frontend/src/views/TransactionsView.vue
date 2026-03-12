@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { transactionsApi } from '../api/transactions'
 
 interface Transaction {
@@ -13,8 +14,14 @@ interface Transaction {
   category: string
   submitted_by_name: string | null
   receipt_image_url: string | null
+  journal_entry_id?: string | null
+  journal_entry_num?: number | null
   created_at?: string
 }
+
+const route = useRoute()
+const router = useRouter()
+const highlightId = ref<string | null>(null)
 
 const transactions = ref<Transaction[]>([])
 const loading = ref(false)
@@ -101,7 +108,12 @@ function formatDate(date: string | null): string {
   return date
 }
 
-onMounted(fetchTransactions)
+onMounted(() => {
+  if (route.query.highlight) {
+    highlightId.value = route.query.highlight as string
+  }
+  fetchTransactions()
+})
 </script>
 
 <template>
@@ -154,12 +166,13 @@ onMounted(fetchTransactions)
             <th class="text-right">Amount</th>
             <th>Category</th>
             <th>Source</th>
+            <th>Journal</th>
             <th>Submitted By</th>
             <th>Image</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(txn, idx) in transactions" :key="txn.id">
+          <tr v-for="(txn, idx) in transactions" :key="txn.id" :class="{ 'highlight-row': highlightId === txn.id }">
             <td class="text-center row-number">{{ (page - 1) * limit + idx + 1 }}</td>
             <td class="nowrap">{{ formatDate(txn.date) }}</td>
             <td class="description-cell">{{ txn.description || '-' }}</td>
@@ -172,6 +185,14 @@ onMounted(fetchTransactions)
               <span class="badge source" :class="txn.source_type">
                 {{ sourceTypeLabels[txn.source_type] || txn.source_type }}
               </span>
+            </td>
+            <td>
+              <span
+                v-if="txn.journal_entry_id"
+                class="badge journal-linked"
+                @click.stop="router.push({ path: '/journal-entries', query: { highlight: txn.journal_entry_id } })"
+              >JE #{{ txn.journal_entry_num || '?' }}</span>
+              <span v-else class="text-muted">-</span>
             </td>
             <td>{{ txn.submitted_by_name || '-' }}</td>
             <td>
@@ -373,6 +394,24 @@ tbody tr:hover {
 .badge.source.telegram_bot {
   background: #e0f2fe;
   color: #075985;
+}
+
+.badge.journal-linked {
+  background: #d1fae5;
+  color: #065f46;
+  cursor: pointer;
+}
+.badge.journal-linked:hover {
+  background: #a7f3d0;
+}
+
+.highlight-row {
+  background: #fef9c3 !important;
+  animation: highlight-fade 3s ease-out forwards;
+}
+@keyframes highlight-fade {
+  0% { background: #fef9c3; }
+  100% { background: transparent; }
 }
 
 .image-link {
