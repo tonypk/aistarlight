@@ -13,6 +13,7 @@ const menuItems = [
   { name: 'Dashboard', path: '/', icon: '📊', minRole: 'viewer' },
   { name: 'Upload Data', path: '/upload', icon: '📤', minRole: 'accountant' },
   { name: 'Receipt Scanner', path: '/receipts', icon: '🧾', minRole: 'accountant' },
+  { name: 'Transactions', path: '/transactions', icon: '💳', minRole: 'viewer' },
   { name: 'Classification', path: '/classification', icon: '🏷️', minRole: 'accountant' },
   { name: 'Reconciliation', path: '/reconciliation', icon: '🔍', minRole: 'accountant' },
   { name: 'Bank Recon', path: '/bank-reconciliation', icon: '🏦', minRole: 'accountant' },

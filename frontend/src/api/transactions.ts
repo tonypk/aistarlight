@@ -1,6 +1,21 @@
 import { client } from "./client";
 import type { TransactionFilters } from "../types/transaction";
 
+export interface TransactionListParams {
+  page?: number;
+  limit?: number;
+  source_type?: string;
+  category?: string;
+  search?: string;
+  date_from?: string;
+  date_to?: string;
+}
+
+export const transactionsApi = {
+  list: (params: TransactionListParams = {}) =>
+    client.get("/transactions", { params }),
+};
+
 export const reconciliationApi = {
   // Sessions
   createSession: (period: string, reportId?: string) =>

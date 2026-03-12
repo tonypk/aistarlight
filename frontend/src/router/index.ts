@@ -35,6 +35,12 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "Column Mapping" },
     },
     {
+      path: "/transactions",
+      name: "transactions",
+      component: () => import("../views/TransactionsView.vue"),
+      meta: { requiresAuth: true, title: "Transactions" },
+    },
+    {
       path: "/classification",
       name: "classification",
       component: () => import("../views/TransactionClassificationView.vue"),
