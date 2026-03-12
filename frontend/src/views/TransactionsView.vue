@@ -148,6 +148,7 @@ onMounted(fetchTransactions)
       <table>
         <thead>
           <tr>
+            <th class="text-center">#</th>
             <th>Date</th>
             <th>Description</th>
             <th class="text-right">Amount</th>
@@ -158,7 +159,8 @@ onMounted(fetchTransactions)
           </tr>
         </thead>
         <tbody>
-          <tr v-for="txn in transactions" :key="txn.id">
+          <tr v-for="(txn, idx) in transactions" :key="txn.id">
+            <td class="text-center row-number">{{ (page - 1) * limit + idx + 1 }}</td>
             <td class="nowrap">{{ formatDate(txn.date) }}</td>
             <td class="description-cell">{{ txn.description || '-' }}</td>
             <td class="text-right nowrap">{{ formatAmount(txn.amount) }}</td>
@@ -323,6 +325,13 @@ tbody tr:hover {
 
 .text-right {
   text-align: right;
+}
+.text-center {
+  text-align: center;
+}
+.row-number {
+  color: #9ca3af;
+  font-size: 13px;
 }
 .nowrap {
   white-space: nowrap;
