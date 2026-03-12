@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAccountingStore } from '../stores/accounting'
 import { useAuthStore } from '../stores/auth'
 import { currencyLocale } from '@/utils/currency'
@@ -36,6 +36,17 @@ const selectedForm = ref(formTypes.value[0])
 
 function onFormChange() {
   selectedForm.value = formTypes.value.find(f => f.value === formType.value) || formTypes.value[0]
+  store.fetchLatestDraft(formType.value)
+}
+
+// Fetch latest draft on mount and when form type changes
+onMounted(() => store.fetchLatestDraft(formType.value))
+watch(formType, (ft) => store.fetchLatestDraft(ft))
+
+function formatDraftTime(dt: string | undefined) {
+  if (!dt) return ''
+  const d = new Date(dt)
+  return d.toLocaleString()
 }
 
 function getPeriodDates() {
@@ -171,6 +182,18 @@ function getDisplayFields() {
       </div>
     </div>
 
+    <!-- Auto-calculated draft banner -->
+    <div v-if="store.taxDraft" class="draft-banner">
+      <div class="draft-info">
+        <span class="auto-badge">Auto-calculated from GL</span>
+        <span class="draft-meta">
+          Last updated: {{ formatDraftTime(store.taxDraft.created_at) }}
+          &middot; Period: {{ store.taxDraft.period_start }} to {{ store.taxDraft.period_end }}
+          &middot; Triggered by: {{ store.taxDraft.triggered_by }}
+        </span>
+      </div>
+    </div>
+
     <!-- Results -->
     <div v-if="store.taxResult" class="result-card">
       <div class="result-header">
@@ -242,4 +265,8 @@ function getDisplayFields() {
 .raw-section { margin-top: 16px; }
 .raw-section summary { cursor: pointer; font-size: 13px; color: #6b7280; padding: 8px 0; }
 .result-table.raw td { font-size: 13px; padding: 6px 12px; }
+.draft-banner { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+.draft-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.auto-badge { display: inline-block; padding: 2px 10px; background: #dcfce7; color: #166534; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.draft-meta { font-size: 13px; color: #6b7280; }
 </style>
