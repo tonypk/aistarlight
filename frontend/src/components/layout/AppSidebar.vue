@@ -52,6 +52,7 @@ const menuItems = [
   { name: 'Compliance Agent', path: '', icon: '✅', minRole: 'viewer', agentId: 'compliance' },
   { name: 'Knowledge', path: '/knowledge', icon: '📚', minRole: 'viewer' },
   { name: 'Learning Insights', path: '/learning', icon: '🎓', minRole: 'viewer' },
+  { name: 'Spending', path: '/spending', icon: '💰', minRole: 'viewer' },
   { name: 'Period Compare', path: '/compare', icon: '⚖️', minRole: 'viewer' },
 
   // System (bottom pinned)

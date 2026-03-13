@@ -119,6 +119,12 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "Period Comparison" },
     },
     {
+      path: "/spending",
+      name: "spending",
+      component: () => import("../views/SpendingDashboardView.vue"),
+      meta: { requiresAuth: true, title: "Spending Dashboard" },
+    },
+    {
       path: "/guide",
       name: "guide",
       component: () => import("../views/GuideView.vue"),
