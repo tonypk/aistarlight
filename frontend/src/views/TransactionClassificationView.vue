@@ -332,25 +332,25 @@ const statusTextColors: Record<string, string> = {
   gap: 12px;
 }
 .view-header h2 { margin: 0 0 4px; }
-.desc { color: #6b7280; font-size: 14px; margin: 0; }
+.desc { color: var(--text-secondary); font-size: 14px; margin: 0; }
 .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .error { color: #ef4444; margin-bottom: 12px; font-size: 14px; }
 
 /* Session List */
-.loading-msg { color: #6b7280; text-align: center; padding: 40px 0; }
+.loading-msg { color: var(--text-secondary); text-align: center; padding: 40px 0; }
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
 }
-.empty-state p { margin: 0 0 8px; color: #374151; }
-.empty-state .hint { color: #9ca3af; font-size: 14px; margin-bottom: 20px; }
+.empty-state p { margin: 0 0 8px; color: var(--text-primary); }
+.empty-state .hint { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
 .session-list { display: flex; flex-direction: column; gap: 12px; }
 .session-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 20px;
   cursor: pointer;
@@ -366,7 +366,7 @@ const statusTextColors: Record<string, string> = {
   font-size: 12px;
   font-weight: 600;
 }
-.session-meta { font-size: 13px; color: #9ca3af; display: flex; gap: 16px; }
+.session-meta { font-size: 13px; color: var(--text-muted); display: flex; gap: 16px; }
 .delete-btn {
   position: absolute;
   top: 20px;
@@ -374,7 +374,7 @@ const statusTextColors: Record<string, string> = {
   padding: 4px 12px;
   border: 1px solid #fca5a5;
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-surface);
   color: #dc2626;
   font-size: 12px;
   cursor: pointer;
@@ -384,14 +384,14 @@ const statusTextColors: Record<string, string> = {
 /* Detail Mode */
 .btn-back {
   padding: 10px 24px;
-  background: #fff;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
 }
-.btn-back:hover { background: #f3f4f6; }
+.btn-back:hover { background: var(--bg-surface-hover); }
 .ai-btn {
   padding: 10px 24px;
   background: #7c3aed;
@@ -407,14 +407,14 @@ const statusTextColors: Record<string, string> = {
 .ai-btn.secondary:hover { background: #4b5563; }
 .nav-btn {
   padding: 10px 24px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
 }
-.nav-btn:hover { background: #4338ca; }
+.nav-btn:hover { background: var(--brand-primary-hover); }
 .bridge-btn {
   padding: 10px 24px;
   background: #059669;
@@ -435,13 +435,13 @@ const statusTextColors: Record<string, string> = {
 }
 .pagination button {
   padding: 8px 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
 }
 .pagination button:disabled { opacity: 0.4; cursor: default; }
-.pagination span { font-size: 14px; color: #6b7280; }
+.pagination span { font-size: 14px; color: var(--text-secondary); }
 
 /* Date warning panel */
 .warning-panel {

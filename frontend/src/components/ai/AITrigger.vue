@@ -56,7 +56,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   padding: 12px 18px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: white;
   border: none;
   border-radius: 28px;
@@ -67,7 +67,7 @@ onUnmounted(() => {
   transition: all 0.2s;
 }
 .ai-trigger:hover {
-  background: #4338ca;
+  background: var(--brand-primary-hover);
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(79,70,229,0.5);
 }

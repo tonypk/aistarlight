@@ -11,10 +11,10 @@ const error = ref('')
 
 // Form fields
 const formName = ref('')
-const formColor = ref('#4f46e5')
+const formColor = ref('var(--brand-primary)')
 
 const presetColors = [
-  '#4f46e5', '#7c3aed', '#db2777', '#dc2626',
+  'var(--brand-primary)', '#7c3aed', '#db2777', '#dc2626',
   '#ea580c', '#d97706', '#16a34a', '#0891b2',
   '#2563eb', '#4b5563',
 ]
@@ -26,7 +26,7 @@ onMounted(() => {
 function openCreate() {
   editingTag.value = null
   formName.value = ''
-  formColor.value = '#4f46e5'
+  formColor.value = 'var(--brand-primary)'
   showForm.value = true
 }
 
@@ -164,8 +164,8 @@ async function handleSearch() {
 }
 .view-header h2 { margin: 0; }
 .error { color: #ef4444; margin-bottom: 12px; font-size: 14px; }
-.loading-msg { color: #6b7280; text-align: center; padding: 40px 0; }
-.empty { color: #9ca3af; text-align: center; padding: 40px 0; }
+.loading-msg { color: var(--text-secondary); text-align: center; padding: 40px 0; }
+.empty { color: var(--text-muted); text-align: center; padding: 40px 0; }
 
 .search-bar {
   display: flex;
@@ -176,22 +176,22 @@ async function handleSearch() {
   flex: 1;
   max-width: 400px;
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
 }
 
 .btn {
   padding: 8px 20px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 8px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 14px;
 }
-.btn:hover { background: #f3f4f6; }
-.btn.primary { background: #4f46e5; color: #fff; border-color: #4f46e5; }
-.btn.primary:hover { background: #4338ca; }
+.btn:hover { background: var(--bg-surface-hover); }
+.btn.primary { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); }
+.btn.primary:hover { background: var(--brand-primary-hover); }
 
 .modal-overlay {
   position: fixed;
@@ -203,7 +203,7 @@ async function handleSearch() {
   z-index: 200;
 }
 .modal {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 16px;
   padding: 32px;
   width: 440px;
@@ -221,13 +221,13 @@ async function handleSearch() {
   margin-bottom: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary);
 }
 .form-group input[type="text"],
 .form-group input:not([type]) {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
   box-sizing: border-box;
@@ -252,13 +252,13 @@ async function handleSearch() {
   padding: 0;
 }
 .color-swatch.selected {
-  border-color: #1f2937;
+  border-color: var(--text-primary);
   box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1f2937;
 }
 .color-input {
   width: 36px;
   height: 36px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   cursor: pointer;
   padding: 2px;
@@ -272,7 +272,7 @@ async function handleSearch() {
   margin-bottom: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .tag-chip {
@@ -296,7 +296,7 @@ async function handleSearch() {
   gap: 12px;
 }
 .tag-card {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 16px;
   display: flex;
@@ -313,13 +313,13 @@ async function handleSearch() {
 }
 .btn-sm {
   padding: 4px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 12px;
 }
-.btn-sm:hover { background: #f3f4f6; }
+.btn-sm:hover { background: var(--bg-surface-hover); }
 .btn-sm.danger { color: #dc2626; border-color: #fca5a5; }
 .btn-sm.danger:hover { background: #fef2f2; }
 </style>

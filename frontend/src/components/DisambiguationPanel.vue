@@ -149,7 +149,7 @@ function confirm() {
 }
 
 .disambiguation-panel {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 12px;
   max-width: 800px;
   width: 95%;
@@ -167,7 +167,7 @@ function confirm() {
   font-size: 18px;
 }
 .panel-desc {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 14px;
   margin: 0;
 }
@@ -179,11 +179,11 @@ function confirm() {
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #9ca3af;
+  color: var(--text-muted);
   line-height: 1;
 }
 .close-btn:hover {
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .comparison-table-wrap {
@@ -203,7 +203,7 @@ function confirm() {
   text-align: left;
 }
 .comparison-table thead th {
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   font-weight: 600;
   position: sticky;
   top: 0;
@@ -211,7 +211,7 @@ function confirm() {
 
 .row-label {
   font-weight: 500;
-  color: #6b7280;
+  color: var(--text-secondary);
   white-space: nowrap;
   width: 100px;
 }
@@ -241,13 +241,13 @@ function confirm() {
   border-radius: 4px;
 }
 .ai-none {
-  color: #9ca3af;
+  color: var(--text-muted);
   font-style: italic;
 }
 
 .reason-row td {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-style: italic;
 }
 
@@ -268,32 +268,32 @@ function confirm() {
   gap: 12px;
   justify-content: flex-end;
   padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-default);
 }
 
 .cancel-btn {
   padding: 8px 20px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 14px;
 }
 .cancel-btn:hover {
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
 }
 
 .confirm-btn {
   padding: 8px 20px;
   border: none;
   border-radius: 6px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   cursor: pointer;
   font-size: 14px;
 }
 .confirm-btn:hover {
-  background: #4338ca;
+  background: var(--brand-primary-hover);
 }
 .confirm-btn:disabled {
   opacity: 0.5;

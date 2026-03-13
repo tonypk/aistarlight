@@ -264,8 +264,8 @@ function handleBack() {
 }
 .back-btn {
   padding: 6px 12px;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
@@ -278,13 +278,13 @@ function handleBack() {
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: #4f46e5;
+  color: var(--brand-primary);
 }
 .edit-card {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 12px;
   padding: 24px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
 }
 .report-meta {
   display: flex;
@@ -344,13 +344,13 @@ function handleBack() {
 .field-row.modified { background: #fef3c7; }
 .field-row.overridden { border-left: 3px solid #f59e0b; }
 .field-row.computed { background: #f8fafc; }
-.line-no { width: 30px; color: #94a3b8; font-weight: 500; font-size: 13px; }
-.label { flex: 1; font-size: 13px; color: #555; }
+.line-no { width: 30px; color: var(--text-muted); font-weight: 500; font-size: 13px; }
+.label { flex: 1; font-size: 13px; color: var(--text-secondary); }
 .value-cell { width: 180px; text-align: right; }
 .field-input {
   width: 100%;
   padding: 4px 8px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 4px;
   text-align: right;
   font-family: monospace;
@@ -363,7 +363,7 @@ function handleBack() {
 .computed-value {
   font-family: monospace;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 .change-indicator { color: #f59e0b; font-weight: 700; font-size: 16px; }
 .override-indicator { color: #3b82f6; font-weight: 700; font-size: 14px; }
@@ -376,9 +376,9 @@ function handleBack() {
 }
 .diff-preview h4 { margin-bottom: 8px; font-size: 13px; color: #92400e; }
 .diff-item { font-size: 12px; padding: 2px 0; display: flex; gap: 6px; align-items: center; }
-.diff-field { font-weight: 500; color: #6b7280; }
+.diff-field { font-weight: 500; color: var(--text-secondary); }
 .diff-old { color: #ef4444; text-decoration: line-through; }
-.diff-arrow { color: #94a3b8; }
+.diff-arrow { color: var(--text-muted); }
 .diff-new { color: #22c55e; font-weight: 500; }
 .notes-row {
   margin-top: 16px;
@@ -390,7 +390,7 @@ function handleBack() {
 .notes-input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 13px;
 }
@@ -402,19 +402,19 @@ function handleBack() {
 }
 .save-btn {
   padding: 10px 24px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
 }
-.save-btn:hover { background: #4338ca; }
+.save-btn:hover { background: var(--brand-primary-hover); }
 .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .cancel-btn {
   padding: 10px 24px;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   cursor: pointer;
 }

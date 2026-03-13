@@ -88,10 +88,10 @@ function handleSubmit() {
 <style scoped>
 .supplier-form { display: flex; flex-direction: column; gap: 12px; }
 .form-row { display: flex; flex-direction: column; gap: 4px; }
-.form-row label { font-size: 13px; font-weight: 500; color: #374151; }
+.form-row label { font-size: 13px; font-weight: 500; color: var(--text-primary); }
 .form-row input, .form-row select {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
 }
@@ -99,13 +99,13 @@ function handleSubmit() {
 .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
 .btn {
   padding: 8px 20px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 8px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 14px;
 }
-.btn.ghost { border: none; color: #6b7280; }
-.btn.primary { background: #4f46e5; color: #fff; border-color: #4f46e5; }
-.btn.primary:hover { background: #4338ca; }
+.btn.ghost { border: none; color: var(--text-secondary); }
+.btn.primary { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); }
+.btn.primary:hover { background: var(--brand-primary-hover); }
 </style>

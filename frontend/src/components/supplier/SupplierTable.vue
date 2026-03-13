@@ -58,8 +58,8 @@ th {
   text-align: left;
   padding: 10px 12px;
   font-size: 12px;
-  color: #6b7280;
-  border-bottom: 2px solid #e5e7eb;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border-default);
   white-space: nowrap;
 }
 td {
@@ -68,7 +68,7 @@ td {
   font-size: 14px;
 }
 .mono { font-family: monospace; font-size: 13px; }
-.empty { text-align: center; color: #9ca3af; padding: 40px 0; }
+.empty { text-align: center; color: var(--text-muted); padding: 40px 0; }
 .badge {
   padding: 2px 8px;
   border-radius: 4px;
@@ -81,12 +81,12 @@ td {
 .btn-sm {
   padding: 4px 10px;
   font-size: 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 4px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
 }
-.btn-sm:hover { background: #f3f4f6; }
+.btn-sm:hover { background: var(--bg-surface-hover); }
 .btn-sm.danger { color: #ef4444; border-color: #fca5a5; }
 .btn-sm.danger:hover { background: #fef2f2; }
 </style>

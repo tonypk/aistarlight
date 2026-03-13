@@ -194,7 +194,7 @@ async function handleLogout() {
   justify-content: space-between;
 }
 .logo h2 { font-size: 20px; margin: 0; }
-.tagline { font-size: 12px; color: #888; margin-top: 4px; }
+.tagline { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 .jurisdiction-badge {
   font-size: 11px;
   padding: 2px 6px;
@@ -209,7 +209,7 @@ async function handleLogout() {
   display: none;
   background: none;
   border: none;
-  color: #888;
+  color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
 }
@@ -235,7 +235,7 @@ async function handleLogout() {
 .company-name {
   padding: 8px 20px;
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--text-muted);
   border-bottom: 1px solid rgba(255,255,255,0.1);
   white-space: nowrap;
   overflow: hidden;
@@ -263,7 +263,7 @@ nav::-webkit-scrollbar-track { background: transparent; }
 .nav-item.active {
   background: rgba(255,255,255,0.1);
   color: #fff;
-  border-right: 3px solid #4f46e5;
+  border-right: 3px solid var(--brand-primary);
 }
 .icon { font-size: 18px; }
 .nav-divider {
@@ -271,7 +271,7 @@ nav::-webkit-scrollbar-track { background: transparent; }
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .sidebar-footer {

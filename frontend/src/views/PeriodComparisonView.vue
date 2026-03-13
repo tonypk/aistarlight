@@ -184,7 +184,7 @@ function fieldLabel(field: string): string {
   margin: 0 auto;
 }
 h2 { margin: 0 0 4px; }
-.subtitle { color: #64748b; font-size: 14px; margin: 0 0 24px; }
+.subtitle { color: var(--text-muted); font-size: 14px; margin: 0 0 24px; }
 
 .controls {
   display: flex;
@@ -195,7 +195,7 @@ h2 { margin: 0 0 4px; }
   padding: 20px;
   background: #f8fafc;
   border-radius: 10px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
 }
 .control-group {
   display: flex;
@@ -205,18 +205,18 @@ h2 { margin: 0 0 4px; }
 .control-group label {
   font-size: 13px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--text-muted);
 }
 .control-group select {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
   min-width: 180px;
 }
 .compare-btn {
   padding: 8px 24px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -225,7 +225,7 @@ h2 { margin: 0 0 4px; }
   cursor: pointer;
   height: 38px;
 }
-.compare-btn:hover { background: #4338ca; }
+.compare-btn:hover { background: var(--brand-primary-hover); }
 .compare-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .error-msg {
@@ -246,7 +246,7 @@ h2 { margin: 0 0 4px; }
 }
 .meta-item {
   font-size: 14px;
-  color: #374151;
+  color: var(--text-primary);
 }
 .meta-item.missing { color: #d97706; }
 
@@ -254,17 +254,17 @@ h2 { margin: 0 0 4px; }
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
 }
 .compare-table th {
   text-align: left;
   padding: 10px 14px;
   background: #f8fafc;
   font-weight: 500;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 13px;
 }
 .compare-table th.num { text-align: right; }
@@ -275,15 +275,15 @@ h2 { margin: 0 0 4px; }
 .compare-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .field-name {
   font-weight: 500;
-  color: #1e293b;
+  color: var(--text-primary);
 }
 .positive { color: #dc2626; font-weight: 500; }
 .negative { color: #16a34a; font-weight: 500; }
-.zero { color: #64748b; }
+.zero { color: var(--text-muted); }
 
 .empty {
   text-align: center;
   padding: 48px;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 </style>

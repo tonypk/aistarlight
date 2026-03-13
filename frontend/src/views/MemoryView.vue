@@ -135,7 +135,7 @@ function formatDate(iso: string) {
 
 <style scoped>
 .memory-view h2 { margin-bottom: 8px; }
-.desc { color: #888; margin-bottom: 20px; }
+.desc { color: var(--text-muted); margin-bottom: 20px; }
 
 .tabs {
   display: flex;
@@ -144,26 +144,26 @@ function formatDate(iso: string) {
 }
 .tabs button {
   padding: 8px 20px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 8px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 14px;
-  color: #555;
+  color: var(--text-secondary);
 }
 .tabs button.active {
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
-  border-color: #4f46e5;
+  border-color: var(--brand-primary);
 }
 
-.loading, .empty { text-align: center; padding: 48px; color: #888; }
+.loading, .empty { text-align: center; padding: 48px; color: var(--text-muted); }
 
 .pref-card {
-  background: #fff;
+  background: var(--bg-surface);
   padding: 24px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   margin-bottom: 16px;
 }
 .pref-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
@@ -176,20 +176,20 @@ function formatDate(iso: string) {
   cursor: pointer;
 }
 .section { margin-bottom: 12px; }
-.section h4 { font-size: 13px; color: #888; margin-bottom: 8px; }
+.section h4 { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
 .mapping-item { padding: 4px 0; font-family: monospace; font-size: 13px; }
-pre { background: #f9fafb; padding: 12px; border-radius: 6px; font-size: 12px; }
+pre { background: var(--bg-surface-alt); padding: 12px; border-radius: 6px; font-size: 12px; }
 
 .corrections-list {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   overflow-x: auto;
 }
 table { width: 100%; border-collapse: collapse; }
-th { text-align: left; padding: 10px 12px; color: #888; font-size: 13px; border-bottom: 1px solid #e5e7eb; background: #f9fafb; }
+th { text-align: left; padding: 10px 12px; color: var(--text-muted); font-size: 13px; border-bottom: 1px solid var(--border-default); background: var(--bg-surface-alt); }
 td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
 .val.old { color: #ef4444; }
 .val.new { color: #059669; }
-.date { color: #888; white-space: nowrap; }
+.date { color: var(--text-muted); white-space: nowrap; }
 </style>

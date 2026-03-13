@@ -884,7 +884,7 @@ function scrollTo(id: string) {
   margin-bottom: 4px;
 }
 .subtitle {
-  color: #888;
+  color: var(--text-muted);
   font-size: 14px;
 }
 
@@ -900,14 +900,14 @@ function scrollTo(id: string) {
   position: sticky;
   top: 24px;
   align-self: flex-start;
-  background: #fff;
+  background: var(--bg-surface);
   padding: 16px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
 }
 .toc h4 {
   margin-bottom: 12px;
-  color: #374151;
+  color: var(--text-primary);
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -915,18 +915,18 @@ function scrollTo(id: string) {
 .toc a {
   display: block;
   padding: 6px 10px;
-  color: #6b7280;
+  color: var(--text-secondary);
   text-decoration: none;
   font-size: 13px;
   border-radius: 4px;
   transition: all 0.15s;
 }
 .toc a:hover {
-  color: #4f46e5;
+  color: var(--brand-primary);
   background: #f5f3ff;
 }
 .toc a.active {
-  color: #4f46e5;
+  color: var(--brand-primary);
   background: #eef2ff;
   font-weight: 500;
 }
@@ -938,10 +938,10 @@ function scrollTo(id: string) {
 }
 
 section {
-  background: #fff;
+  background: var(--bg-surface);
   padding: 24px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   margin-bottom: 16px;
 }
 
@@ -956,7 +956,7 @@ section h3 {
 section h4 {
   font-size: 15px;
   margin: 16px 0 8px;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 section p {
@@ -986,7 +986,7 @@ section li {
   display: flex;
   gap: 12px;
   padding: 12px;
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   border-radius: 8px;
   border: 1px solid #f3f4f6;
 }
@@ -1001,7 +1001,7 @@ section li {
 }
 .feature-item p {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -1021,7 +1021,7 @@ section li {
 .step-num {
   width: 32px;
   height: 32px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border-radius: 50%;
   display: flex;
@@ -1078,10 +1078,10 @@ section li {
 .ref-table th {
   text-align: left;
   padding: 8px 12px;
-  background: #f9fafb;
-  color: #374151;
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
   font-weight: 600;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--border-default);
 }
 .ref-table td {
   padding: 8px 12px;
@@ -1100,13 +1100,13 @@ section li {
 .wf-step {
   padding: 6px 14px;
   background: #eef2ff;
-  color: #4f46e5;
+  color: var(--brand-primary);
   border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
 }
 .wf-arrow {
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 18px;
 }
 

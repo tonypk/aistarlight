@@ -108,8 +108,8 @@ const lineLabels = computed(() => isSG.value ? lineLabelsSG : lineLabelsPH)
 
 <style scoped>
 .recon-summary {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 24px;
 }
@@ -122,18 +122,18 @@ const lineLabels = computed(() => isSG.value ? lineLabelsSG : lineLabelsPH)
 .stat {
   text-align: center;
   padding: 16px;
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   border-radius: 8px;
 }
 .stat.warn .stat-val { color: #d97706; }
 .stat.good .stat-val { color: #16a34a; }
 .stat-val { font-size: 24px; font-weight: 700; color: #111827; }
-.stat-label { font-size: 12px; color: #6b7280; margin-top: 4px; }
+.stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
 
 h3 { font-size: 16px; margin: 0 0 12px; }
 
 .comparison-table {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -146,10 +146,10 @@ h3 { font-size: 16px; margin: 0 0 12px; }
   align-items: center;
 }
 .comp-row.header {
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   font-weight: 600;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 .comp-row.mismatch { background: #fef2f2; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
@@ -163,7 +163,7 @@ h3 { font-size: 16px; margin: 0 0 12px; }
   justify-content: space-between;
   margin-top: 12px;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 .all-match { color: #16a34a; font-weight: 600; }
 .total-diff { color: #dc2626; font-weight: 600; }

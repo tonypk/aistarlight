@@ -126,7 +126,7 @@ function formatPeso(val: number): string {
 <style scoped>
 .penalty-calc { max-width: 800px; }
 .penalty-calc h2 { margin-bottom: 4px; }
-.subtitle { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
+.subtitle { color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; }
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -138,18 +138,18 @@ function formatPeso(val: number): string {
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 4px;
-  color: #374151;
+  color: var(--text-primary);
 }
 .field input, .field select {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   font-size: 14px;
 }
 .calc-btn {
   padding: 10px 24px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -165,8 +165,8 @@ function formatPeso(val: number): string {
 .result-card {
   margin-top: 24px;
   padding: 20px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
 }
 .result-card h3 { margin-bottom: 16px; font-size: 16px; }
@@ -176,11 +176,11 @@ function formatPeso(val: number): string {
 }
 .result-table td {
   padding: 10px 8px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
   font-size: 14px;
 }
 .result-table .amount { text-align: right; font-variant-numeric: tabular-nums; }
-.result-table .ref { color: #6b7280; font-size: 12px; text-align: right; }
+.result-table .ref { color: var(--text-secondary); font-size: 12px; text-align: right; }
 .total-row td {
   border-top: 2px solid #374151;
   border-bottom: none;

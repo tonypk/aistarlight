@@ -124,7 +124,7 @@ function formatDate(iso: string) {
 
 <style scoped>
 .knowledge-view h2 { margin-bottom: 4px; }
-.desc { color: #888; margin-bottom: 20px; }
+.desc { color: var(--text-muted); margin-bottom: 20px; }
 
 .stats-row {
   display: flex;
@@ -132,15 +132,15 @@ function formatDate(iso: string) {
   margin-bottom: 20px;
 }
 .stat-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 16px 24px;
   text-align: center;
   flex: 1;
 }
-.stat-value { font-size: 28px; font-weight: 700; color: #4f46e5; }
-.stat-label { font-size: 13px; color: #888; margin-top: 4px; }
+.stat-value { font-size: 28px; font-weight: 700; color: var(--brand-primary); }
+.stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 
 .category-filter {
   display: flex;
@@ -150,25 +150,25 @@ function formatDate(iso: string) {
 }
 .category-filter button {
   padding: 6px 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 20px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 13px;
-  color: #555;
+  color: var(--text-secondary);
 }
 .category-filter button.active {
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
-  border-color: #4f46e5;
+  border-color: var(--brand-primary);
 }
 
-.loading { text-align: center; padding: 32px; color: #888; }
+.loading { text-align: center; padding: 32px; color: var(--text-muted); }
 
 .entries { display: flex; flex-direction: column; gap: 12px; }
 .entry-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 16px 20px;
 }
@@ -180,7 +180,7 @@ function formatDate(iso: string) {
 }
 .category-badge {
   background: #eef2ff;
-  color: #4f46e5;
+  color: var(--brand-primary);
   padding: 2px 10px;
   border-radius: 12px;
   font-size: 12px;
@@ -188,7 +188,7 @@ function formatDate(iso: string) {
 }
 .source {
   font-size: 13px;
-  color: #888;
+  color: var(--text-muted);
   flex: 1;
 }
 .emb-badge {
@@ -212,6 +212,6 @@ function formatDate(iso: string) {
   font-size: 12px;
   color: #aaa;
 }
-.empty { text-align: center; padding: 48px; color: #888; }
+.empty { text-align: center; padding: 48px; color: var(--text-muted); }
 .error-msg { color: #ef4444; text-align: center; padding: 24px; }
 </style>

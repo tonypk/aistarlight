@@ -155,7 +155,7 @@ function daysLabel(days: number): string {
   font-size: 16px;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--border-default);
 }
 .overdue-title { color: #dc2626; border-color: #dc2626; }
 .upcoming-title { color: #d97706; border-color: #d97706; }
@@ -180,12 +180,12 @@ function daysLabel(days: number): string {
 }
 
 .event-left { display: flex; flex-direction: column; gap: 2px; }
-.event-form { font-weight: 600; font-size: 15px; color: #1e293b; }
-.event-name { font-size: 13px; color: #64748b; }
+.event-form { font-weight: 600; font-size: 15px; color: var(--text-primary); }
+.event-name { font-size: 13px; color: var(--text-muted); }
 
 .event-right { display: flex; align-items: center; gap: 16px; text-align: right; }
-.event-period { font-size: 13px; color: #64748b; }
-.event-deadline { font-size: 14px; color: #374151; }
+.event-period { font-size: 13px; color: var(--text-muted); }
+.event-deadline { font-size: 14px; color: var(--text-primary); }
 .event-days {
   font-weight: 600;
   font-size: 13px;
@@ -200,26 +200,26 @@ function daysLabel(days: number): string {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
 }
 .calendar-table th {
   text-align: left;
   padding: 10px 14px;
   background: #f8fafc;
   font-weight: 500;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 13px;
 }
 .calendar-table td {
   padding: 10px 14px;
   border-top: 1px solid #f1f5f9;
 }
-.form-cell { font-weight: 600; color: #4f46e5; }
+.form-cell { font-weight: 600; color: var(--brand-primary); }
 .days-cell { color: #16a34a; font-weight: 500; }
 
-.loading { text-align: center; padding: 48px; color: #64748b; }
-.empty { text-align: center; padding: 48px; color: #94a3b8; }
+.loading { text-align: center; padding: 48px; color: var(--text-muted); }
+.empty { text-align: center; padding: 48px; color: var(--text-muted); }
 </style>

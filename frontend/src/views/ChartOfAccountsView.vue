@@ -99,20 +99,20 @@ const groupedAccounts = computed(() => {
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .page-header h1 { font-size: 24px; margin: 0; }
 .filters { display: flex; gap: 12px; margin-bottom: 20px; }
-.input, .select { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px; }
+.input, .select { padding: 8px 12px; border: 1px solid var(--border-default); border-radius: 6px; font-size: 14px; }
 .input { flex: 1; }
 .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
-.btn-secondary { background: #e5e7eb; color: #111; }
-.btn-secondary:hover { background: #d1d5db; }
+.btn-secondary { background: var(--border-default); color: var(--text-primary); }
+.btn-secondary:hover { background: var(--border-input); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .loading, .empty { text-align: center; padding: 40px; color: #666; }
 .account-group { margin-bottom: 24px; }
-.group-title { font-size: 16px; color: #374151; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid #e5e7eb; }
+.group-title { font-size: 16px; color: var(--text-primary); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid var(--border-default); }
 .table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.table th { text-align: left; padding: 8px 12px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #374151; }
+.table th { text-align: left; padding: 8px 12px; background: var(--bg-surface-alt); border-bottom: 1px solid var(--border-default); font-weight: 600; color: var(--text-primary); }
 .table td { padding: 8px 12px; border-bottom: 1px solid #f3f4f6; }
 .mono { font-family: monospace; font-weight: 600; }
-.desc { color: #6b7280; font-size: 13px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.desc { color: var(--text-secondary); font-size: 13px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; text-transform: capitalize; }
 .badge-asset { background: #dbeafe; color: #1d4ed8; }
 .badge-liability { background: #fce7f3; color: #be185d; }

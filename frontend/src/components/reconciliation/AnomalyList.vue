@@ -68,7 +68,7 @@ const openCount = computed(() => props.anomalies.filter((a) => a.status === 'ope
   display: flex;
   gap: 4px;
   margin-bottom: 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
   padding-bottom: 8px;
 }
 .tab {
@@ -77,14 +77,14 @@ const openCount = computed(() => props.anomalies.filter((a) => a.status === 'ope
   background: none;
   cursor: pointer;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary);
   border-radius: 6px;
 }
-.tab:hover { background: #f3f4f6; }
+.tab:hover { background: var(--bg-surface-hover); }
 .tab.active {
   background: #eef2ff;
-  color: #4f46e5;
+  color: var(--brand-primary);
   font-weight: 600;
 }
-.empty { text-align: center; padding: 24px; color: #9ca3af; font-size: 14px; }
+.empty { text-align: center; padding: 24px; color: var(--text-muted); font-size: 14px; }
 </style>

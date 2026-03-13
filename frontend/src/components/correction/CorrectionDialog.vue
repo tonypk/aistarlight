@@ -117,7 +117,7 @@ function handleClose() {
   z-index: 1000;
 }
 .dialog {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 12px;
   width: 460px;
   max-width: 90vw;
@@ -128,7 +128,7 @@ function handleClose() {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
 }
 .dialog-header h3 {
   font-size: 15px;
@@ -139,7 +139,7 @@ function handleClose() {
   border: none;
   font-size: 20px;
   cursor: pointer;
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 .dialog-body {
   padding: 20px;
@@ -152,30 +152,30 @@ function handleClose() {
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 6px;
-  color: #374151;
+  color: var(--text-primary);
 }
 .required {
   color: #ef4444;
 }
 .current-value {
   padding: 8px 12px;
-  background: #f3f4f6;
+  background: var(--bg-surface-hover);
   border-radius: 6px;
   font-family: monospace;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 .input {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
   box-sizing: border-box;
 }
 .input:focus {
   outline: none;
-  border-color: #4f46e5;
+  border-color: var(--brand-primary);
   box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
 }
 .error {
@@ -188,19 +188,19 @@ function handleClose() {
   justify-content: flex-end;
   gap: 10px;
   padding: 16px 20px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-default);
 }
 .cancel-btn {
   padding: 8px 16px;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
 }
 .save-btn {
   padding: 8px 16px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -208,7 +208,7 @@ function handleClose() {
   font-size: 13px;
 }
 .save-btn:hover {
-  background: #4338ca;
+  background: var(--brand-primary-hover);
 }
 .save-btn:disabled {
   opacity: 0.5;

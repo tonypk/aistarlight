@@ -569,9 +569,9 @@ function getFieldLabel(target: string): string {
 
 <style scoped>
 .mapping-view h2 { margin-bottom: 8px; }
-.desc { color: #888; margin-bottom: 24px; }
-.no-file { text-align: center; padding: 48px; color: #888; }
-.no-file a { color: #4f46e5; }
+.desc { color: var(--text-muted); margin-bottom: 24px; }
+.no-file { text-align: center; padding: 48px; color: var(--text-muted); }
+.no-file a { color: var(--brand-primary); }
 
 .file-info {
   padding: 12px 16px;
@@ -592,12 +592,12 @@ function getFieldLabel(target: string): string {
 .category-label {
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary);
 }
 .category-options {
   display: flex;
   gap: 4px;
-  background: #f3f4f6;
+  background: var(--bg-surface-hover);
   border-radius: 8px;
   padding: 3px;
 }
@@ -608,15 +608,15 @@ function getFieldLabel(target: string): string {
   background: transparent;
   cursor: pointer;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary);
   transition: all 0.15s;
 }
 .category-btn:hover {
-  color: #374151;
+  color: var(--text-primary);
 }
 .category-btn.active {
-  background: #fff;
-  color: #4f46e5;
+  background: var(--bg-surface);
+  color: var(--brand-primary);
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
@@ -704,9 +704,9 @@ function getFieldLabel(target: string): string {
 
 /* Mapping table */
 .mapping-table {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   overflow: hidden;
 }
 .mapping-row {
@@ -717,10 +717,10 @@ function getFieldLabel(target: string): string {
   align-items: center;
 }
 .mapping-row.header {
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   font-weight: 600;
   font-size: 13px;
-  color: #888;
+  color: var(--text-muted);
 }
 /* When confidence column is shown */
 .with-confidence .mapping-row {
@@ -729,11 +729,11 @@ function getFieldLabel(target: string): string {
 .conf-value {
   text-align: center;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 .source { font-weight: 500; }
 .sample {
-  color: #888;
+  color: var(--text-muted);
   font-size: 13px;
   cursor: help;
 }
@@ -773,14 +773,14 @@ function getFieldLabel(target: string): string {
 .confirm-btn {
   margin-top: 24px;
   padding: 12px 32px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
 }
-.confirm-btn:hover { background: #4338ca; }
+.confirm-btn:hover { background: var(--brand-primary-hover); }
 .confirm-btn:disabled {
   background: #9ca3af;
   cursor: default;
@@ -789,7 +789,7 @@ function getFieldLabel(target: string): string {
 /* Preview */
 .preview-section h3 { margin-bottom: 8px; }
 .preview-desc {
-  color: #6b7280;
+  color: var(--text-secondary);
   margin-bottom: 16px;
   font-size: 14px;
 }
@@ -797,17 +797,17 @@ function getFieldLabel(target: string): string {
 .preview-table {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   font-size: 13px;
 }
 .preview-table th {
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   padding: 10px 12px;
   text-align: left;
   font-weight: 600;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
 }
 .preview-table td {
   padding: 10px 12px;
@@ -820,12 +820,12 @@ function getFieldLabel(target: string): string {
 }
 .back-btn {
   padding: 12px 32px;
-  background: #fff;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
 }
-.back-btn:hover { background: #f9fafb; }
+.back-btn:hover { background: var(--bg-surface-alt); }
 </style>

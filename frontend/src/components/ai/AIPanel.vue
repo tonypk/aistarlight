@@ -154,7 +154,7 @@ watch(() => agentStore.messages.length, async () => {
 
       <div class="messages" ref="messagesEl">
         <div v-if="!agentStore.messages.length" class="empty-state">
-          <div class="empty-icon" :style="{ color: agentStore.activeAgentInfo?.color || '#4f46e5' }">
+          <div class="empty-icon" :style="{ color: agentStore.activeAgentInfo?.color || 'var(--brand-primary)' }">
             {{ agentIcons[agentStore.activeAgent] || '&#129302;' }}
           </div>
           <h4 class="empty-title">{{ agentStore.activeAgentInfo?.name || 'AI Assistant' }}</h4>
@@ -164,7 +164,7 @@ watch(() => agentStore.messages.length, async () => {
               v-for="(q, qi) in agentStore.activeAgentInfo.sample_questions"
               :key="qi"
               class="sample-chip"
-              :style="{ '--agent-color': agentStore.activeAgentInfo?.color || '#4f46e5' }"
+              :style="{ '--agent-color': agentStore.activeAgentInfo?.color || 'var(--brand-primary)' }"
               @click="handleSampleQuestion(q)"
             >
               {{ q }}
@@ -222,7 +222,7 @@ watch(() => agentStore.messages.length, async () => {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
   background: #fafafa;
 }
 .panel-header h3 {
@@ -243,18 +243,18 @@ watch(() => agentStore.messages.length, async () => {
   border: 1px solid transparent;
   font-size: 14px;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--text-secondary);
   padding: 4px 8px;
   border-radius: 4px;
   position: relative;
 }
-.header-btn:hover { background: #f3f4f6; }
-.header-btn.active { background: #eef2ff; border-color: #c7d2fe; color: #4f46e5; }
+.header-btn:hover { background: var(--bg-surface-hover); }
+.header-btn.active { background: #eef2ff; border-color: #c7d2fe; color: var(--brand-primary); }
 .thread-badge {
   position: absolute;
   top: -4px;
   right: -4px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: white;
   font-size: 9px;
   padding: 1px 4px;
@@ -267,11 +267,11 @@ watch(() => agentStore.messages.length, async () => {
   border: none;
   font-size: 18px;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--text-secondary);
   padding: 4px 8px;
   border-radius: 4px;
 }
-.close-btn:hover { background: #f3f4f6; }
+.close-btn:hover { background: var(--bg-surface-hover); }
 
 .panel-agent-info {
   padding: 6px 16px;
@@ -279,20 +279,20 @@ watch(() => agentStore.messages.length, async () => {
 }
 .agent-desc {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 /* Thread list */
 .thread-list {
   max-height: 200px;
   overflow-y: auto;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
   background: #fafafa;
 }
 .thread-empty {
   padding: 12px 16px;
   text-align: center;
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 13px;
 }
 .thread-item {
@@ -312,14 +312,14 @@ watch(() => agentStore.messages.length, async () => {
 .thread-item:hover { background: #eef2ff; }
 .thread-item.active { background: #e0e7ff; }
 .thread-title {
-  color: #1f2937;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
 }
 .thread-date {
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 11px;
   margin-left: 8px;
   flex-shrink: 0;
@@ -343,7 +343,7 @@ watch(() => agentStore.messages.length, async () => {
   padding: 16px;
 }
 .messages::-webkit-scrollbar { width: 4px; }
-.messages::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+.messages::-webkit-scrollbar-thumb { background: var(--border-input); border-radius: 2px; }
 
 .empty-state {
   text-align: center;
@@ -361,12 +361,12 @@ watch(() => agentStore.messages.length, async () => {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
 }
 .empty-hint {
   margin: 0;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 .sample-questions {
   display: flex;
@@ -379,45 +379,45 @@ watch(() => agentStore.messages.length, async () => {
   display: block;
   width: 100%;
   padding: 10px 14px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
-  color: #374151;
+  color: var(--text-primary);
   text-align: left;
   font-family: inherit;
   transition: all 0.15s;
   line-height: 1.4;
 }
 .sample-chip:hover {
-  background: color-mix(in srgb, var(--agent-color, #4f46e5) 8%, white);
-  border-color: var(--agent-color, #4f46e5);
-  color: var(--agent-color, #4f46e5);
+  background: color-mix(in srgb, var(--agent-color, var(--brand-primary)) 8%, white);
+  border-color: var(--agent-color, var(--brand-primary));
+  color: var(--agent-color, var(--brand-primary));
 }
 .empty-context {
   font-size: 12px;
   margin-top: 4px;
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 .empty-context code {
   background: #eef2ff;
   padding: 2px 6px;
   border-radius: 3px;
-  color: #4f46e5;
+  color: var(--brand-primary);
 }
 
 .input-area {
   display: flex;
   gap: 8px;
   padding: 12px 16px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-default);
   background: #fafafa;
 }
 .input-area textarea {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   resize: none;
   font-size: 14px;
@@ -425,12 +425,12 @@ watch(() => agentStore.messages.length, async () => {
   outline: none;
 }
 .input-area textarea:focus {
-  border-color: #4f46e5;
+  border-color: var(--brand-primary);
   box-shadow: 0 0 0 2px rgba(79,70,229,0.1);
 }
 .send-btn {
   padding: 8px 14px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -443,18 +443,18 @@ watch(() => agentStore.messages.length, async () => {
   cursor: not-allowed;
 }
 .send-btn:hover:not(:disabled) {
-  background: #4338ca;
+  background: var(--brand-primary-hover);
 }
 
 .shortcut-hint {
   text-align: center;
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-muted);
   padding: 4px 16px 8px;
 }
 .shortcut-hint kbd {
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-input);
   border-radius: 3px;
   padding: 1px 4px;
   font-size: 10px;

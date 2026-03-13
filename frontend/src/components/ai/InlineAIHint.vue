@@ -39,11 +39,11 @@ function handleAction() {
 .hint-icon { font-size: 16px; }
 .hint-message {
   flex: 1;
-  color: #4338ca;
+  color: var(--brand-primary-hover);
 }
 .hint-action {
   padding: 4px 12px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: white;
   border: none;
   border-radius: 6px;
@@ -52,5 +52,5 @@ function handleAction() {
   font-weight: 500;
   white-space: nowrap;
 }
-.hint-action:hover { background: #4338ca; }
+.hint-action:hover { background: var(--brand-primary-hover); }
 </style>

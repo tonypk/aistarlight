@@ -133,15 +133,15 @@ function formatAmount(amount: number): string {
 
 <style scoped>
 .table-wrapper {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   overflow-x: auto;
 }
 .loading, .empty {
   text-align: center;
   padding: 32px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 table {
   width: 100%;
@@ -151,11 +151,11 @@ table {
 th {
   text-align: left;
   padding: 12px 16px;
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   font-weight: 600;
   font-size: 13px;
-  color: #6b7280;
-  border-bottom: 1px solid #e5e7eb;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-default);
   white-space: nowrap;
 }
 td {
@@ -175,7 +175,7 @@ tr.low-conf { background: #fffbeb; }
 .action-col { width: 100px; white-space: nowrap; }
 .inline-select {
   padding: 4px 8px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 4px;
   font-size: 13px;
 }
@@ -186,8 +186,8 @@ tr.low-conf { background: #fffbeb; }
   font-size: 12px;
   cursor: pointer;
 }
-.edit-btn { background: #e5e7eb; color: #374151; }
-.edit-btn:hover { background: #d1d5db; }
-.save-btn { background: #4f46e5; color: #fff; margin-right: 4px; }
-.cancel-btn { background: #e5e7eb; color: #374151; }
+.edit-btn { background: var(--border-default); color: var(--text-primary); }
+.edit-btn:hover { background: var(--border-input); }
+.save-btn { background: var(--brand-primary); color: #fff; margin-right: 4px; }
+.cancel-btn { background: var(--border-default); color: var(--text-primary); }
 </style>

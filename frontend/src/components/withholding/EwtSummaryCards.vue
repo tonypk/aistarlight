@@ -44,8 +44,8 @@ function fmt(n: number): string {
   margin-bottom: 24px;
 }
 .card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 20px;
 }
@@ -55,7 +55,7 @@ function fmt(n: number): string {
 }
 .card-label {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;

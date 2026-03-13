@@ -132,14 +132,14 @@ function totalCredit() {
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .page-header h1 { font-size: 24px; margin: 0; }
 .filters, .ledger-filters { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.filters label, .ledger-filters label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #374151; }
-.input { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px; }
+.filters label, .ledger-filters label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-primary); }
+.input { padding: 8px 12px; border: 1px solid var(--border-default); border-radius: 6px; font-size: 14px; }
 .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
-.btn-primary { background: #4f46e5; color: #fff; }
-.btn-primary:hover { background: #4338ca; }
-.btn-secondary { background: #e5e7eb; color: #111; }
+.btn-primary { background: var(--brand-primary); color: #fff; }
+.btn-primary:hover { background: var(--brand-primary-hover); }
+.btn-secondary { background: var(--border-default); color: var(--text-primary); }
 .table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.table th { text-align: left; padding: 10px 12px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 600; }
+.table th { text-align: left; padding: 10px 12px; background: var(--bg-surface-alt); border-bottom: 1px solid var(--border-default); font-weight: 600; }
 .table td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
 .right { text-align: right; }
 .mono { font-family: monospace; }
@@ -153,8 +153,8 @@ function totalCredit() {
 .badge-equity { background: #ede9fe; color: #6d28d9; }
 .badge-revenue { background: #d1fae5; color: #065f46; }
 .badge-expense { background: #fef3c7; color: #92400e; }
-.totals td { background: #f9fafb; border-top: 2px solid #e5e7eb; }
-.ledger-panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; }
+.totals td { background: var(--bg-surface-alt); border-top: 2px solid var(--border-default); }
+.ledger-panel { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: 8px; padding: 20px; }
 .ledger-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .ledger-header h2 { margin: 0; font-size: 18px; }
 </style>

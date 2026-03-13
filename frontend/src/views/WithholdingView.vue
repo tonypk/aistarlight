@@ -125,8 +125,8 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
 .error { color: #ef4444; margin-bottom: 12px; font-size: 14px; }
 
 .control-panel {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 24px;
@@ -144,7 +144,7 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
 .control-row label { font-size: 14px; font-weight: 500; }
 .control-row select {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
 }
@@ -153,16 +153,16 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
 }
-.empty-state p { margin: 0 0 8px; color: #374151; }
-.empty-state .hint { color: #9ca3af; font-size: 14px; }
+.empty-state p { margin: 0 0 8px; color: var(--text-primary); }
+.empty-state .hint { color: var(--text-muted); font-size: 14px; }
 
 .section {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
@@ -171,13 +171,13 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
 
 .btn {
   padding: 8px 20px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 8px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 14px;
   text-decoration: none;
   color: inherit;
 }
-.btn:hover { background: #f3f4f6; }
+.btn:hover { background: var(--bg-surface-hover); }
 </style>

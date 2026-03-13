@@ -78,27 +78,27 @@ function reset() {
   display: flex;
   gap: 12px;
   padding: 12px 16px;
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   border-radius: 8px;
   align-items: center;
   flex-wrap: wrap;
 }
 select, .search-input {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
-  background: #fff;
+  background: var(--bg-surface);
 }
 .search-input { flex: 1; min-width: 180px; }
 .reset-btn {
   padding: 8px 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
-.reset-btn:hover { background: #f3f4f6; }
+.reset-btn:hover { background: var(--bg-surface-hover); }
 </style>

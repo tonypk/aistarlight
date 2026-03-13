@@ -728,11 +728,11 @@ function exportCSV() {
   background: #f1f5f9;
   border-radius: 8px;
   font-size: 13px;
-  color: #64748b;
+  color: var(--text-muted);
   transition: all 0.2s;
 }
-.step.active { background: #4f46e5; color: #fff; }
-.step.done { background: #e0e7ff; color: #4f46e5; }
+.step.active { background: var(--brand-primary); color: #fff; }
+.step.done { background: #e0e7ff; color: var(--brand-primary); }
 .step-circle {
   width: 28px;
   height: 28px;
@@ -745,7 +745,7 @@ function exportCSV() {
   font-size: 12px;
 }
 .step.active .step-circle { background: rgba(255,255,255,0.2); }
-.step.done .step-circle { background: #4f46e5; color: #fff; }
+.step.done .step-circle { background: var(--brand-primary); color: #fff; }
 
 /* Error */
 .error-banner {
@@ -777,12 +777,12 @@ function exportCSV() {
   margin-bottom: 16px;
 }
 .drop-zone:hover, .drop-zone.drag-over {
-  border-color: #4f46e5;
+  border-color: var(--brand-primary);
   background: #f5f3ff;
 }
 .drop-icon { font-size: 48px; margin-bottom: 12px; }
 .drop-zone p { margin: 4px 0; color: #475569; }
-.hint { font-size: 13px; color: #94a3b8; }
+.hint { font-size: 13px; color: var(--text-muted); }
 
 /* File list */
 .file-list {
@@ -801,11 +801,11 @@ function exportCSV() {
 }
 .file-icon { font-size: 20px; }
 .file-name { flex: 1; font-size: 14px; }
-.file-size { color: #94a3b8; font-size: 13px; }
+.file-size { color: var(--text-muted); font-size: 13px; }
 .remove-btn {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 16px;
 }
@@ -860,9 +860,9 @@ function exportCSV() {
   transition: all 0.2s;
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: #4f46e5; color: #fff; }
-.btn-primary:hover:not(:disabled) { background: #4338ca; }
-.btn-outline { background: #fff; border: 1px solid #e2e8f0; color: #475569; }
+.btn-primary { background: var(--brand-primary); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--brand-primary-hover); }
+.btn-outline { background: var(--bg-surface); border: 1px solid #e2e8f0; color: #475569; }
 .btn-outline:hover:not(:disabled) { background: #f8fafc; }
 .btn-sm { padding: 4px 12px; font-size: 12px; }
 .btn-success { background: #22c55e; color: #fff; }
@@ -877,7 +877,7 @@ function exportCSV() {
   width: 40px;
   height: 40px;
   border: 3px solid #e2e8f0;
-  border-top-color: #4f46e5;
+  border-top-color: var(--brand-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 16px;
@@ -899,9 +899,9 @@ function exportCSV() {
 }
 .stat-card.matched { border-left: 4px solid #22c55e; }
 .stat-card.unmatched { border-left: 4px solid #ef4444; }
-.stat-card.rate { border-left: 4px solid #4f46e5; }
-.stat-value { font-size: 28px; font-weight: 700; color: #1e293b; }
-.stat-label { font-size: 13px; color: #64748b; margin-top: 4px; }
+.stat-card.rate { border-left: 4px solid var(--brand-primary); }
+.stat-value { font-size: 28px; font-weight: 700; color: var(--text-primary); }
+.stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 
 /* Cards row */
 .cards-row {
@@ -929,7 +929,7 @@ function exportCSV() {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 /* Badges */
@@ -983,7 +983,7 @@ function exportCSV() {
   margin-bottom: 16px;
 }
 .suggestion-card {
-  background: #fff;
+  background: var(--bg-surface);
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 14px;
@@ -1006,7 +1006,7 @@ function exportCSV() {
 .confidence {
   font-weight: 600;
   font-size: 14px;
-  color: #1e293b;
+  color: var(--text-primary);
 }
 .status-tag {
   padding: 2px 8px;
@@ -1038,7 +1038,7 @@ function exportCSV() {
   font-size: 11px;
   font-weight: 500;
 }
-.type-badge { background: #e0e7ff; color: #4f46e5; }
+.type-badge { background: #e0e7ff; color: var(--brand-primary); }
 .mismatch-badge { background: #fef3c7; color: #92400e; }
 .action-badge { color: #fff; }
 
@@ -1054,9 +1054,9 @@ function exportCSV() {
   border-radius: 10px;
   padding: 16px;
 }
-.summary-card h4 { font-size: 13px; color: #64748b; margin: 0 0 8px; }
+.summary-card h4 { font-size: 13px; color: var(--text-muted); margin: 0 0 8px; }
 .summary-card p { font-size: 16px; font-weight: 500; margin: 0; }
-.big-number { font-size: 32px !important; font-weight: 700 !important; color: #4f46e5; }
+.big-number { font-size: 32px !important; font-weight: 700 !important; color: var(--brand-primary); }
 
 .summary-details { margin-bottom: 24px; }
 .summary-details h3 { font-size: 16px; margin-bottom: 12px; }
@@ -1081,9 +1081,9 @@ function exportCSV() {
 }
 .history-panel h3 { margin: 0 0 12px; font-size: 16px; }
 
-.loading { text-align: center; padding: 24px; color: #64748b; }
-.empty { text-align: center; padding: 24px; color: #94a3b8; }
-.muted { color: #94a3b8; }
+.loading { text-align: center; padding: 24px; color: var(--text-muted); }
+.empty { text-align: center; padding: 24px; color: var(--text-muted); }
+.muted { color: var(--text-muted); }
 
 /* Balance tracking */
 .balance-result { margin-bottom: 24px; }
@@ -1101,8 +1101,8 @@ function exportCSV() {
 }
 .balance-item.balanced { background: #f0fdf4; border: 1px solid #86efac; }
 .balance-item.imbalanced { background: #fef2f2; border: 1px solid #fecaca; }
-.balance-label { display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; }
-.balance-value { font-size: 16px; font-weight: 600; color: #1e293b; font-family: monospace; }
+.balance-label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.balance-value { font-size: 16px; font-weight: 600; color: var(--text-primary); font-family: monospace; }
 .balance-value.credit { color: #16a34a; }
 .balance-value.debit { color: #dc2626; }
 .discrepancies { display: flex; flex-direction: column; gap: 8px; }

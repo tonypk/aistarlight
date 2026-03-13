@@ -206,10 +206,10 @@ function statusBadgeClass(status: string): string {
 
 <style scoped>
 .preview {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 12px;
   padding: 24px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
 }
 .preview-header {
   display: flex;
@@ -231,7 +231,7 @@ h3 { margin: 0; }
 .badge-approved { background: #d1fae5; color: #065f46; }
 .badge-rejected { background: #fee2e2; color: #991b1b; }
 .badge-filed { background: #ede9fe; color: #5b21b6; }
-.badge-archived { background: #f3f4f6; color: #6b7280; }
+.badge-archived { background: var(--bg-surface-hover); color: var(--text-secondary); }
 
 .workflow-progress {
   display: flex;
@@ -247,7 +247,7 @@ h3 { margin: 0; }
   left: 10%;
   right: 10%;
   height: 2px;
-  background: #e5e7eb;
+  background: var(--border-default);
 }
 .progress-step {
   display: flex;
@@ -261,15 +261,15 @@ h3 { margin: 0; }
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #e5e7eb;
+  background: var(--border-default);
   border: 2px solid #fff;
-  box-shadow: 0 0 0 2px #e5e7eb;
+  box-shadow: 0 0 0 2px var(--border-default);
 }
 .progress-step.done .step-dot { background: #22c55e; box-shadow: 0 0 0 2px #22c55e; }
 .progress-step.active .step-dot { background: #3b82f6; box-shadow: 0 0 0 2px #3b82f6; }
 .step-label {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-muted);
   text-transform: capitalize;
 }
 .progress-step.done .step-label { color: #22c55e; }
@@ -287,8 +287,8 @@ h3 { margin: 0; }
 }
 table { width: 100%; }
 td { padding: 6px 12px; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
-.line-no { width: 40px; color: #94a3b8; font-weight: 500; }
-.label { color: #555; }
+.line-no { width: 40px; color: var(--text-muted); font-weight: 500; }
+.label { color: var(--text-secondary); }
 .value { text-align: right; font-family: monospace; white-space: nowrap; }
 tr.total { background: #f8fafc; }
 tr.total .label, tr.total .value { font-weight: 700; }

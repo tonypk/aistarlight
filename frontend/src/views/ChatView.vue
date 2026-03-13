@@ -99,9 +99,9 @@ async function handleSend() {
   font-size: 14px;
 }
 .chat-container {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
   height: calc(100vh - 160px);
@@ -111,7 +111,7 @@ async function handleSend() {
   overflow-y: auto;
   padding: 24px;
 }
-.welcome { text-align: center; padding: 48px 0; color: #888; }
+.welcome { text-align: center; padding: 48px 0; color: var(--text-muted); }
 .suggestions { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
 .suggestions button {
   padding: 8px 16px;
@@ -119,26 +119,26 @@ async function handleSend() {
   border: 1px solid #c7d2fe;
   border-radius: 20px;
   cursor: pointer;
-  color: #4f46e5;
+  color: var(--brand-primary);
   font-size: 13px;
 }
-.typing { color: #888; font-style: italic; padding: 12px; }
+.typing { color: var(--text-muted); font-style: italic; padding: 12px; }
 .input-area {
   display: flex;
   gap: 8px;
   padding: 16px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-default);
 }
 .input-area input {
   flex: 1;
   padding: 12px 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   font-size: 14px;
 }
 .input-area button {
   padding: 12px 24px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 8px;

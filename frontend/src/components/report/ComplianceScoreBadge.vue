@@ -54,7 +54,7 @@ const scoreLabel = computed(() => {
   color: #991b1b;
 }
 .no-score {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--bg-surface-hover);
+  color: var(--text-secondary);
 }
 </style>

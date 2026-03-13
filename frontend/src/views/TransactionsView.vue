@@ -288,7 +288,7 @@ onMounted(() => {
             :style="{
               background: selectedTagIds.includes(tag.id) ? tag.color + '20' : '#f9fafb',
               color: selectedTagIds.includes(tag.id) ? tag.color : '#6b7280',
-              borderColor: selectedTagIds.includes(tag.id) ? tag.color : '#e5e7eb',
+              borderColor: selectedTagIds.includes(tag.id) ? tag.color : 'var(--border-default)',
             }"
             @click="toggleTagSelection(tag.id)"
           >{{ tag.name }}</button>
@@ -343,10 +343,10 @@ onMounted(() => {
 .filters select,
 .filters input {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
-  background: #fff;
+  background: var(--bg-surface);
 }
 .filters select {
   min-width: 140px;
@@ -361,22 +361,22 @@ onMounted(() => {
 
 .btn {
   padding: 8px 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   cursor: pointer;
   font-size: 14px;
 }
 .btn:hover {
-  background: #4338ca;
+  background: var(--brand-primary-hover);
 }
 .btn.secondary {
-  background: #fff;
-  color: #374151;
+  background: var(--bg-surface);
+  color: var(--text-primary);
 }
 .btn.secondary:hover {
-  background: #f3f4f6;
+  background: var(--bg-surface-hover);
 }
 
 .error {
@@ -390,18 +390,18 @@ onMounted(() => {
 .loading {
   text-align: center;
   padding: 40px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .empty {
   text-align: center;
   padding: 40px;
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 
 .table-container {
   overflow-x: auto;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   border-radius: 8px;
 }
 
@@ -411,23 +411,23 @@ table {
   font-size: 14px;
 }
 thead {
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
 }
 th {
   padding: 10px 12px;
   text-align: left;
   font-weight: 600;
-  color: #374151;
-  border-bottom: 2px solid #e5e7eb;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-default);
   white-space: nowrap;
 }
 td {
   padding: 10px 12px;
   border-bottom: 1px solid #f3f4f6;
-  color: #1f2937;
+  color: var(--text-primary);
 }
 tbody tr:hover {
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
 }
 
 .text-right {
@@ -437,14 +437,14 @@ tbody tr:hover {
   text-align: center;
 }
 .row-number {
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 13px;
 }
 .nowrap {
   white-space: nowrap;
 }
 .text-muted {
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 
 .description-cell {
@@ -501,7 +501,7 @@ tbody tr:hover {
 }
 
 .image-link {
-  color: #4f46e5;
+  color: var(--brand-primary);
   text-decoration: none;
   font-weight: 500;
 }
@@ -519,21 +519,21 @@ tbody tr:hover {
 }
 .pagination button {
   padding: 6px 14px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 14px;
 }
 .pagination button:hover:not(:disabled) {
-  background: #f3f4f6;
+  background: var(--bg-surface-hover);
 }
 .pagination button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 .page-info {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -556,9 +556,9 @@ tbody tr:hover {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 1px dashed #d1d5db;
+  border: 1px dashed var(--border-input);
   background: transparent;
-  color: #9ca3af;
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 14px;
   display: flex;
@@ -567,9 +567,9 @@ tbody tr:hover {
   padding: 0;
 }
 .tag-add-btn:hover {
-  background: #f3f4f6;
-  color: #4f46e5;
-  border-color: #4f46e5;
+  background: var(--bg-surface-hover);
+  color: var(--brand-primary);
+  border-color: var(--brand-primary);
 }
 
 .modal-overlay {
@@ -582,7 +582,7 @@ tbody tr:hover {
   z-index: 200;
 }
 .modal {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 16px;
   padding: 32px;
   width: 440px;
@@ -610,7 +610,7 @@ tbody tr:hover {
 .tag-option:hover { opacity: 0.8; }
 
 .empty-tags {
-  color: #9ca3af;
+  color: var(--text-muted);
   text-align: center;
   padding: 20px 0;
   font-size: 14px;

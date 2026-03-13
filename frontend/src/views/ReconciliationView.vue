@@ -568,25 +568,25 @@ const statusTextColors: Record<string, string> = {
   gap: 12px;
 }
 .view-header h2 { margin: 0 0 4px; }
-.desc { color: #6b7280; font-size: 14px; margin: 0; }
+.desc { color: var(--text-secondary); font-size: 14px; margin: 0; }
 .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .error { color: #ef4444; margin-bottom: 12px; font-size: 14px; }
 
 /* Session List */
-.loading-msg { color: #6b7280; text-align: center; padding: 40px 0; }
+.loading-msg { color: var(--text-secondary); text-align: center; padding: 40px 0; }
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
 }
-.empty-state p { margin: 0 0 8px; color: #374151; }
-.empty-state .hint { color: #9ca3af; font-size: 14px; margin-bottom: 20px; }
+.empty-state p { margin: 0 0 8px; color: var(--text-primary); }
+.empty-state .hint { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
 .session-list { display: flex; flex-direction: column; gap: 12px; }
 .session-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 20px;
   cursor: pointer;
@@ -601,11 +601,11 @@ const statusTextColors: Record<string, string> = {
   font-size: 12px;
   font-weight: 600;
 }
-.session-meta { font-size: 13px; color: #9ca3af; display: flex; gap: 16px; }
+.session-meta { font-size: 13px; color: var(--text-muted); display: flex; gap: 16px; }
 
 .control-panel {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 24px;
@@ -621,7 +621,7 @@ const statusTextColors: Record<string, string> = {
   flex: 1;
   max-width: 400px;
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
 }
@@ -629,28 +629,28 @@ const statusTextColors: Record<string, string> = {
 
 .btn {
   padding: 8px 20px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 8px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 14px;
 }
-.btn:hover { background: #f3f4f6; }
-.btn.ghost { border: none; color: #6b7280; }
-.btn.ghost:hover { background: #f3f4f6; }
-.btn.secondary { background: #6b7280; color: #fff; border-color: #6b7280; }
+.btn:hover { background: var(--bg-surface-hover); }
+.btn.ghost { border: none; color: var(--text-secondary); }
+.btn.ghost:hover { background: var(--bg-surface-hover); }
+.btn.secondary { background: #6b7280; color: #fff; border-color: var(--text-secondary); }
 .btn.secondary:hover { background: #4b5563; }
 .btn.secondary:disabled { opacity: 0.6; cursor: default; }
-.btn.primary { background: #4f46e5; color: #fff; border-color: #4f46e5; }
-.btn.primary:hover { background: #4338ca; }
+.btn.primary { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); }
+.btn.primary:hover { background: var(--brand-primary-hover); }
 .btn.primary:disabled { opacity: 0.6; cursor: default; }
 .btn.bridge { background: #059669; color: #fff; border-color: #059669; }
 .btn.bridge:hover { background: #047857; }
 .btn.bridge:disabled { opacity: 0.6; cursor: default; }
 
 .match-only {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
@@ -664,16 +664,16 @@ const statusTextColors: Record<string, string> = {
 .match-stat {
   text-align: center;
   padding: 16px;
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   border-radius: 8px;
 }
 .match-stat .val { font-size: 24px; font-weight: 700; color: #111827; }
-.match-stat .lbl { font-size: 12px; color: #6b7280; margin-top: 4px; }
+.match-stat .lbl { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
 
 /* Transaction Section (F2/F3) */
 .txn-section {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 24px;
@@ -685,14 +685,14 @@ const statusTextColors: Record<string, string> = {
   margin-bottom: 16px;
 }
 .txn-header h3 { margin: 0; font-size: 16px; }
-.txn-count { color: #6b7280; font-weight: 400; font-size: 14px; }
+.txn-count { color: var(--text-secondary); font-weight: 400; font-size: 14px; }
 .txn-controls { display: flex; gap: 12px; align-items: center; }
 .review-toggle {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #374151;
+  color: var(--text-primary);
   cursor: pointer;
 }
 .review-toggle input { cursor: pointer; }
@@ -709,13 +709,13 @@ const statusTextColors: Record<string, string> = {
   margin-bottom: 12px;
   flex-wrap: wrap;
 }
-.bulk-count { font-size: 13px; font-weight: 600; color: #4338ca; }
+.bulk-count { font-size: 13px; font-weight: 600; color: var(--brand-primary-hover); }
 .bulk-select {
   padding: 5px 10px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 13px;
-  background: #fff;
+  background: var(--bg-surface);
 }
 .btn-sm { padding: 5px 14px; font-size: 13px; }
 
@@ -729,18 +729,18 @@ const statusTextColors: Record<string, string> = {
 .txn-table th {
   text-align: left;
   padding: 8px 10px;
-  background: #f9fafb;
-  border-bottom: 2px solid #e5e7eb;
+  background: var(--bg-surface-alt);
+  border-bottom: 2px solid var(--border-default);
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
   white-space: nowrap;
 }
 .txn-table td {
   padding: 8px 10px;
   border-bottom: 1px solid #f3f4f6;
-  color: #374151;
+  color: var(--text-primary);
 }
-.txn-table tr:hover { background: #f9fafb; }
+.txn-table tr:hover { background: var(--bg-surface-alt); }
 .txn-table tr.low-conf { background: #fef2f2; }
 .txn-table tr.selected-row { background: #eef2ff; }
 .col-check { width: 36px; }
@@ -752,7 +752,7 @@ const statusTextColors: Record<string, string> = {
 .tag {
   display: inline-block;
   padding: 2px 8px;
-  background: #f3f4f6;
+  background: var(--bg-surface-hover);
   border-radius: 4px;
   font-size: 11px;
   text-transform: capitalize;
@@ -769,7 +769,7 @@ const statusTextColors: Record<string, string> = {
 .conf-low { background: #fecaca; color: #991b1b; }
 .src-badge {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-secondary);
   text-transform: capitalize;
 }
 .src-badge.auto-confirmed { color: #059669; font-weight: 600; }
@@ -782,5 +782,5 @@ const statusTextColors: Record<string, string> = {
   gap: 12px;
   margin-top: 12px;
 }
-.page-info { font-size: 13px; color: #6b7280; }
+.page-info { font-size: 13px; color: var(--text-secondary); }
 </style>

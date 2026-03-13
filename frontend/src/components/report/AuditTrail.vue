@@ -71,10 +71,10 @@ function actionColor(action: string): string {
 
 <style scoped>
 .audit-trail {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 12px;
   padding: 24px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   margin-top: 16px;
 }
 h4 { margin-bottom: 16px; font-size: 15px; }
@@ -86,7 +86,7 @@ h4 { margin-bottom: 16px; font-size: 15px; }
   top: 4px;
   bottom: 4px;
   width: 2px;
-  background: #e5e7eb;
+  background: var(--border-default);
 }
 .timeline-item {
   position: relative;
@@ -101,7 +101,7 @@ h4 { margin-bottom: 16px; font-size: 15px; }
   height: 12px;
   border-radius: 50%;
   border: 2px solid #fff;
-  box-shadow: 0 0 0 2px #e5e7eb;
+  box-shadow: 0 0 0 2px var(--border-default);
 }
 .content { padding-left: 4px; }
 .header {
@@ -116,8 +116,8 @@ h4 { margin-bottom: 16px; font-size: 15px; }
   padding: 2px 8px;
   border-radius: 4px;
 }
-.time { font-size: 12px; color: #94a3b8; }
-.comment { font-size: 13px; color: #555; margin-bottom: 4px; font-style: italic; }
+.time { font-size: 12px; color: var(--text-muted); }
+.comment { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; font-style: italic; }
 .changes { font-size: 12px; }
 .change-item {
   display: flex;
@@ -125,8 +125,8 @@ h4 { margin-bottom: 16px; font-size: 15px; }
   gap: 4px;
   padding: 2px 0;
 }
-.field-name { color: #6b7280; font-weight: 500; }
+.field-name { color: var(--text-secondary); font-weight: 500; }
 .old-val { color: #ef4444; text-decoration: line-through; }
-.arrow { color: #94a3b8; }
+.arrow { color: var(--text-muted); }
 .new-val { color: #22c55e; font-weight: 500; }
 </style>

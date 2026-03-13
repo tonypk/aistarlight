@@ -195,10 +195,10 @@ function confidenceLabel(score: number): string {
   margin-bottom: 20px;
 }
 .view-header h2 { margin: 0; }
-.subtitle { color: #6b7280; font-size: 14px; margin-top: 4px; }
+.subtitle { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
 .error { color: #ef4444; margin-bottom: 12px; font-size: 14px; }
-.loading-msg { color: #6b7280; text-align: center; padding: 40px 0; }
-.empty { color: #9ca3af; text-align: center; padding: 40px 0; }
+.loading-msg { color: var(--text-secondary); text-align: center; padding: 40px 0; }
+.empty { color: var(--text-muted); text-align: center; padding: 40px 0; }
 
 .suggestions-section {
   background: #fffbeb;
@@ -215,37 +215,37 @@ function confidenceLabel(score: number): string {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 6px;
   border: 1px solid #fde68a;
 }
 .suggestion-info strong { font-size: 14px; }
-.suggestion-detail { display: block; font-size: 12px; color: #6b7280; }
+.suggestion-detail { display: block; font-size: 12px; color: var(--text-secondary); }
 .suggestion-stats .stat { font-size: 12px; color: #92400e; }
 
 .table-container {
   overflow-x: auto;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   border-radius: 8px;
 }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
-thead { background: #f9fafb; }
+thead { background: var(--bg-surface-alt); }
 th {
   padding: 10px 12px;
   text-align: left;
   font-weight: 600;
-  color: #374151;
-  border-bottom: 2px solid #e5e7eb;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-default);
   white-space: nowrap;
 }
 td {
   padding: 10px 12px;
   border-bottom: 1px solid #f3f4f6;
-  color: #1f2937;
+  color: var(--text-primary);
 }
-tbody tr:hover { background: #f9fafb; }
+tbody tr:hover { background: var(--bg-surface-alt); }
 .text-center { text-align: center; }
-.text-muted { color: #9ca3af; font-size: 12px; }
+.text-muted { color: var(--text-muted); font-size: 12px; }
 
 .vendor-name { font-weight: 500; }
 .aliases-cell { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
@@ -254,8 +254,8 @@ tbody tr:hover { background: #f9fafb; }
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 11px;
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--bg-surface-hover);
+  color: var(--text-secondary);
 }
 
 .confidence-badge { font-weight: 600; font-size: 13px; }
@@ -263,13 +263,13 @@ tbody tr:hover { background: #f9fafb; }
 .action-btns { display: flex; gap: 4px; }
 .btn-sm {
   padding: 4px 10px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 12px;
 }
-.btn-sm:hover { background: #f3f4f6; }
+.btn-sm:hover { background: var(--bg-surface-hover); }
 .btn-sm.danger { color: #dc2626; border-color: #fca5a5; }
 .btn-sm.danger:hover { background: #fef2f2; }
 .btn-sm.promote { color: #16a34a; border-color: #86efac; }
@@ -277,15 +277,15 @@ tbody tr:hover { background: #f9fafb; }
 
 .btn {
   padding: 8px 20px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 8px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 14px;
 }
-.btn:hover { background: #f3f4f6; }
-.btn.primary { background: #4f46e5; color: #fff; border-color: #4f46e5; }
-.btn.primary:hover { background: #4338ca; }
+.btn:hover { background: var(--bg-surface-hover); }
+.btn.primary { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); }
+.btn.primary:hover { background: var(--brand-primary-hover); }
 
 .modal-overlay {
   position: fixed; inset: 0;
@@ -294,7 +294,7 @@ tbody tr:hover { background: #f9fafb; }
   z-index: 200;
 }
 .modal {
-  background: #fff; border-radius: 16px;
+  background: var(--bg-surface); border-radius: 16px;
   padding: 32px; width: 480px;
   max-width: 90vw; max-height: 90vh;
   overflow-y: auto;
@@ -304,11 +304,11 @@ tbody tr:hover { background: #f9fafb; }
 .form-group { margin-bottom: 14px; }
 .form-group label {
   display: block; margin-bottom: 4px;
-  font-size: 13px; font-weight: 500; color: #374151;
+  font-size: 13px; font-weight: 500; color: var(--text-primary);
 }
 .form-group input {
   width: 100%; padding: 8px 12px;
-  border: 1px solid #d1d5db; border-radius: 6px;
+  border: 1px solid var(--border-input); border-radius: 6px;
   font-size: 14px; box-sizing: border-box;
 }
 .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }

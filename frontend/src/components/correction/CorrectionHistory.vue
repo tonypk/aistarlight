@@ -59,17 +59,17 @@ function formatDate(iso: string): string {
 .correction-history {
   margin-top: 16px;
   padding: 16px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
 }
 .correction-history h4 {
   margin: 0 0 12px;
   font-size: 14px;
-  color: #374151;
+  color: var(--text-primary);
 }
 .loading {
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 13px;
 }
 table {
@@ -80,9 +80,9 @@ table {
 th {
   text-align: left;
   padding: 6px 8px;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
 }
 td {
   padding: 6px 8px;
@@ -90,7 +90,7 @@ td {
 }
 .field-name {
   font-family: monospace;
-  color: #4f46e5;
+  color: var(--brand-primary);
 }
 .old-val {
   color: #ef4444;
@@ -101,11 +101,11 @@ td {
   font-weight: 500;
 }
 .reason {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-style: italic;
 }
 .date {
-  color: #9ca3af;
+  color: var(--text-muted);
   white-space: nowrap;
   font-size: 12px;
 }

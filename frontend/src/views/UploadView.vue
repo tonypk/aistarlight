@@ -291,7 +291,7 @@ function proceedToMapping() {
   margin-bottom: 8px;
 }
 .desc {
-  color: #888;
+  color: var(--text-muted);
   margin-bottom: 24px;
 }
 
@@ -305,21 +305,21 @@ function proceedToMapping() {
 .report-type-label {
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary);
   white-space: nowrap;
 }
 .report-type-select {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   font-size: 14px;
-  color: #374151;
-  background: #fff;
+  color: var(--text-primary);
+  background: var(--bg-surface);
   min-width: 280px;
 }
 .report-type-select:focus {
   outline: none;
-  border-color: #4f46e5;
+  border-color: var(--brand-primary);
   box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
 }
 
@@ -329,13 +329,13 @@ function proceedToMapping() {
 }
 .progress-bar-wrap {
   height: 6px;
-  background: #e5e7eb;
+  background: var(--border-default);
   border-radius: 3px;
   overflow: hidden;
 }
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #4f46e5, #818cf8);
+  background: linear-gradient(90deg, var(--brand-primary), #818cf8);
   border-radius: 3px;
   transition: width 0.3s ease;
 }
@@ -346,10 +346,10 @@ function proceedToMapping() {
   font-size: 13px;
 }
 .progress-text {
-  color: #4f46e5;
+  color: var(--brand-primary);
 }
 .progress-pct {
-  color: #9ca3af;
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -387,14 +387,14 @@ function proceedToMapping() {
 }
 .error-hint {
   margin: 4px 0 0 0;
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 13px;
 }
 .retry-btn {
   padding: 6px 16px;
   border: 1px solid #fca5a5;
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-surface);
   color: #dc2626;
   font-size: 13px;
   font-weight: 500;
@@ -431,10 +431,10 @@ function proceedToMapping() {
 }
 
 .sheet {
-  background: #fff;
+  background: var(--bg-surface);
   padding: 24px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   margin-bottom: 16px;
 }
 .sheet h3 {
@@ -448,7 +448,7 @@ function proceedToMapping() {
   font-weight: 500;
   padding: 2px 8px;
   background: #eef2ff;
-  color: #4f46e5;
+  color: var(--brand-primary);
   border-radius: 4px;
 }
 .table-wrap {
@@ -460,10 +460,10 @@ table {
   font-size: 13px;
 }
 th {
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   padding: 8px;
   text-align: left;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
   font-weight: 600;
 }
 td {
@@ -477,7 +477,7 @@ td {
   gap: 8px;
   margin-top: 16px;
   padding: 12px 28px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -487,7 +487,7 @@ td {
   transition: background 0.15s;
 }
 .proceed-btn:hover {
-  background: #4338ca;
+  background: var(--brand-primary-hover);
 }
 .arrow-icon {
   width: 18px;

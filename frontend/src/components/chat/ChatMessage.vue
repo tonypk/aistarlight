@@ -51,12 +51,12 @@ defineProps<{
   white-space: pre-wrap;
 }
 .user .bubble {
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border-bottom-right-radius: 4px;
 }
 .assistant .bubble {
-  background: #f3f4f6;
+  background: var(--bg-surface-hover);
   color: #333;
   border-bottom-left-radius: 4px;
 }
@@ -70,7 +70,7 @@ defineProps<{
 }
 .citations-label {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin-right: 2px;
 }
 .citation-tag {
@@ -82,7 +82,7 @@ defineProps<{
   border-radius: 12px;
   background: #eef2ff;
   border: 1px solid #c7d2fe;
-  color: #4338ca;
+  color: var(--brand-primary-hover);
   cursor: default;
 }
 .tag-law {

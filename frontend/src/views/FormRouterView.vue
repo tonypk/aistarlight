@@ -122,7 +122,7 @@ function freqClass(freq: string): string {
 <style scoped>
 .form-router { max-width: 900px; }
 .form-router h2 { margin-bottom: 4px; }
-.subtitle { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
+.subtitle { color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; }
 .profile-form {
   display: flex;
   flex-wrap: wrap;
@@ -130,8 +130,8 @@ function freqClass(freq: string): string {
   align-items: flex-end;
   margin-bottom: 24px;
   padding: 20px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
 }
 .field label {
@@ -146,13 +146,13 @@ function freqClass(freq: string): string {
   display: block;
   margin-top: 4px;
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
 }
 .recommend-btn {
   padding: 10px 24px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -169,9 +169,9 @@ function freqClass(freq: string): string {
 .form-card {
   position: relative;
   padding: 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 10px;
-  background: #fff;
+  background: var(--bg-surface);
 }
 .form-card.optional {
   border-style: dashed;
@@ -183,7 +183,7 @@ function freqClass(freq: string): string {
   align-items: center;
   margin-bottom: 8px;
 }
-.form-type { font-weight: 700; font-size: 15px; color: #1e293b; }
+.form-type { font-weight: 700; font-size: 15px; color: var(--text-primary); }
 .freq-badge {
   font-size: 11px;
   padding: 2px 8px;
@@ -193,18 +193,18 @@ function freqClass(freq: string): string {
 .freq-monthly { background: #dbeafe; color: #1e40af; }
 .freq-quarterly { background: #fef3c7; color: #92400e; }
 .freq-annual { background: #d1fae5; color: #065f46; }
-.card-name { font-size: 13px; color: #374151; margin-bottom: 6px; }
-.card-reason { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
-.card-deadline { font-size: 12px; color: #4338ca; margin-top: 6px; }
+.card-name { font-size: 13px; color: var(--text-primary); margin-bottom: 6px; }
+.card-reason { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+.card-deadline { font-size: 12px; color: var(--brand-primary-hover); margin-top: 6px; }
 .optional-badge {
   position: absolute;
   top: 8px;
   right: 8px;
   font-size: 10px;
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--bg-surface-hover);
+  color: var(--text-secondary);
   padding: 1px 6px;
   border-radius: 4px;
 }
-.no-results { color: #6b7280; font-style: italic; }
+.no-results { color: var(--text-secondary); font-style: italic; }
 </style>

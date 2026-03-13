@@ -142,7 +142,7 @@ defineExpose({ clearFile })
 }
 
 .uploader {
-  border: 2px dashed #d1d5db;
+  border: 2px dashed var(--border-input);
   border-radius: 12px;
   padding: 40px 24px;
   text-align: center;
@@ -155,7 +155,7 @@ defineExpose({ clearFile })
   background: #f5f3ff;
 }
 .uploader.drag-over {
-  border-color: #4f46e5;
+  border-color: var(--brand-primary);
   background: #eef2ff;
   transform: scale(1.01);
 }
@@ -170,30 +170,30 @@ defineExpose({ clearFile })
 .upload-icon {
   width: 48px;
   height: 48px;
-  color: #9ca3af;
+  color: var(--text-muted);
   margin: 0 auto;
 }
 .uploader:hover .upload-icon,
 .uploader.drag-over .upload-icon {
-  color: #4f46e5;
+  color: var(--brand-primary);
 }
 
 .upload-title {
   font-size: 16px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
 }
 .upload-hint {
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--text-muted);
   margin: 0 0 16px 0;
 }
 
 .upload-btn {
   display: inline-block;
   padding: 8px 24px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border-radius: 8px;
   cursor: pointer;
@@ -201,7 +201,7 @@ defineExpose({ clearFile })
   font-weight: 500;
   transition: background 0.15s;
 }
-.upload-btn:hover { background: #4338ca; }
+.upload-btn:hover { background: var(--brand-primary-hover); }
 
 /* File selected state */
 .file-selected {
@@ -223,7 +223,7 @@ defineExpose({ clearFile })
 .file-ext {
   font-size: 11px;
   font-weight: 700;
-  color: #4f46e5;
+  color: var(--brand-primary);
   text-transform: uppercase;
 }
 .file-details {
@@ -234,7 +234,7 @@ defineExpose({ clearFile })
 .file-name {
   display: block;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -242,22 +242,22 @@ defineExpose({ clearFile })
 }
 .file-size {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 .file-change {
   padding: 6px 14px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  background: #fff;
-  color: #374151;
+  background: var(--bg-surface);
+  color: var(--text-primary);
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
 }
 .file-change:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+  background: var(--bg-surface-hover);
+  border-color: var(--text-muted);
 }
 
 /* Validation error */

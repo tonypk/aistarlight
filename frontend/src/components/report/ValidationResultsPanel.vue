@@ -135,8 +135,8 @@ function scoreClass(score: number): string {
 <style scoped>
 .validation-panel {
   margin-top: 16px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 20px;
 }
@@ -152,16 +152,16 @@ function scoreClass(score: number): string {
 }
 .validate-btn {
   padding: 6px 14px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
 }
-.validate-btn:hover { background: #4338ca; }
+.validate-btn:hover { background: var(--brand-primary-hover); }
 .validate-btn:disabled { opacity: 0.5; }
-.loading { color: #9ca3af; font-size: 13px; }
+.loading { color: var(--text-muted); font-size: 13px; }
 .error { color: #ef4444; font-size: 13px; }
 .results { margin-top: 8px; }
 .score-display {
@@ -181,7 +181,7 @@ function scoreClass(score: number): string {
   font-weight: 700;
   letter-spacing: 0.5px;
   padding: 4px 0;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
   margin-bottom: 4px;
 }
 .check-item {
@@ -196,7 +196,7 @@ function scoreClass(score: number): string {
 .check-item.failed { color: #991b1b; background: #fef2f2; }
 .check-icon { font-weight: 700; flex-shrink: 0; }
 .check-name { font-weight: 500; min-width: 180px; }
-.check-msg { color: #6b7280; flex: 1; }
+.check-msg { color: var(--text-secondary); flex: 1; }
 .rag-section { margin-top: 12px; }
 .reg-ref {
   font-size: 11px;
@@ -207,7 +207,7 @@ function scoreClass(score: number): string {
 .validated-at {
   text-align: right;
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-muted);
   margin-top: 12px;
 }
 </style>

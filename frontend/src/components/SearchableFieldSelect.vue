@@ -153,9 +153,9 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .select-trigger {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -164,7 +164,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   text-align: left;
 }
 .select-trigger:hover {
-  border-color: #9ca3af;
+  border-color: var(--text-muted);
 }
 .conflict .select-trigger {
   border-color: #ef4444;
@@ -173,7 +173,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 
 .trigger-arrow {
   font-size: 10px;
-  color: #9ca3af;
+  color: var(--text-muted);
   margin-left: 8px;
 }
 
@@ -183,8 +183,8 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   left: 0;
   right: 0;
   z-index: 50;
-  background: #fff;
-  border: 1px solid #d1d5db;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   margin-top: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -196,13 +196,13 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .search-input {
   padding: 8px 12px;
   border: none;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
   outline: none;
   font-size: 14px;
   border-radius: 8px 8px 0 0;
 }
 .search-input::placeholder {
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 
 .options-list {
@@ -214,10 +214,10 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   padding: 6px 12px;
   font-size: 11px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   position: sticky;
   top: 0;
 }
@@ -236,11 +236,11 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   flex-wrap: wrap;
 }
 .option:hover {
-  background: #f3f4f6;
+  background: var(--bg-surface-hover);
 }
 .option.active {
   background: #eef2ff;
-  color: #4f46e5;
+  color: var(--brand-primary);
   font-weight: 500;
 }
 .option.used {
@@ -258,7 +258,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .ai-reason {
   width: 100%;
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
@@ -273,7 +273,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .no-results {
   padding: 16px 12px;
   text-align: center;
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 13px;
 }
 </style>

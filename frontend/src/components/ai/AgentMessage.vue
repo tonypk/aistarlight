@@ -126,13 +126,13 @@ function handleAction(route: string) {
   position: relative;
 }
 .user .msg-bubble {
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: white;
   border-bottom-right-radius: 4px;
 }
 .assistant .msg-bubble {
-  background: #f3f4f6;
-  color: #1f2937;
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
   border-bottom-left-radius: 4px;
 }
 .user-text { white-space: pre-wrap; }
@@ -143,17 +143,17 @@ function handleAction(route: string) {
   top: 6px;
   right: 6px;
   background: rgba(255,255,255,0.8);
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 4px;
   padding: 2px 6px;
   font-size: 12px;
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.15s;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 .msg-bubble:hover .msg-copy-btn { opacity: 1; }
-.msg-copy-btn:hover { background: white; border-color: #4f46e5; color: #4f46e5; }
+.msg-copy-btn:hover { background: white; border-color: var(--brand-primary); color: var(--brand-primary); }
 .msg-copy-btn.copied { color: #059669; border-color: #059669; opacity: 1; }
 
 /* Retry button */
@@ -179,7 +179,7 @@ function handleAction(route: string) {
 }
 .action-btn {
   padding: 6px 14px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: white;
   border: none;
   border-radius: 6px;
@@ -189,7 +189,7 @@ function handleAction(route: string) {
   font-weight: 500;
   transition: background 0.15s;
 }
-.action-btn:hover { background: #4338ca; }
+.action-btn:hover { background: var(--brand-primary-hover); }
 
 /* Markdown body styles */
 .markdown-body :deep(p) { margin: 0 0 8px; }
@@ -218,10 +218,10 @@ function handleAction(route: string) {
   color: inherit;
 }
 .markdown-body :deep(blockquote) {
-  border-left: 3px solid #4f46e5;
+  border-left: 3px solid var(--brand-primary);
   padding-left: 10px;
   margin: 8px 0;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 .markdown-body :deep(table) {
   border-collapse: collapse;
@@ -230,12 +230,12 @@ function handleAction(route: string) {
   width: 100%;
 }
 .markdown-body :deep(th), .markdown-body :deep(td) {
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   padding: 4px 8px;
   text-align: left;
 }
-.markdown-body :deep(th) { background: #f9fafb; font-weight: 600; }
-.markdown-body :deep(a) { color: #4f46e5; text-decoration: underline; }
+.markdown-body :deep(th) { background: var(--bg-surface-alt); font-weight: 600; }
+.markdown-body :deep(a) { color: var(--brand-primary); text-decoration: underline; }
 .markdown-body :deep(h1), .markdown-body :deep(h2), .markdown-body :deep(h3), .markdown-body :deep(h4) {
   margin: 12px 0 4px;
   font-weight: 600;
@@ -243,24 +243,24 @@ function handleAction(route: string) {
 .markdown-body :deep(h1) { font-size: 18px; }
 .markdown-body :deep(h2) { font-size: 16px; }
 .markdown-body :deep(h3) { font-size: 15px; }
-.markdown-body :deep(hr) { border: none; border-top: 1px solid #d1d5db; margin: 8px 0; }
+.markdown-body :deep(hr) { border: none; border-top: 1px solid var(--border-input); margin: 8px 0; }
 
 /* Tool calls */
 .tool-calls {
   margin-bottom: 8px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
   padding-bottom: 6px;
 }
 .tool-summary {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 4px;
   user-select: none;
 }
-.tool-summary:hover { color: #4f46e5; }
+.tool-summary:hover { color: var(--brand-primary); }
 .tool-icon { font-size: 14px; }
 .tool-call-item {
   margin-top: 6px;
@@ -271,12 +271,12 @@ function handleAction(route: string) {
 .tool-name {
   font-size: 11px;
   font-weight: 600;
-  color: #4f46e5;
+  color: var(--brand-primary);
   font-family: 'SF Mono', Monaco, monospace;
 }
 .tool-result {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 4px 0 0;
   white-space: pre-wrap;
   max-height: 100px;
@@ -289,14 +289,14 @@ function handleAction(route: string) {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-secondary);
   padding: 4px 0;
 }
 .tool-spinner {
   width: 12px;
   height: 12px;
-  border: 2px solid #d1d5db;
-  border-top-color: #4f46e5;
+  border: 2px solid var(--border-input);
+  border-top-color: var(--brand-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -316,7 +316,7 @@ function handleAction(route: string) {
   padding: 2px 6px;
   border-radius: 3px;
   background: rgba(79, 70, 229, 0.1);
-  color: #4f46e5;
+  color: var(--brand-primary);
   cursor: help;
 }
 

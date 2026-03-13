@@ -46,7 +46,7 @@ function barPercent(val: string, max: number): number {
   return Math.max((parseFloat(val) / max) * 100, 2)
 }
 
-const categoryColors = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1']
+const categoryColors = ['var(--brand-primary)', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1']
 
 async function fetchData() {
   loading.value = true
@@ -192,7 +192,7 @@ onMounted(fetchData)
 
 .page-header h2 {
   margin: 0;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .date-filters {
@@ -203,21 +203,21 @@ onMounted(fetchData)
 
 .date-filters input {
   padding: 6px 10px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   font-size: 14px;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .date-sep {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .loading {
   text-align: center;
   padding: 60px 0;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 /* Summary Cards */
@@ -229,8 +229,8 @@ onMounted(fetchData)
 }
 
 .summary-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 16px;
   display: flex;
@@ -248,12 +248,12 @@ onMounted(fetchData)
 .summary-value {
   font-size: 20px;
   font-weight: 700;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .summary-label {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 /* Charts Grid */
@@ -264,8 +264,8 @@ onMounted(fetchData)
 }
 
 .chart-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 20px;
 }
@@ -277,7 +277,7 @@ onMounted(fetchData)
 .chart-card h3 {
   margin: 0 0 16px;
   font-size: 15px;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 /* Horizontal Bar Chart */
@@ -296,7 +296,7 @@ onMounted(fetchData)
 
 .bar-label {
   font-size: 13px;
-  color: #374151;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -304,7 +304,7 @@ onMounted(fetchData)
 
 .bar-track {
   height: 20px;
-  background: #f3f4f6;
+  background: var(--bg-surface-hover);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -319,13 +319,13 @@ onMounted(fetchData)
 .bar-value {
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
   text-align: right;
 }
 
 .bar-count {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-muted);
   text-align: right;
 }
 
@@ -350,7 +350,7 @@ onMounted(fetchData)
 .month-amount {
   font-size: 11px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
@@ -358,7 +358,7 @@ onMounted(fetchData)
   width: 100%;
   max-width: 40px;
   height: 140px;
-  background: #f3f4f6;
+  background: var(--bg-surface-hover);
   border-radius: 4px 4px 0 0;
   display: flex;
   align-items: flex-end;
@@ -367,7 +367,7 @@ onMounted(fetchData)
 
 .month-bar-fill {
   width: 100%;
-  background: #4f46e5;
+  background: var(--brand-primary);
   border-radius: 4px 4px 0 0;
   transition: height 0.5s ease;
   min-height: 4px;
@@ -375,19 +375,19 @@ onMounted(fetchData)
 
 .month-label {
   font-size: 12px;
-  color: #374151;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .month-count {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 
 .empty-state {
   text-align: center;
   padding: 40px 0;
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 14px;
 }
 

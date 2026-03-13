@@ -113,8 +113,8 @@ function severityIcon(severity: string): string {
 
 <style scoped>
 .vat-sheet {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 24px;
 }
@@ -123,9 +123,9 @@ h3 { margin: 0 0 16px; font-size: 18px; color: #111827; }
 .section-title {
   font-weight: 600;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary);
   padding: 8px 0;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
   margin-bottom: 4px;
 }
 .row {
@@ -136,12 +136,12 @@ h3 { margin: 0 0 16px; font-size: 18px; color: #111827; }
 }
 .row.total {
   font-weight: 600;
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   border-radius: 4px;
 }
 .val { font-variant-numeric: tabular-nums; }
-.net .row.total { background: #eef2ff; color: #4f46e5; font-size: 16px; }
-.stats { font-size: 12px; color: #9ca3af; text-align: right; padding-top: 8px; }
+.net .row.total { background: #eef2ff; color: var(--brand-primary); font-size: 16px; }
+.stats { font-size: 12px; color: var(--text-muted); text-align: right; padding-top: 8px; }
 
 /* Validation warnings */
 .validation-panel {
@@ -209,7 +209,7 @@ h3 { margin: 0 0 16px; font-size: 18px; color: #111827; }
 .severity-icon.error { background: #ef4444; }
 .severity-icon.warning { background: #f59e0b; }
 .severity-icon.info { background: #3b82f6; }
-.validation-msg { color: #374151; }
+.validation-msg { color: var(--text-primary); }
 .validation-item.error .validation-msg { color: #991b1b; }
 .validation-item.warning .validation-msg { color: #78350f; }
 .validation-item.info .validation-msg { color: #1e3a5f; }

@@ -126,19 +126,19 @@ async function handleSubmit() {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
 }
 .login-card {
-  background: #fff;
+  background: var(--bg-surface);
   padding: 48px;
   border-radius: 16px;
   width: 400px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 h1 { text-align: center; color: #1a1a2e; font-size: 28px; }
-.subtitle { text-align: center; color: #888; margin-bottom: 24px; }
+.subtitle { text-align: center; color: var(--text-muted); margin-bottom: 24px; }
 .jurisdiction-selector { margin-bottom: 24px; }
 .jurisdiction-label {
   text-align: center;
   font-size: 14px;
-  color: #555;
+  color: var(--text-secondary);
   margin-bottom: 10px;
 }
 .jurisdiction-options {
@@ -151,9 +151,9 @@ h1 { text-align: center; color: #1a1a2e; font-size: 28px; }
   flex-direction: column;
   align-items: center;
   padding: 12px 24px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--border-default);
   border-radius: 12px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   transition: all 0.2s;
   min-width: 100px;
@@ -163,9 +163,9 @@ h1 { text-align: center; color: #1a1a2e; font-size: 28px; }
   background: #f5f3ff;
 }
 .jurisdiction-btn.active {
-  border-color: #4f46e5;
+  border-color: var(--brand-primary);
   background: #eef2ff;
-  box-shadow: 0 0 0 1px #4f46e5;
+  box-shadow: 0 0 0 1px var(--brand-primary);
 }
 .jurisdiction-btn .flag {
   font-size: 24px;
@@ -175,31 +175,31 @@ h1 { text-align: center; color: #1a1a2e; font-size: 28px; }
 }
 .jurisdiction-btn .country-name {
   font-size: 12px;
-  color: #555;
+  color: var(--text-secondary);
 }
 .field { margin-bottom: 16px; }
-.field label { display: block; margin-bottom: 4px; font-size: 14px; color: #555; }
+.field label { display: block; margin-bottom: 4px; font-size: 14px; color: var(--text-secondary); }
 .field input {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   font-size: 14px;
 }
-.field input:focus { outline: none; border-color: #4f46e5; }
+.field input:focus { outline: none; border-color: var(--brand-primary); }
 .error { color: #ef4444; font-size: 13px; margin-bottom: 12px; }
 .submit-btn {
   width: 100%;
   padding: 12px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
 }
-.submit-btn:hover { background: #4338ca; }
+.submit-btn:hover { background: var(--brand-primary-hover); }
 .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-.toggle { text-align: center; margin-top: 16px; font-size: 14px; color: #888; }
-.toggle a { color: #4f46e5; }
+.toggle { text-align: center; margin-top: 16px; font-size: 14px; color: var(--text-muted); }
+.toggle a { color: var(--brand-primary); }
 </style>

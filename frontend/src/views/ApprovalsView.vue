@@ -303,7 +303,7 @@ onMounted(fetchData)
 
 .page-header h2 {
   margin: 0;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .pending-badge {
@@ -320,7 +320,7 @@ onMounted(fetchData)
   display: flex;
   gap: 4px;
   margin-bottom: 20px;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--border-default);
 }
 
 .tabs button {
@@ -329,15 +329,15 @@ onMounted(fetchData)
   background: none;
   cursor: pointer;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--text-secondary);
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
   transition: all 0.2s;
 }
 
 .tabs button.active {
-  color: #4f46e5;
-  border-bottom-color: #4f46e5;
+  color: var(--brand-primary);
+  border-bottom-color: var(--brand-primary);
   font-weight: 600;
 }
 
@@ -353,13 +353,13 @@ onMounted(fetchData)
 .loading {
   text-align: center;
   padding: 40px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .empty-state {
   text-align: center;
   padding: 60px 0;
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 
 /* Approval Cards */
@@ -370,8 +370,8 @@ onMounted(fetchData)
 }
 
 .approval-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 16px;
 }
@@ -386,7 +386,7 @@ onMounted(fetchData)
 .approval-vendor {
   font-weight: 600;
   font-size: 15px;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .trigger-badge {
@@ -401,19 +401,19 @@ onMounted(fetchData)
 .badge-amber { background: #fef3c7; color: #92400e; }
 .badge-blue { background: #dbeafe; color: #1e40af; }
 .badge-red { background: #fee2e2; color: #991b1b; }
-.badge-gray { background: #f3f4f6; color: #374151; }
+.badge-gray { background: var(--bg-surface-hover); color: var(--text-primary); }
 
 .approval-details {
   display: flex;
   gap: 16px;
   margin-bottom: 12px;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .detail-amount {
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .approval-actions {
@@ -453,8 +453,8 @@ onMounted(fetchData)
 .history-table {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -464,9 +464,9 @@ onMounted(fetchData)
   padding: 10px 12px;
   font-size: 12px;
   font-weight: 600;
-  color: #6b7280;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  color: var(--text-secondary);
+  background: var(--bg-surface-alt);
+  border-bottom: 1px solid var(--border-default);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -474,12 +474,12 @@ onMounted(fetchData)
 .history-table td {
   padding: 10px 12px;
   font-size: 13px;
-  color: #374151;
+  color: var(--text-primary);
   border-bottom: 1px solid #f3f4f6;
 }
 
 .col-amount { font-weight: 600; text-align: right; }
-.col-date { color: #6b7280; white-space: nowrap; }
+.col-date { color: var(--text-secondary); white-space: nowrap; }
 
 .status-badge {
   font-size: 11px;
@@ -495,8 +495,8 @@ onMounted(fetchData)
 
 /* Settings */
 .settings-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 24px;
 }
@@ -511,39 +511,39 @@ onMounted(fetchData)
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .setting-label input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #4f46e5;
+  accent-color: var(--brand-primary);
 }
 
 .setting-desc {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 4px 0 0;
 }
 
 .setting-input-group input[type="number"] {
   width: 120px;
   padding: 6px 10px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   font-size: 14px;
   margin-bottom: 4px;
 }
 
 .setting-input-group input:disabled {
-  background: #f9fafb;
-  color: #9ca3af;
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
 }
 
 .btn-save {
   padding: 8px 24px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -553,7 +553,7 @@ onMounted(fetchData)
   margin-top: 8px;
 }
 
-.btn-save:hover { background: #4338ca; }
+.btn-save:hover { background: var(--brand-primary-hover); }
 .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Reject Modal */
@@ -571,7 +571,7 @@ onMounted(fetchData)
 }
 
 .modal-content {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 12px;
   padding: 24px;
   width: 400px;
@@ -580,13 +580,13 @@ onMounted(fetchData)
 
 .modal-content h3 {
   margin: 0 0 12px;
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .modal-content textarea {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   font-size: 14px;
   resize: vertical;
@@ -603,8 +603,8 @@ onMounted(fetchData)
 
 .btn-cancel {
   padding: 6px 16px;
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
   border: none;
   border-radius: 6px;
   cursor: pointer;

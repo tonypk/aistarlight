@@ -505,7 +505,7 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 .toggle-slider {
   position: absolute;
   inset: 0;
-  background: #d1d5db;
+  background: var(--border-input);
   border-radius: 26px;
   transition: background 0.2s;
 }

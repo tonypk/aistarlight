@@ -420,20 +420,20 @@ function formatFormType(type: string): string {
 <style scoped>
 .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .gen-card {
-  background: #fff;
+  background: var(--bg-surface);
   padding: 24px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   margin-bottom: 24px;
 }
 .gen-card h3 { margin-bottom: 16px; }
 .form-select {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
   min-width: 320px;
-  background: #fff;
+  background: var(--bg-surface);
 }
 .data-source {
   padding: 10px 14px;
@@ -449,7 +449,7 @@ function formatFormType(type: string): string {
   border-color: #fde68a;
   color: #92400e;
 }
-.data-source-warn a { color: #4f46e5; }
+.data-source-warn a { color: var(--brand-primary); }
 .form-row {
   display: flex;
   align-items: center;
@@ -459,31 +459,31 @@ function formatFormType(type: string): string {
 .form-row label { font-weight: 500; white-space: nowrap; }
 .form-row input[type="month"] {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
 }
 .gen-btn {
   padding: 10px 24px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
 }
-.gen-btn:hover { background: #4338ca; }
+.gen-btn:hover { background: var(--brand-primary-hover); }
 .gen-btn:disabled { opacity: 0.6; }
 .error { color: #ef4444; margin-top: 12px; }
 .report-list {
   margin-top: 24px;
-  background: #fff;
+  background: var(--bg-surface);
   padding: 24px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
 }
 .report-list h3 { margin-bottom: 16px; }
 table { width: 100%; border-collapse: collapse; }
-th { text-align: left; padding: 8px; color: #888; font-size: 13px; border-bottom: 1px solid #e5e7eb; }
+th { text-align: left; padding: 8px; color: var(--text-muted); font-size: 13px; border-bottom: 1px solid var(--border-default); }
 td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
 .badge { padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
 .badge.draft { background: #fef3c7; color: #92400e; }
@@ -492,7 +492,7 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
 .badge.approved { background: #d1fae5; color: #065f46; }
 .badge.rejected { background: #fee2e2; color: #991b1b; }
 .badge.filed { background: #ede9fe; color: #5b21b6; }
-.badge.archived { background: #f3f4f6; color: #6b7280; }
+.badge.archived { background: var(--bg-surface-hover); color: var(--text-secondary); }
 .actions-cell {
   display: flex;
   gap: 6px;
@@ -500,8 +500,8 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
 }
 .dl-btn {
   padding: 4px 10px;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-input);
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
@@ -558,8 +558,8 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
 }
 .chain-btn {
   padding: 4px 10px;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-input);
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
@@ -574,7 +574,7 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
 }
 .fixes-panel h4 { margin-bottom: 12px; color: #991b1b; }
 .fix-item {
-  background: #fff;
+  background: var(--bg-surface);
   border: 1px solid #fde8e8;
   border-radius: 6px;
   padding: 10px 14px;
@@ -591,10 +591,10 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
 .fix-severity.critical { background: #fee2e2; color: #dc2626; }
 .fix-severity.high { background: #fef3c7; color: #d97706; }
 .fix-severity.medium { background: #e0f2fe; color: #0284c7; }
-.fix-severity.low { background: #f3f4f6; color: #6b7280; }
-.fix-message { font-size: 13px; color: #6b7280; margin: 0 0 4px; }
+.fix-severity.low { background: var(--bg-surface-hover); color: var(--text-secondary); }
+.fix-message { font-size: 13px; color: var(--text-secondary); margin: 0 0 4px; }
 .fix-suggestion { font-size: 13px; color: #166534; font-weight: 500; margin: 0 0 4px; }
-.fix-field { font-size: 11px; color: #9ca3af; }
+.fix-field { font-size: 11px; color: var(--text-muted); }
 /* Dialog */
 .dialog-overlay {
   position: fixed; inset: 0;
@@ -603,17 +603,17 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
   z-index: 1000;
 }
 .dialog {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 12px;
   padding: 24px;
   width: 420px;
   max-width: 90vw;
 }
 .dialog h4 { margin-bottom: 12px; }
-.dialog label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; }
+.dialog label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
 .dialog textarea {
   width: 100%;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   padding: 8px 10px;
   font-size: 14px;
@@ -622,15 +622,15 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 .cancel-btn {
   padding: 6px 16px;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
 }
 .confirm-btn {
   padding: 6px 16px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -639,14 +639,14 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
 }
 /* Amendments panel */
 .amendments-panel {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 16px 20px;
   margin-bottom: 20px;
 }
 .amendments-panel h4 { margin-bottom: 10px; }
 .amendments-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-.amendments-table th { text-align: left; padding: 6px 8px; font-size: 12px; color: #888; border-bottom: 1px solid #e5e7eb; }
+.amendments-table th { text-align: left; padding: 6px 8px; font-size: 12px; color: var(--text-muted); border-bottom: 1px solid var(--border-default); }
 .amendments-table td { padding: 6px 8px; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
 </style>

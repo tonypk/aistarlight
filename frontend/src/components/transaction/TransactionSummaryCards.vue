@@ -87,31 +87,31 @@ function fmt(n: number): string {
 .card {
   padding: 16px;
   border-radius: 10px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
 }
 .card.vatable { border-left: 4px solid #3b82f6; }
 .card.exempt { border-left: 4px solid #f59e0b; }
 .card.zero-rated { border-left: 4px solid #10b981; }
-.card-label { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+.card-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
 .card-value { font-size: 24px; font-weight: 700; color: #111827; }
-.card-sub { font-size: 13px; color: #6b7280; margin-top: 2px; }
+.card-sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
 
 .confidence-bar {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   border-radius: 8px;
   margin-bottom: 16px;
 }
-.bar-label { font-size: 13px; color: #6b7280; white-space: nowrap; }
+.bar-label { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
 .bar {
   flex: 1;
   height: 8px;
   border-radius: 4px;
-  background: #e5e7eb;
+  background: var(--border-default);
   display: flex;
   overflow: hidden;
 }
@@ -119,7 +119,7 @@ function fmt(n: number): string {
 .seg.high { background: #16a34a; }
 .seg.med { background: #d97706; }
 .seg.low { background: #dc2626; }
-.bar-legend { display: flex; gap: 12px; font-size: 12px; color: #6b7280; white-space: nowrap; }
+.bar-legend { display: flex; gap: 12px; font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
 .dot {
   display: inline-block;
   width: 8px;

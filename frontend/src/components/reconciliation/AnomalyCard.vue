@@ -46,7 +46,7 @@ function resolve(status: string) {
     class="anomaly-card"
     :style="{
       background: severityColors[anomaly.severity]?.bg ?? '#f9fafb',
-      borderColor: severityColors[anomaly.severity]?.border ?? '#e5e7eb',
+      borderColor: severityColors[anomaly.severity]?.border ?? 'var(--border-default)',
     }"
   >
     <div class="header">
@@ -128,22 +128,22 @@ function resolve(status: string) {
 .type { font-weight: 600; font-size: 14px; color: #111827; }
 .status-badge {
   padding: 2px 8px;
-  background: #e5e7eb;
+  background: var(--border-default);
   border-radius: 4px;
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-secondary);
   text-transform: capitalize;
 }
-.desc { font-size: 14px; color: #374151; margin: 0 0 8px; }
+.desc { font-size: 14px; color: var(--text-primary); margin: 0 0 8px; }
 .details {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin-bottom: 12px;
 }
-.detail-item strong { color: #374151; }
+.detail-item strong { color: var(--text-primary); }
 .actions {
   display: flex;
   gap: 8px;
@@ -152,24 +152,24 @@ function resolve(status: string) {
 }
 .action-btn {
   padding: 6px 14px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 12px;
 }
-.action-btn:hover { background: #f3f4f6; }
+.action-btn:hover { background: var(--bg-surface-hover); }
 .action-btn.primary {
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
-  border-color: #4f46e5;
+  border-color: var(--brand-primary);
 }
-.action-btn.primary:hover { background: #4338ca; }
+.action-btn.primary:hover { background: var(--brand-primary-hover); }
 .resolve-input {
   flex: 1;
   min-width: 200px;
   padding: 6px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 13px;
 }
@@ -210,9 +210,9 @@ function resolve(status: string) {
 .ai-resolution strong { color: #0c4a6e; }
 .ai-bir-ref {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0;
   font-style: italic;
 }
-.ai-bir-ref strong { font-style: normal; color: #374151; }
+.ai-bir-ref strong { font-style: normal; color: var(--text-primary); }
 </style>

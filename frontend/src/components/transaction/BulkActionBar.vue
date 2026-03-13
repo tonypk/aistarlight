@@ -45,18 +45,18 @@ const emit = defineEmits<{
   border-radius: 8px;
 }
 .left, .right { display: flex; gap: 8px; align-items: center; }
-.count { font-weight: 600; color: #4f46e5; font-size: 14px; }
+.count { font-weight: 600; color: var(--brand-primary); font-size: 14px; }
 .bulk-btn {
   padding: 6px 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 13px;
-  color: #374151;
+  color: var(--text-primary);
 }
-.bulk-btn:hover { background: #f3f4f6; }
-.bulk-btn.ghost { border: none; color: #6b7280; }
+.bulk-btn:hover { background: var(--bg-surface-hover); }
+.bulk-btn.ghost { border: none; color: var(--text-secondary); }
 .bulk-btn.accent {
   background: #7c3aed;
   color: #fff;
@@ -64,9 +64,9 @@ const emit = defineEmits<{
 }
 .bulk-btn.accent:hover { background: #6d28d9; }
 .bulk-btn.primary {
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
-  border-color: #4f46e5;
+  border-color: var(--brand-primary);
 }
-.bulk-btn.primary:hover { background: #4338ca; }
+.bulk-btn.primary:hover { background: var(--brand-primary-hover); }
 </style>
