@@ -19,6 +19,7 @@ const menuItems = [
   { name: 'divider', path: '', icon: '', minRole: 'accountant', divider: true, label: 'Data Input' },
   { name: 'Upload Data', path: '/upload', icon: '📤', minRole: 'accountant' },
   { name: 'Receipt Scanner', path: '/receipts', icon: '🧾', minRole: 'accountant' },
+  { name: 'Approvals', path: '/approvals', icon: '✅', minRole: 'accountant' },
   { name: 'Transactions', path: '/transactions', icon: '💳', minRole: 'viewer' },
   { name: 'Suppliers', path: '/suppliers', icon: '🏢', minRole: 'accountant' },
 
