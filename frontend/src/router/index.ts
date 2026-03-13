@@ -191,6 +191,12 @@ const router = createRouter({
       component: () => import("../views/FormRouterView.vue"),
       meta: { requiresAuth: true, title: "Form Router" },
     },
+    {
+      path: "/vendor-policies",
+      name: "vendor-policies",
+      component: () => import("../views/VendorPoliciesView.vue"),
+      meta: { requiresAuth: true, title: "Vendor Policies" },
+    },
   ],
 });
 
