@@ -89,6 +89,12 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "Memory & Preferences" },
     },
     {
+      path: "/tags",
+      name: "tags",
+      component: () => import("../views/TagsView.vue"),
+      meta: { requiresAuth: true, title: "Tags" },
+    },
+    {
       path: "/suppliers",
       name: "suppliers",
       component: () => import("../views/SupplierView.vue"),

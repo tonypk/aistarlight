@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { transactionsApi } from '../api/transactions'
+import { useTagStore } from '../stores/tags'
+import type { Tag } from '../api/tags'
 
 interface Transaction {
   id: string
@@ -21,7 +23,14 @@ interface Transaction {
 
 const route = useRoute()
 const router = useRouter()
+const tagStore = useTagStore()
 const highlightId = ref<string | null>(null)
+
+// Tag state
+const transactionTags = ref<Record<string, Tag[]>>({})
+const showTagModal = ref(false)
+const tagModalTxnId = ref('')
+const selectedTagIds = ref<string[]>([])
 
 const transactions = ref<Transaction[]>([])
 const loading = ref(false)
@@ -68,6 +77,7 @@ async function fetchTransactions() {
     transactions.value = data.data || []
     total.value = data.meta?.total || 0
     totalPages.value = Math.ceil(total.value / limit.value)
+    loadTagsForTransactions(transactions.value)
   } catch (e: any) {
     error.value = e?.response?.data?.error || 'Failed to load transactions'
   } finally {
@@ -108,10 +118,47 @@ function formatDate(date: string | null): string {
   return date
 }
 
+async function loadTagsForTransactions(txns: Transaction[]) {
+  for (const txn of txns) {
+    try {
+      const tags = await tagStore.getTransactionTags(txn.id)
+      transactionTags.value = { ...transactionTags.value, [txn.id]: tags }
+    } catch {
+      // Silently skip tag loading failures
+    }
+  }
+}
+
+function openTagModal(txnId: string) {
+  tagModalTxnId.value = txnId
+  const existing = transactionTags.value[txnId] || []
+  selectedTagIds.value = existing.map(t => t.id)
+  showTagModal.value = true
+}
+
+async function saveTransactionTags() {
+  try {
+    const updated = await tagStore.setTransactionTags(tagModalTxnId.value, selectedTagIds.value)
+    transactionTags.value = { ...transactionTags.value, [tagModalTxnId.value]: updated }
+    showTagModal.value = false
+  } catch (e: any) {
+    error.value = e?.response?.data?.error || 'Failed to update tags'
+  }
+}
+
+function toggleTagSelection(tagId: string) {
+  if (selectedTagIds.value.includes(tagId)) {
+    selectedTagIds.value = selectedTagIds.value.filter(id => id !== tagId)
+  } else {
+    selectedTagIds.value = [...selectedTagIds.value, tagId]
+  }
+}
+
 onMounted(() => {
   if (route.query.highlight) {
     highlightId.value = route.query.highlight as string
   }
+  tagStore.fetchTags(1, 200)
   fetchTransactions()
 })
 </script>
@@ -165,6 +212,7 @@ onMounted(() => {
             <th>Description</th>
             <th class="text-right">Amount</th>
             <th>Category</th>
+            <th>Tags</th>
             <th>Source</th>
             <th>Journal</th>
             <th>Submitted By</th>
@@ -180,6 +228,15 @@ onMounted(() => {
             <td>
               <span v-if="txn.category" class="badge category">{{ txn.category }}</span>
               <span v-else class="text-muted">-</span>
+            </td>
+            <td class="tags-cell">
+              <span
+                v-for="tag in (transactionTags[txn.id] || [])"
+                :key="tag.id"
+                class="tag-chip"
+                :style="{ background: tag.color + '20', color: tag.color, borderColor: tag.color }"
+              >{{ tag.name }}</span>
+              <button class="tag-add-btn" @click.stop="openTagModal(txn.id)" title="Manage tags">+</button>
             </td>
             <td>
               <span class="badge source" :class="txn.source_type">
@@ -212,6 +269,35 @@ onMounted(() => {
 
     <div v-else class="empty">
       No transactions found. Try adjusting your filters.
+    </div>
+
+    <!-- Tag Assignment Modal -->
+    <div v-if="showTagModal" class="modal-overlay" @click.self="showTagModal = false">
+      <div class="modal">
+        <h3>Manage Tags</h3>
+        <div v-if="tagStore.tags.length === 0" class="empty-tags">
+          No tags created yet. Go to Tag Management to create tags.
+        </div>
+        <div v-else class="tag-selector">
+          <button
+            v-for="tag in tagStore.tags"
+            :key="tag.id"
+            type="button"
+            class="tag-option"
+            :class="{ selected: selectedTagIds.includes(tag.id) }"
+            :style="{
+              background: selectedTagIds.includes(tag.id) ? tag.color + '20' : '#f9fafb',
+              color: selectedTagIds.includes(tag.id) ? tag.color : '#6b7280',
+              borderColor: selectedTagIds.includes(tag.id) ? tag.color : '#e5e7eb',
+            }"
+            @click="toggleTagSelection(tag.id)"
+          >{{ tag.name }}</button>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" @click="showTagModal = false">Cancel</button>
+          <button class="btn primary" @click="saveTransactionTags">Save</button>
+        </div>
+      </div>
     </div>
 
     <!-- Pagination -->
@@ -449,5 +535,90 @@ tbody tr:hover {
 .page-info {
   color: #6b7280;
   font-size: 14px;
+}
+
+.tags-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+.tag-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.tag-add-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px dashed #d1d5db;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.tag-add-btn:hover {
+  background: #f3f4f6;
+  color: #4f46e5;
+  border-color: #4f46e5;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  width: 440px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal h3 { margin: 0 0 16px; }
+
+.tag-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.tag-option {
+  padding: 6px 14px;
+  border-radius: 16px;
+  border: 1px solid;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+.tag-option:hover { opacity: 0.8; }
+
+.empty-tags {
+  color: #9ca3af;
+  text-align: center;
+  padding: 20px 0;
+  font-size: 14px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
 </style>

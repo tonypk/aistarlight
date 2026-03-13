@@ -22,6 +22,7 @@ const menuItems = [
   { name: 'Approvals', path: '/approvals', icon: '✅', minRole: 'accountant' },
   { name: 'Transactions', path: '/transactions', icon: '💳', minRole: 'viewer' },
   { name: 'Suppliers', path: '/suppliers', icon: '🏢', minRole: 'accountant' },
+  { name: 'Tags', path: '/tags', icon: '🏷️', minRole: 'accountant' },
 
   // Processing
   { name: 'divider', path: '', icon: '', minRole: 'accountant', divider: true, label: 'Processing' },
