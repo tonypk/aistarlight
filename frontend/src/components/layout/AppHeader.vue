@@ -3,9 +3,11 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import { useNotificationStore } from '../../stores/notification'
+import { useUIStore } from '../../stores/ui'
 
 const auth = useAuthStore()
 const notifStore = useNotificationStore()
+const ui = useUIStore()
 const route = useRoute()
 const showNotifPanel = ref(false)
 
@@ -38,9 +40,17 @@ function handleMarkRead(id: string) {
 <template>
   <header class="header">
     <div class="header-left">
+      <button class="hamburger-btn" @click="ui.toggleSidebar()" aria-label="Toggle sidebar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
       <h1 class="page-title">{{ pageTitle }}</h1>
     </div>
     <div class="header-right">
+      <!-- Dark mode toggle -->
+      <button class="theme-toggle" @click="ui.toggleDarkMode()" :title="ui.isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <svg v-if="ui.isDarkMode" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
       <!-- Notification bell -->
       <div class="notif-wrapper">
         <button class="notif-bell" @click="toggleNotifPanel" title="Notifications">
@@ -78,17 +88,31 @@ function handleMarkRead(id: string) {
 <style scoped>
 .header {
   height: 60px;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
 }
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hamburger-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 4px;
+}
+.hamburger-btn:hover { color: var(--text-primary); }
 .page-title {
   font-size: 18px;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary);
 }
 .header-right {
   display: flex;
@@ -97,8 +121,19 @@ function handleMarkRead(id: string) {
 }
 .user-info {
   font-size: 14px;
-  color: #555;
+  color: var(--text-secondary);
 }
+/* Theme toggle */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+.theme-toggle:hover { color: var(--text-primary); }
 /* Notification bell */
 .notif-wrapper {
   position: relative;
@@ -107,11 +142,11 @@ function handleMarkRead(id: string) {
   background: none;
   border: none;
   cursor: pointer;
-  color: #555;
+  color: var(--text-secondary);
   position: relative;
   padding: 4px;
 }
-.notif-bell:hover { color: #111; }
+.notif-bell:hover { color: var(--text-primary); }
 .notif-badge {
   position: absolute;
   top: -4px;
@@ -132,8 +167,8 @@ function handleMarkRead(id: string) {
   right: 0;
   width: 360px;
   max-height: 400px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   z-index: 100;
@@ -144,24 +179,35 @@ function handleMarkRead(id: string) {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border-default);
+  color: var(--text-primary);
 }
 .mark-all-btn {
   background: none;
   border: none;
-  color: #4f46e5;
+  color: var(--brand-primary);
   font-size: 12px;
   cursor: pointer;
 }
 .notif-item {
   padding: 10px 16px;
-  border-bottom: 1px solid #f9fafb;
+  border-bottom: 1px solid var(--bg-surface-alt);
   cursor: pointer;
 }
-.notif-item:hover { background: #f9fafb; }
+.notif-item:hover { background: var(--bg-surface-alt); }
 .notif-item.unread { background: #eef2ff; }
-.notif-title { font-size: 13px; font-weight: 600; color: #111; }
-.notif-msg { font-size: 12px; color: #6b7280; margin-top: 2px; }
-.notif-time { font-size: 11px; color: #9ca3af; margin-top: 4px; }
-.notif-empty { padding: 24px; text-align: center; color: #9ca3af; font-size: 13px; }
+html.dark .notif-item.unread { background: rgba(99, 102, 241, 0.15); }
+.notif-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.notif-msg { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.notif-time { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.notif-empty { padding: 24px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+@media (max-width: 768px) {
+  .hamburger-btn {
+    display: flex;
+  }
+  .header {
+    padding: 0 12px;
+  }
+}
 </style>

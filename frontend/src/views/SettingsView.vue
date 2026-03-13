@@ -3,8 +3,10 @@ import { onMounted, ref, computed } from 'vue'
 import { client } from '../api/client'
 import { authApi, type CreateMemberData } from '../api/auth'
 import { useAuthStore } from '../stores/auth'
+import { useUIStore } from '../stores/ui'
 
 const auth = useAuthStore()
+const ui = useUIStore()
 
 // Company settings
 const form = ref({
@@ -226,6 +228,21 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 <template>
   <div class="settings-view">
     <h2>Settings</h2>
+
+    <!-- Appearance -->
+    <div class="section-card">
+      <h3>Appearance</h3>
+      <div class="appearance-row">
+        <div class="appearance-info">
+          <strong>Dark Mode</strong>
+          <p class="desc">Switch between light and dark themes</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" :checked="ui.isDarkMode" @change="ui.toggleDarkMode()" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
 
     <!-- Company Settings -->
     <div class="section-card">
@@ -453,59 +470,102 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 </template>
 
 <style scoped>
-.settings-view h2 { margin-bottom: 24px; }
+.settings-view h2 { margin-bottom: 24px; color: var(--text-primary); }
 
 .section-card {
-  background: #fff;
+  background: var(--bg-surface);
   padding: 24px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   max-width: 800px;
   margin-bottom: 24px;
 }
 .section-card h3 {
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border-default);
+  color: var(--text-primary);
+}
+
+/* Appearance toggle */
+.appearance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.appearance-info strong { color: var(--text-primary); }
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+  cursor: pointer;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #d1d5db;
+  border-radius: 26px;
+  transition: background 0.2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--brand-primary);
+}
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(22px);
 }
 
 .settings-form { max-width: 500px; }
 .field { margin-bottom: 16px; }
-.field label { display: block; margin-bottom: 4px; font-size: 14px; color: #555; }
+.field label { display: block; margin-bottom: 4px; font-size: 14px; color: var(--text-secondary); }
 .field input[type="text"],
 .field input[type="email"],
 .field input:not([type]),
 .field select {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   font-size: 14px;
   box-sizing: border-box;
+  background: var(--bg-input);
+  color: var(--text-primary);
 }
 
 .primary-btn {
   padding: 10px 24px;
-  background: #4f46e5;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
 }
-.primary-btn:hover { background: #4338ca; }
+.primary-btn:hover { background: var(--brand-primary-hover); }
 .primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .secondary-btn {
   padding: 10px 24px;
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  border: 1px solid var(--border-input);
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
 }
-.secondary-btn:hover { background: #e5e7eb; }
+.secondary-btn:hover { background: var(--bg-surface-hover); }
 
 .success-msg { color: #059669; margin-left: 12px; font-size: 14px; }
 .error-msg { color: #ef4444; font-size: 14px; margin-top: 8px; }
@@ -515,7 +575,7 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 .create-form {
   margin-top: 16px;
   padding: 20px;
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   border-radius: 8px;
   max-width: 500px;
 }
@@ -528,11 +588,14 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
   border-radius: 8px;
   max-width: 500px;
 }
+html.dark .result-card { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); }
 .result-card h4 { margin: 0 0 12px; color: #065f46; }
+html.dark .result-card h4 { color: #6ee7b7; }
 .result-row {
   margin-bottom: 8px;
   font-size: 14px;
   word-break: break-all;
+  color: var(--text-primary);
 }
 .result-label { font-weight: 600; margin-right: 4px; }
 .result-actions {
@@ -548,36 +611,39 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
   align-items: center;
   gap: 8px;
   font-size: 14px;
+  color: var(--text-primary);
 }
 .tg-btn { margin-left: auto; }
-.tg-date { color: #6b7280; font-size: 13px; }
+.tg-date { color: var(--text-secondary); font-size: 13px; }
 .tg-link-box {
   margin-top: 12px;
   padding: 12px;
   background: #f0fdf4;
   border-radius: 8px;
 }
-.tg-link-box p { font-size: 13px; color: #555; margin-bottom: 8px; }
+html.dark .tg-link-box { background: rgba(16,185,129,0.1); }
+.tg-link-box p { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
 .tg-link-row {
   display: flex;
   gap: 8px;
   align-items: center;
 }
 .tg-deep-link {
-  color: #4f46e5;
+  color: var(--brand-primary);
   font-size: 13px;
   word-break: break-all;
 }
 .copy-btn {
   padding: 4px 12px;
-  background: #e5e7eb;
+  background: var(--bg-surface-hover);
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
   white-space: nowrap;
+  color: var(--text-primary);
 }
-.copy-btn:hover { background: #d1d5db; }
+.copy-btn:hover { background: var(--border-default); }
 
 .status-dot {
   display: inline-block;
@@ -595,7 +661,7 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
   gap: 6px;
   font-size: 13px;
 }
-.muted { color: #9ca3af; }
+.muted { color: var(--text-muted); }
 
 /* Invite */
 .invite-form { margin-bottom: 20px; }
@@ -607,16 +673,19 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 .invite-input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
+  background: var(--bg-input);
+  color: var(--text-primary);
 }
 .invite-select {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   font-size: 14px;
-  background: #fff;
+  background: var(--bg-input);
+  color: var(--text-primary);
 }
 
 /* Team table */
@@ -627,21 +696,23 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 .team-table th {
   text-align: left;
   padding: 8px;
-  color: #888;
+  color: var(--text-muted);
   font-size: 13px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-default);
 }
 .team-table td {
   padding: 8px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-surface-alt);
   font-size: 14px;
+  color: var(--text-primary);
 }
 .role-select {
   padding: 4px 8px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-input);
   border-radius: 4px;
   font-size: 13px;
-  background: #fff;
+  background: var(--bg-input);
+  color: var(--text-primary);
 }
 .role-badge {
   display: inline-block;
@@ -654,12 +725,12 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 .role-badge.owner { background: #fef3c7; color: #92400e; }
 .role-badge.admin, .role-badge.company_admin { background: #dbeafe; color: #1e40af; }
 .role-badge.accountant { background: #d1fae5; color: #065f46; }
-.role-badge.viewer { background: #f3f4f6; color: #6b7280; }
+.role-badge.viewer { background: var(--bg-surface-alt); color: var(--text-secondary); }
 .role-badge.member { background: #e0e7ff; color: #3730a3; }
 
-.loading { color: #888; padding: 20px 0; }
-.empty { color: #888; font-size: 14px; }
-.desc { color: #888; margin-bottom: 12px; font-size: 14px; }
+.loading { color: var(--text-muted); padding: 20px 0; }
+.empty { color: var(--text-muted); font-size: 14px; }
+.desc { color: var(--text-muted); margin-bottom: 12px; font-size: 14px; }
 
 /* API */
 .api-btn {
@@ -674,14 +745,14 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 .api-key {
   margin-top: 16px;
   padding: 16px;
-  background: #f9fafb;
+  background: var(--bg-surface-alt);
   border-radius: 8px;
 }
 .api-key code {
   display: block;
   font-size: 14px;
   word-break: break-all;
-  color: #1a1a2e;
+  color: var(--text-primary);
 }
 .warn { color: #ef4444; font-size: 12px; margin-top: 8px; }
 </style>

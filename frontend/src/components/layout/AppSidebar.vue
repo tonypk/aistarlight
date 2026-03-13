@@ -3,10 +3,12 @@ import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import { useAgentStore } from '../../stores/agent'
+import { useUIStore } from '../../stores/ui'
 
 const router = useRouter()
 const auth = useAuthStore()
 const agentStore = useAgentStore()
+const ui = useUIStore()
 
 // Role-based menu: minRole defines minimum access level
 // Sections follow accounting workflow: Input → Process → Record → Report → File → AI Assist
@@ -78,6 +80,8 @@ const visibleMenuItems = computed(() => {
   return menuItems.filter(item => userLevel >= (ROLE_LEVEL[item.minRole] || 1))
 })
 
+const isMobile = () => window.innerWidth <= 768
+
 onMounted(() => {
   auth.fetchCompanies()
 })
@@ -91,6 +95,15 @@ async function handleSwitchCompany(event: Event) {
   }
 }
 
+function handleNavClick(item: { agentId?: string }) {
+  if (item.agentId) {
+    agentStore.openPanel(item.agentId)
+  }
+  if (isMobile()) {
+    ui.closeSidebar()
+  }
+}
+
 async function handleLogout() {
   await auth.logout()
   router.push('/login')
@@ -98,9 +111,14 @@ async function handleLogout() {
 </script>
 
 <template>
-  <aside class="sidebar">
+  <aside class="sidebar" :class="{ 'is-open': ui.sidebarOpen }">
     <div class="logo">
-      <h2>AIStarlight <span class="jurisdiction-badge">{{ auth.jurisdiction }}</span></h2>
+      <div class="logo-row">
+        <h2>AIStarlight <span class="jurisdiction-badge">{{ auth.jurisdiction }}</span></h2>
+        <button class="close-btn" @click="ui.closeSidebar()" aria-label="Close sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
       <p class="tagline">{{ { SG: 'Singapore Tax Assistant', LK: 'Sri Lanka Tax Assistant' }[auth.jurisdiction] ?? 'Philippine Tax Assistant' }}</p>
     </div>
 
@@ -124,7 +142,7 @@ async function handleLogout() {
         <button
           v-else-if="item.agentId"
           class="nav-item nav-agent-btn"
-          @click="agentStore.openPanel(item.agentId)"
+          @click="handleNavClick(item)"
         >
           <span class="icon">{{ item.icon }}</span>
           {{ item.name }}
@@ -135,6 +153,7 @@ async function handleLogout() {
           class="nav-item"
           active-class="active"
           :data-testid="`sidebar-nav-${item.path.replace('/', '') || 'dashboard'}`"
+          @click="handleNavClick(item)"
         >
           <span class="icon">{{ item.icon }}</span>
           {{ item.name }}
@@ -169,6 +188,11 @@ async function handleLogout() {
   padding: 24px 20px 12px;
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
+.logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 .logo h2 { font-size: 20px; margin: 0; }
 .tagline { font-size: 12px; color: #888; margin-top: 4px; }
 .jurisdiction-badge {
@@ -180,6 +204,16 @@ async function handleLogout() {
   vertical-align: middle;
   margin-left: 4px;
 }
+
+.close-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 4px;
+}
+.close-btn:hover { color: #fff; }
 
 .company-switcher {
   padding: 8px 16px;
@@ -283,7 +317,14 @@ nav::-webkit-scrollbar-track { background: transparent; }
 
 @media (max-width: 768px) {
   .sidebar {
-    display: none;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .sidebar.is-open {
+    transform: translateX(0);
+  }
+  .close-btn {
+    display: block;
   }
 }
 </style>
