@@ -223,7 +223,7 @@ onMounted(() => {
           <tr v-for="(txn, idx) in transactions" :key="txn.id" :class="{ 'highlight-row': highlightId === txn.id }">
             <td class="text-center row-number">{{ (page - 1) * limit + idx + 1 }}</td>
             <td class="nowrap">{{ formatDate(txn.date) }}</td>
-            <td class="description-cell">{{ txn.description || '-' }}</td>
+            <td class="description-cell" :title="txn.description ?? ''">{{ txn.description || '-' }}</td>
             <td class="text-right nowrap">{{ formatAmount(txn.amount) }}</td>
             <td>
               <span v-if="txn.category" class="badge category">{{ txn.category }}</span>
