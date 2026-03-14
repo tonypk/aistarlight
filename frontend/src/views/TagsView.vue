@@ -12,6 +12,7 @@ const error = ref('')
 // Form fields
 const formName = ref('')
 const formColor = ref('var(--brand-primary)')
+const formIsProject = ref(false)
 
 const presetColors = [
   'var(--brand-primary)', '#7c3aed', '#db2777', '#dc2626',
@@ -27,6 +28,7 @@ function openCreate() {
   editingTag.value = null
   formName.value = ''
   formColor.value = 'var(--brand-primary)'
+  formIsProject.value = false
   showForm.value = true
 }
 
@@ -34,6 +36,7 @@ function openEdit(tag: Tag) {
   editingTag.value = tag
   formName.value = tag.name
   formColor.value = tag.color
+  formIsProject.value = tag.is_project ?? false
   showForm.value = true
 }
 
@@ -42,6 +45,7 @@ async function handleSubmit() {
   const data: CreateTagData = {
     name: formName.value.trim(),
     color: formColor.value,
+    is_project: formIsProject.value,
   }
   if (!data.name) {
     error.value = 'Tag name is required'
@@ -118,11 +122,19 @@ async function handleSearch() {
               <input type="color" v-model="formColor" class="color-input" />
             </div>
           </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="formIsProject" />
+              <span>Use as Project</span>
+            </label>
+            <p class="hint">Project tags appear as project options in the Telegram bot receipt flow.</p>
+          </div>
           <div class="preview-group">
             <label>Preview</label>
             <span class="tag-chip" :style="{ background: formColor + '20', color: formColor, borderColor: formColor }">
               {{ formName || 'Tag name' }}
             </span>
+            <span v-if="formIsProject" class="project-badge">Project</span>
           </div>
           <div class="form-actions">
             <button type="button" class="btn" @click="showForm = false">Cancel</button>
@@ -144,6 +156,7 @@ async function handleSearch() {
           <span class="tag-chip" :style="{ background: tag.color + '20', color: tag.color, borderColor: tag.color }">
             {{ tag.name }}
           </span>
+          <span v-if="tag.is_project" class="project-badge">Project</span>
         </div>
         <div class="tag-card-actions">
           <button class="btn-sm" @click="openEdit(tag)">Edit</button>
@@ -233,6 +246,27 @@ async function handleSearch() {
   box-sizing: border-box;
 }
 
+.checkbox-group {
+  margin-bottom: 16px;
+}
+.checkbox-label {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--brand-primary);
+}
+.hint {
+  margin: 4px 0 0 24px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .color-picker {
   display: flex;
   align-items: center;
@@ -266,13 +300,15 @@ async function handleSearch() {
 
 .preview-group {
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .preview-group label {
-  display: block;
-  margin-bottom: 6px;
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+  margin-right: 4px;
 }
 
 .tag-chip {
@@ -282,6 +318,19 @@ async function handleSearch() {
   font-size: 13px;
   font-weight: 500;
   border: 1px solid;
+}
+
+.project-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
 }
 
 .form-actions {
@@ -306,6 +355,7 @@ async function handleSearch() {
 .tag-card-header {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 .tag-card-actions {
   display: flex;

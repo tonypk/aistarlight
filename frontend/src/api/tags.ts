@@ -5,6 +5,7 @@ export interface Tag {
   company_id: string
   name: string
   color: string
+  is_project: boolean
   created_at: string
   updated_at: string
 }
@@ -12,16 +13,18 @@ export interface Tag {
 export interface CreateTagData {
   name: string
   color: string
+  is_project?: boolean
 }
 
 export interface UpdateTagData {
   name: string
   color: string
+  is_project?: boolean
 }
 
 export const tagsApi = {
-  list: (page = 1, limit = 50, search?: string) =>
-    client.get('/tags', { params: { page, limit, search } }),
+  list: (page = 1, limit = 50, search?: string, isProject?: boolean) =>
+    client.get('/tags', { params: { page, limit, search, is_project: isProject } }),
 
   create: (data: CreateTagData) =>
     client.post('/tags', data),
