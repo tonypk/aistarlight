@@ -50,7 +50,7 @@ const statusTextColors: Record<string, string> = {
           <td colspan="9" class="empty">No certificates yet</td>
         </tr>
         <tr v-for="c in certificates" :key="c.id">
-          <td>{{ c.supplier_name || c.supplier_id.slice(0, 8) }}</td>
+          <td>{{ c.vendor_name || c.vendor_id.slice(0, 8) }}</td>
           <td>{{ c.quarter }}</td>
           <td class="mono">{{ c.atc_code }}</td>
           <td>{{ c.income_type }}</td>

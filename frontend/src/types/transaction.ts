@@ -42,7 +42,7 @@ export interface Transaction {
   ewt_rate: number | null;
   ewt_amount: number | null;
   atc_code: string | null;
-  supplier_id: string | null;
+  vendor_id: string | null;
 }
 
 export type VatType = "vatable" | "exempt" | "zero_rated" | "government";

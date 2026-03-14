@@ -16,7 +16,7 @@ const ROUTE_AGENT_MAP: Record<string, string> = {
   "/form-router": "filing",
   "/chat": "general",
   "/withholding": "classifier",
-  "/suppliers": "classifier",
+  "/vendors": "classifier",
   "/receipts": "classifier",
   "/upload": "general",
 };

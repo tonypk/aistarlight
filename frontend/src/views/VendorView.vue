@@ -2,66 +2,66 @@
 import { ref, computed, onMounted } from 'vue'
 import { useWithholdingStore } from '../stores/withholding'
 import { useAuthStore } from '../stores/auth'
-import SupplierTable from '../components/supplier/SupplierTable.vue'
-import SupplierForm from '../components/supplier/SupplierForm.vue'
-import type { Supplier, SupplierCreateData } from '../types/withholding'
+import VendorTable from '../components/vendor/VendorTable.vue'
+import VendorForm from '../components/vendor/VendorForm.vue'
+import type { Vendor, VendorCreateData } from '../types/withholding'
 
 const store = useWithholdingStore()
 const auth = useAuthStore()
 const isSG = computed(() => auth.jurisdiction === 'SG')
 const showForm = ref(false)
-const editingSupplier = ref<Supplier | null>(null)
+const editingVendor = ref<Vendor | null>(null)
 const searchQuery = ref('')
 const error = ref('')
 
 onMounted(() => {
-  store.fetchSuppliers()
+  store.fetchVendors()
 })
 
 function openCreate() {
-  editingSupplier.value = null
+  editingVendor.value = null
   showForm.value = true
 }
 
-function openEdit(supplier: Supplier) {
-  editingSupplier.value = supplier
+function openEdit(vendor: Vendor) {
+  editingVendor.value = vendor
   showForm.value = true
 }
 
-async function handleSubmit(data: SupplierCreateData) {
+async function handleSubmit(data: VendorCreateData) {
   error.value = ''
   try {
-    if (editingSupplier.value) {
-      await store.updateSupplier(editingSupplier.value.id, data)
+    if (editingVendor.value) {
+      await store.updateVendor(editingVendor.value.id, data)
     } else {
-      await store.createSupplier(data)
+      await store.createVendor(data)
     }
     showForm.value = false
-    editingSupplier.value = null
+    editingVendor.value = null
   } catch (e: any) {
     error.value = e?.response?.data?.error ?? 'Operation failed'
   }
 }
 
 async function handleDelete(id: string) {
-  if (!confirm('Delete this supplier?')) return
+  if (!confirm('Delete this vendor?')) return
   try {
-    await store.deleteSupplier(id)
+    await store.deleteVendor(id)
   } catch (e: any) {
     error.value = e?.response?.data?.error ?? 'Delete failed'
   }
 }
 
 async function handleSearch() {
-  await store.fetchSuppliers(1, 50, searchQuery.value || undefined)
+  await store.fetchVendors(1, 50, searchQuery.value || undefined)
 }
 </script>
 
 <template>
-  <div class="supplier-view">
+  <div class="vendor-view">
     <div class="view-header">
-      <h2>Supplier Management</h2>
-      <button class="btn primary" @click="openCreate">Add Supplier</button>
+      <h2>Vendor Management</h2>
+      <button class="btn primary" @click="openCreate">Add Vendor</button>
     </div>
 
     <p v-if="error" class="error">{{ error }}</p>
@@ -78,9 +78,9 @@ async function handleSearch() {
     <!-- Form Modal -->
     <div v-if="showForm" class="modal-overlay" @click.self="showForm = false">
       <div class="modal">
-        <h3>{{ editingSupplier ? 'Edit Supplier' : 'New Supplier' }}</h3>
-        <SupplierForm
-          :supplier="editingSupplier"
+        <h3>{{ editingVendor ? 'Edit Vendor' : 'New Vendor' }}</h3>
+        <VendorForm
+          :vendor="editingVendor"
           :jurisdiction="auth.jurisdiction"
           @submit="handleSubmit"
           @cancel="showForm = false"
@@ -88,10 +88,10 @@ async function handleSearch() {
       </div>
     </div>
 
-    <div v-if="store.loading" class="loading-msg">Loading suppliers...</div>
-    <SupplierTable
+    <div v-if="store.loading" class="loading-msg">Loading vendors...</div>
+    <VendorTable
       v-else
-      :suppliers="store.suppliers"
+      :vendors="store.vendors"
       :jurisdiction="auth.jurisdiction"
       @edit="openEdit"
       @delete="handleDelete"
@@ -100,7 +100,7 @@ async function handleSearch() {
 </template>
 
 <style scoped>
-.supplier-view { max-width: 1200px; }
+.vendor-view { max-width: 1200px; }
 .view-header {
   display: flex;
   justify-content: space-between;

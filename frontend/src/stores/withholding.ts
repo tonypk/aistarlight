@@ -2,51 +2,51 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { withholdingApi } from '../api/withholding'
 import type {
-  Supplier,
+  Vendor,
   WithholdingCertificate,
   EwtSummary,
   EwtRate,
-  SupplierCreateData,
-  SupplierUpdateData,
+  VendorCreateData,
+  VendorUpdateData,
 } from '../types/withholding'
 
 export const useWithholdingStore = defineStore('withholding', () => {
-  const suppliers = ref<Supplier[]>([])
-  const supplierTotal = ref(0)
+  const vendors = ref<Vendor[]>([])
+  const vendorTotal = ref(0)
   const certificates = ref<WithholdingCertificate[]>([])
   const certificateTotal = ref(0)
   const ewtSummary = ref<EwtSummary | null>(null)
   const ewtRates = ref<EwtRate[]>([])
   const loading = ref(false)
 
-  async function fetchSuppliers(page = 1, limit = 50, search?: string) {
+  async function fetchVendors(page = 1, limit = 50, search?: string) {
     loading.value = true
     try {
-      const res = await withholdingApi.listSuppliers(page, limit, search)
-      suppliers.value = res.data.data
-      supplierTotal.value = res.data.meta?.total ?? res.data.data.length
+      const res = await withholdingApi.listVendors(page, limit, search)
+      vendors.value = res.data.data
+      vendorTotal.value = res.data.meta?.total ?? res.data.data.length
     } finally {
       loading.value = false
     }
   }
 
-  async function createSupplier(data: SupplierCreateData) {
-    const res = await withholdingApi.createSupplier(data)
-    const created = res.data.data as Supplier
-    suppliers.value = [created, ...suppliers.value]
+  async function createVendor(data: VendorCreateData) {
+    const res = await withholdingApi.createVendor(data)
+    const created = res.data.data as Vendor
+    vendors.value = [created, ...vendors.value]
     return created
   }
 
-  async function updateSupplier(id: string, data: SupplierUpdateData) {
-    const res = await withholdingApi.updateSupplier(id, data)
-    const updated = res.data.data as Supplier
-    suppliers.value = suppliers.value.map(s => s.id === id ? updated : s)
+  async function updateVendor(id: string, data: VendorUpdateData) {
+    const res = await withholdingApi.updateVendor(id, data)
+    const updated = res.data.data as Vendor
+    vendors.value = vendors.value.map(s => s.id === id ? updated : s)
     return updated
   }
 
-  async function deleteSupplier(id: string) {
-    await withholdingApi.deleteSupplier(id)
-    suppliers.value = suppliers.value.filter(s => s.id !== id)
+  async function deleteVendor(id: string) {
+    await withholdingApi.deleteVendor(id)
+    vendors.value = vendors.value.filter(s => s.id !== id)
   }
 
   async function classifyEwt(sessionId: string) {
@@ -118,17 +118,23 @@ export const useWithholdingStore = defineStore('withholding', () => {
   }
 
   return {
-    suppliers,
-    supplierTotal,
+    vendors,
+    vendorTotal,
+    /** @deprecated Use vendors instead */
+    get suppliers() { return vendors.value },
+    /** @deprecated Use vendorTotal instead */
+    get supplierTotal() { return vendorTotal.value },
     certificates,
     certificateTotal,
     ewtSummary,
     ewtRates,
     loading,
-    fetchSuppliers,
-    createSupplier,
-    updateSupplier,
-    deleteSupplier,
+    fetchVendors,
+    createVendor,
+    updateVendor,
+    deleteVendor,
+    /** @deprecated Use fetchVendors instead */
+    fetchSuppliers: fetchVendors,
     classifyEwt,
     fetchCertificates,
     generateCertificates,

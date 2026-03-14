@@ -23,7 +23,7 @@ const menuItems = [
   { name: 'Receipt Scanner', path: '/receipts', icon: '🧾', minRole: 'accountant' },
   { name: 'Approvals', path: '/approvals', icon: '✅', minRole: 'accountant' },
   { name: 'Transactions', path: '/transactions', icon: '💳', minRole: 'viewer' },
-  { name: 'Suppliers', path: '/suppliers', icon: '🏢', minRole: 'accountant' },
+  { name: 'Vendors', path: '/vendors', icon: '🏢', minRole: 'accountant' },
   { name: 'Tags', path: '/tags', icon: '🏷️', minRole: 'accountant' },
 
   // Processing

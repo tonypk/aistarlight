@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Supplier } from '../../types/withholding'
+import type { Vendor } from '../../types/withholding'
 
 const props = defineProps<{
-  suppliers: Supplier[]
+  vendors: Vendor[]
   jurisdiction?: string
 }>()
 
 const isSG = computed(() => props.jurisdiction === 'SG')
 const emit = defineEmits<{
-  edit: [supplier: Supplier]
+  edit: [vendor: Vendor]
   delete: [id: string]
 }>()
 </script>
@@ -29,14 +29,14 @@ const emit = defineEmits<{
         </tr>
       </thead>
       <tbody>
-        <tr v-if="suppliers.length === 0">
-          <td colspan="7" class="empty">No suppliers yet</td>
+        <tr v-if="vendors.length === 0">
+          <td colspan="7" class="empty">No vendors yet</td>
         </tr>
-        <tr v-for="s in suppliers" :key="s.id">
+        <tr v-for="s in vendors" :key="s.id">
           <td class="mono">{{ s.tin }}</td>
           <td>{{ s.name }}</td>
           <td>
-            <span class="badge" :class="s.supplier_type">{{ s.supplier_type }}</span>
+            <span class="badge" :class="s.vendor_type">{{ s.vendor_type }}</span>
           </td>
           <td>{{ s.default_atc_code || '-' }}</td>
           <td>{{ s.default_ewt_rate != null ? `${(s.default_ewt_rate * 100).toFixed(1)}%` : '-' }}</td>

@@ -95,10 +95,14 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "Tags" },
     },
     {
+      path: "/vendors",
+      name: "vendors",
+      component: () => import("../views/VendorView.vue"),
+      meta: { requiresAuth: true, title: "Vendors" },
+    },
+    {
       path: "/suppliers",
-      name: "suppliers",
-      component: () => import("../views/SupplierView.vue"),
-      meta: { requiresAuth: true, title: "Suppliers" },
+      redirect: "/vendors",
     },
     {
       path: "/withholding",

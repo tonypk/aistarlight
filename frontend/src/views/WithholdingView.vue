@@ -67,7 +67,7 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
     <div class="view-header">
       <h2>{{ isSG ? 'Withholding Tax (S45) Dashboard' : 'Withholding Tax Dashboard' }}</h2>
       <div class="header-actions">
-        <router-link to="/suppliers" class="btn">Manage Suppliers</router-link>
+        <router-link to="/vendors" class="btn">Manage Vendors</router-link>
       </div>
     </div>
 

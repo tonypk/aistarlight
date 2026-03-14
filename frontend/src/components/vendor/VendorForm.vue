@@ -1,35 +1,35 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import type { Supplier, SupplierCreateData } from '../../types/withholding'
+import type { Vendor, VendorCreateData } from '../../types/withholding'
 
 const props = defineProps<{
-  supplier?: Supplier | null
+  vendor?: Vendor | null
   jurisdiction?: string
 }>()
 
 const isSG = computed(() => props.jurisdiction === 'SG')
 const emit = defineEmits<{
-  submit: [data: SupplierCreateData]
+  submit: [data: VendorCreateData]
   cancel: []
 }>()
 
-const form = ref<SupplierCreateData>({
+const form = ref<VendorCreateData>({
   tin: '',
   name: '',
   address: '',
-  supplier_type: 'corporation',
+  vendor_type: 'corporation',
   default_ewt_rate: undefined,
   default_atc_code: '',
   is_vat_registered: true,
 })
 
-watch(() => props.supplier, (s) => {
+watch(() => props.vendor, (s) => {
   if (s) {
     form.value = {
       tin: s.tin,
       name: s.name,
       address: s.address || '',
-      supplier_type: s.supplier_type,
+      vendor_type: s.vendor_type,
       default_ewt_rate: s.default_ewt_rate ?? undefined,
       default_atc_code: s.default_atc_code || '',
       is_vat_registered: s.is_vat_registered,
@@ -44,14 +44,14 @@ function handleSubmit() {
 </script>
 
 <template>
-  <form class="supplier-form" @submit.prevent="handleSubmit">
+  <form class="vendor-form" @submit.prevent="handleSubmit">
     <div class="form-row">
       <label>{{ isSG ? 'UEN *' : 'TIN *' }}</label>
       <input v-model="form.tin" :placeholder="isSG ? 'e.g. 201234567X' : 'e.g. 123-456-789-000'" required />
     </div>
     <div class="form-row">
       <label>Name *</label>
-      <input v-model="form.name" placeholder="Supplier name" required />
+      <input v-model="form.name" placeholder="Vendor name" required />
     </div>
     <div class="form-row">
       <label>Address</label>
@@ -59,7 +59,7 @@ function handleSubmit() {
     </div>
     <div class="form-row">
       <label>Type</label>
-      <select v-model="form.supplier_type">
+      <select v-model="form.vendor_type">
         <option value="corporation">Corporation</option>
         <option value="individual">Individual</option>
       </select>
@@ -80,13 +80,13 @@ function handleSubmit() {
     </div>
     <div class="form-actions">
       <button type="button" class="btn ghost" @click="emit('cancel')">Cancel</button>
-      <button type="submit" class="btn primary">{{ supplier ? 'Update' : 'Create' }}</button>
+      <button type="submit" class="btn primary">{{ vendor ? 'Update' : 'Create' }}</button>
     </div>
   </form>
 </template>
 
 <style scoped>
-.supplier-form { display: flex; flex-direction: column; gap: 12px; }
+.vendor-form { display: flex; flex-direction: column; gap: 12px; }
 .form-row { display: flex; flex-direction: column; gap: 4px; }
 .form-row label { font-size: 13px; font-weight: 500; color: var(--text-primary); }
 .form-row input, .form-row select {

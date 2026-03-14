@@ -1,21 +1,21 @@
 import { client } from "./client";
 import type {
-  SupplierCreateData,
-  SupplierUpdateData,
+  VendorCreateData,
+  VendorUpdateData,
 } from "../types/withholding";
 
 export const withholdingApi = {
-  // Suppliers
-  listSuppliers: (page = 1, limit = 50, search?: string) =>
-    client.get("/withholding/suppliers", { params: { page, limit, search } }),
+  // Vendors
+  listVendors: (page = 1, limit = 50, search?: string) =>
+    client.get("/withholding/vendors", { params: { page, limit, search } }),
 
-  createSupplier: (data: SupplierCreateData) =>
-    client.post("/withholding/suppliers", data),
+  createVendor: (data: VendorCreateData) =>
+    client.post("/withholding/vendors", data),
 
-  updateSupplier: (id: string, data: SupplierUpdateData) =>
-    client.patch(`/withholding/suppliers/${id}`, data),
+  updateVendor: (id: string, data: VendorUpdateData) =>
+    client.patch(`/withholding/vendors/${id}`, data),
 
-  deleteSupplier: (id: string) => client.delete(`/withholding/suppliers/${id}`),
+  deleteVendor: (id: string) => client.delete(`/withholding/vendors/${id}`),
 
   // EWT Classification
   classifyEwt: (sessionId: string) =>
@@ -26,10 +26,10 @@ export const withholdingApi = {
     page = 1,
     limit = 50,
     period?: string,
-    supplierId?: string,
+    vendorId?: string,
   ) =>
     client.get("/withholding/certificates", {
-      params: { page, limit, period, supplier_id: supplierId },
+      params: { page, limit, period, vendor_id: vendorId },
     }),
 
   generateCertificates: (sessionId: string) =>

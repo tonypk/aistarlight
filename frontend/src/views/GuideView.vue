@@ -21,7 +21,7 @@ const sections = [
   { id: 'calendar', title: 'Filing Calendar' },
   { id: 'compare', title: 'Period Comparison' },
   { id: 'corrections', title: 'Corrections & Learning' },
-  { id: 'suppliers', title: 'Suppliers' },
+  { id: 'vendors', title: 'Vendors' },
   { id: 'withholding', title: 'Withholding Tax' },
   { id: 'team', title: 'Team & Roles' },
   { id: 'chat', title: 'AI Tax Assistant' },
@@ -603,30 +603,30 @@ function scrollTo(id: string) {
           </div>
         </section>
 
-        <!-- 14. Suppliers -->
-        <section id="suppliers">
-          <h3>14. Supplier Management</h3>
-          <p>Navigate to: Sidebar &rarr; <strong>Suppliers</strong></p>
+        <!-- 14. Vendors -->
+        <section id="vendors">
+          <h3>14. Vendor Management</h3>
+          <p>Navigate to: Sidebar &rarr; <strong>Vendors</strong></p>
 
-          <h4>Managing Suppliers</h4>
+          <h4>Managing Vendors</h4>
           <ul>
-            <li><strong>Add Supplier</strong> &mdash; Enter {{ isSG ? 'UEN' : 'TIN' }}, name, address, and type (Individual / Corporation)</li>
-            <li><strong>Set Default {{ isSG ? 'WHT' : 'EWT' }}</strong> &mdash; Assign a default withholding tax rate and {{ isSG ? 'WHT nature' : 'ATC code' }} per supplier</li>
-            <li><strong>Auto-Matching</strong> &mdash; During {{ isSG ? 'WHT' : 'EWT' }} classification, the system automatically matches existing suppliers</li>
+            <li><strong>Add Vendor</strong> &mdash; Enter {{ isSG ? 'UEN' : 'TIN' }}, name, address, and type (Individual / Corporation)</li>
+            <li><strong>Set Default {{ isSG ? 'WHT' : 'EWT' }}</strong> &mdash; Assign a default withholding tax rate and {{ isSG ? 'WHT nature' : 'ATC code' }} per vendor</li>
+            <li><strong>Auto-Matching</strong> &mdash; During {{ isSG ? 'WHT' : 'EWT' }} classification, the system automatically matches existing vendors</li>
           </ul>
 
-          <h4>Supplier Field Reference</h4>
+          <h4>Vendor Field Reference</h4>
           <table class="ref-table">
             <thead>
               <tr><th>Field</th><th>Description</th></tr>
             </thead>
             <tbody>
               <tr><td>{{ isSG ? 'UEN' : 'TIN' }}</td><td>{{ isSG ? 'Unique Entity Number' : 'Tax Identification Number' }}</td></tr>
-              <tr><td>Name</td><td>Full supplier name</td></tr>
+              <tr><td>Name</td><td>Full vendor name</td></tr>
               <tr><td>Type</td><td>Individual or Corporation</td></tr>
               <tr><td>Default {{ isSG ? 'WHT' : 'EWT' }} Rate</td><td>Default withholding tax rate (e.g., 0.02 = 2%)</td></tr>
               <tr><td>Default {{ isSG ? 'WHT Nature' : 'ATC Code' }}</td><td>{{ isSG ? 'Default WHT nature (e.g., INT, ROY, TECH)' : 'Default Alphanumeric Tax Code (e.g., WC050)' }}</td></tr>
-              <tr><td>{{ isSG ? 'GST Registered' : 'VAT Registered' }}</td><td>Whether the supplier is {{ isSG ? 'GST' : 'VAT' }}-registered</td></tr>
+              <tr><td>{{ isSG ? 'GST Registered' : 'VAT Registered' }}</td><td>Whether the vendor is {{ isSG ? 'GST' : 'VAT' }}-registered</td></tr>
             </tbody>
           </table>
         </section>
@@ -649,7 +649,7 @@ function scrollTo(id: string) {
               <span class="step-num">2</span>
               <div>
                 <strong>Generate {{ isSG ? 'S45 Certificate' : 'BIR 2307' }}</strong>
-                <p>Click "Generate Certificates" to auto-group by supplier and period, generating {{ isSG ? 'S45 WHT' : 'BIR 2307' }} withholding tax certificate PDFs</p>
+                <p>Click "Generate Certificates" to auto-group by vendor and period, generating {{ isSG ? 'S45 WHT' : 'BIR 2307' }} withholding tax certificate PDFs</p>
               </div>
             </div>
             <div class="step">
@@ -821,7 +821,7 @@ function scrollTo(id: string) {
 
           <div class="faq-item">
             <h4>Q: What if the AI classification results are inaccurate?</h4>
-            <p>A: Manually override the classification. The system learns from your corrections and improves future accuracy. You can also set default {{ isSG ? 'WHT rates and WHT nature codes' : 'EWT rates and ATC codes' }} for suppliers.</p>
+            <p>A: Manually override the classification. The system learns from your corrections and improves future accuracy. You can also set default {{ isSG ? 'WHT rates and WHT nature codes' : 'EWT rates and ATC codes' }} for vendors.</p>
           </div>
 
           <div class="faq-item">
