@@ -53,6 +53,8 @@ const menuGroups: MenuGroup[] = [
       { name: 'Journal Entries', path: '/journal-entries', icon: '📝', minRole: 'accountant' },
       { name: 'General Ledger', path: '/general-ledger', icon: '📓', minRole: 'accountant' },
       { name: 'Financial Statements', path: '/statements', icon: '📊', minRole: 'accountant' },
+      { name: 'HR Integration', path: '/integration', icon: '🔗', minRole: 'admin' },
+      { name: 'GL Mapping', path: '/gl-mapping', icon: '🗺️', minRole: 'admin' },
     ],
   },
   {

@@ -219,6 +219,19 @@ const router = createRouter({
       component: () => import("../views/CASComplianceView.vue"),
       meta: { requiresAuth: true, title: "BIR CAS Compliance" },
     },
+    // HR Integration
+    {
+      path: "/gl-mapping",
+      name: "gl-mapping",
+      component: () => import("../views/GLMappingView.vue"),
+      meta: { requiresAuth: true, title: "Payroll GL Mapping" },
+    },
+    {
+      path: "/integration",
+      name: "integration",
+      component: () => import("../views/IntegrationView.vue"),
+      meta: { requiresAuth: true, title: "HR Integration" },
+    },
     {
       path: "/org-dashboard",
       name: "org-dashboard",
