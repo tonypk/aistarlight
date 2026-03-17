@@ -502,4 +502,3 @@ th {
   }
 }
 </style>
-</template>

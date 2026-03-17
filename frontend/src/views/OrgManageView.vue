@@ -671,4 +671,3 @@ onMounted(loadOrgs);
   .form-input { width: 100%; }
 }
 </style>
-</template>
