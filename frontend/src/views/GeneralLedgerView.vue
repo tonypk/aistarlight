@@ -157,4 +157,12 @@ function totalCredit() {
 .ledger-panel { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: 8px; padding: 20px; }
 .ledger-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .ledger-header h2 { margin: 0; font-size: 18px; }
+
+@media (max-width: 768px) {
+  .page { max-width: 100%; }
+  .ledger-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .ledger-header h2 { font-size: 16px; }
+  .ledger-panel { padding: 12px; overflow-x: auto; }
+  .table { min-width: 500px; }
+}
 </style>

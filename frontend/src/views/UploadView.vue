@@ -513,4 +513,12 @@ td {
   opacity: 0;
   transform: translateY(-8px);
 }
+
+@media (max-width: 768px) {
+  .upload-view { max-width: 100%; }
+  .report-type-section { flex-direction: column; align-items: stretch; }
+  .report-type-select { min-width: 0; width: 100%; }
+  .sheet { padding: 16px; }
+  .proceed-btn { width: 100%; justify-content: center; }
+}
 </style>

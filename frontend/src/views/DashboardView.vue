@@ -3,7 +3,7 @@ import { onMounted, ref, computed } from 'vue'
 import { client } from '../api/client'
 import { reportsApi } from '../api/reports'
 import { healthApi, type AIHealthStatus } from '../api/health'
-import { dashboardApi, type MonthlyTrend, type ActivityItem } from '../api/dashboard'
+import { dashboardApi, type MonthlyTrend, type ActivityItem, type FinancialSummary } from '../api/dashboard'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
@@ -25,6 +25,10 @@ interface DashboardStats {
   bank_recon_count: number
   receipt_count: number
   knowledge_count: number
+  pending_approvals: number
+  unmatched_transactions: number
+  low_confidence_count: number
+  draft_reports: number
 }
 
 interface CalendarEvent {
@@ -37,6 +41,7 @@ interface CalendarEvent {
 }
 
 const stats = ref<DashboardStats | null>(null)
+const financials = ref<FinancialSummary | null>(null)
 const recentReports = ref<ReportSummary[]>([])
 const deadlines = ref<CalendarEvent[]>([])
 const aiHealth = ref<AIHealthStatus | null>(null)
@@ -51,6 +56,49 @@ const urgentDeadlines = computed(() =>
 const nextDeadlines = computed(() =>
   deadlines.value.filter(d => d.status === 'scheduled').slice(0, 5)
 )
+
+// Financial helpers
+function fmtCompact(val: string | undefined): string {
+  if (!val) return '0'
+  const n = parseFloat(val)
+  if (isNaN(n)) return '0'
+  const abs = Math.abs(n)
+  if (abs >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M'
+  if (abs >= 1_000) return (n / 1_000).toFixed(1) + 'K'
+  return n.toFixed(2)
+}
+
+function isPositive(val: string | undefined): boolean {
+  return parseFloat(val || '0') > 0
+}
+
+function isNegative(val: string | undefined): boolean {
+  return parseFloat(val || '0') < 0
+}
+
+// P&L trend chart (SVG)
+const plMaxValue = computed(() => {
+  if (!financials.value?.monthly_pl?.length) return 1
+  const vals = financials.value.monthly_pl.flatMap(p => [
+    Math.abs(parseFloat(p.revenue || '0')),
+    Math.abs(parseFloat(p.expenses || '0')),
+    Math.abs(parseFloat(p.net || '0'))
+  ])
+  return Math.max(...vals, 1)
+})
+
+function plPoints(field: 'revenue' | 'expenses' | 'net'): string {
+  const pts = financials.value?.monthly_pl
+  if (!pts?.length) return ''
+  const w = 400, h = 140, pad = 20
+  const stepX = pts.length > 1 ? (w - 2 * pad) / (pts.length - 1) : 0
+  return pts.map((p, i) => {
+    const x = pad + i * stepX
+    const v = parseFloat(p[field] || '0')
+    const y = h - pad - ((Math.abs(v) / plMaxValue.value) * (h - 2 * pad))
+    return `${x},${y}`
+  }).join(' ')
+}
 
 // Donut chart from reports_by_status
 const donutSegments = computed(() => {
@@ -78,7 +126,7 @@ const donutGradient = computed(() => {
   return `conic-gradient(${stops.join(', ')})`
 })
 
-// SVG trend chart
+// Monthly reports trend chart (legacy)
 const trendMaxValue = computed(() => {
   if (!trends.value.length) return 1
   return Math.max(...trends.value.map(t => t.total_reports), 1)
@@ -87,9 +135,7 @@ const trendMaxValue = computed(() => {
 const trendPoints = computed(() => {
   const pts = trends.value
   if (!pts.length) return ''
-  const w = 400
-  const h = 120
-  const pad = 10
+  const w = 400, h = 120, pad = 10
   const stepX = pts.length > 1 ? (w - 2 * pad) / (pts.length - 1) : 0
   return pts.map((t, i) => {
     const x = pad + i * stepX
@@ -101,9 +147,7 @@ const trendPoints = computed(() => {
 const trendFillPath = computed(() => {
   const pts = trends.value
   if (!pts.length) return ''
-  const w = 400
-  const h = 120
-  const pad = 10
+  const w = 400, h = 120, pad = 10
   const stepX = pts.length > 1 ? (w - 2 * pad) / (pts.length - 1) : 0
   const coords = pts.map((t, i) => {
     const x = pad + i * stepX
@@ -113,11 +157,51 @@ const trendFillPath = computed(() => {
   return `M${pad},${h - pad} L${coords.join(' L')} L${pad + (pts.length - 1) * stepX},${h - pad} Z`
 })
 
+// Smart quick actions — sorted by pending items
+const quickActions = computed(() => {
+  const s = stats.value
+  const actions = [
+    {
+      to: '/upload', icon: '📤', title: 'Upload Data',
+      desc: 'Upload sales & purchase records',
+      badge: 0,
+    },
+    {
+      to: '/classification', icon: '🏷️', title: 'Classify Transactions',
+      desc: 'Review low-confidence items',
+      badge: s?.low_confidence_count || 0,
+    },
+    {
+      to: '/reports', icon: '📋', title: 'Generate Report',
+      desc: auth.jurisdiction === 'SG' ? 'Create GST F5 and more' : auth.jurisdiction === 'LK' ? 'Create VAT Return and more' : 'Create BIR 2550M and more',
+      badge: s?.draft_reports || 0,
+    },
+    {
+      to: '/bank-reconciliation', icon: '🏦', title: 'Bank Recon',
+      desc: 'Auto-reconcile bank & billing',
+      badge: s?.unmatched_transactions || 0,
+    },
+    {
+      to: '/approvals', icon: '✅', title: 'Approvals',
+      desc: 'Review pending items',
+      badge: s?.pending_approvals || 0,
+    },
+    {
+      to: '/chat', icon: '💬', title: 'AI Assistant',
+      desc: 'Ask tax questions',
+      badge: 0,
+    },
+  ]
+  // Sort: items with badges first
+  return actions.sort((a, b) => (b.badge > 0 ? 1 : 0) - (a.badge > 0 ? 1 : 0))
+})
+
 onMounted(async () => {
   if (!auth.user) await auth.fetchUser()
   try {
-    const [statsRes, reportsRes, calendarRes, aiRes, trendsRes, activityRes] = await Promise.all([
+    const [statsRes, finRes, reportsRes, calendarRes, aiRes, trendsRes, activityRes] = await Promise.all([
       client.get('/dashboard/stats'),
+      dashboardApi.getFinancialSummary().catch(() => null),
       reportsApi.list(1, 5),
       client.get('/dashboard/calendar', { params: { months_ahead: 3 } }),
       healthApi.getAIHealth().catch(() => null),
@@ -125,6 +209,7 @@ onMounted(async () => {
       dashboardApi.getActivity(10).catch(() => ({ data: { data: [] } })),
     ])
     stats.value = statsRes.data.data
+    if (finRes) financials.value = finRes.data.data
     recentReports.value = reportsRes.data.data || []
     deadlines.value = calendarRes.data.data || []
     if (aiRes) aiHealth.value = aiRes.data.data
@@ -139,12 +224,8 @@ onMounted(async () => {
 
 function statusLabel(status: string): string {
   const labels: Record<string, string> = {
-    draft: 'Draft',
-    review: 'In Review',
-    approved: 'Approved',
-    filed: 'Filed',
-    archived: 'Archived',
-    confirmed: 'Confirmed',
+    draft: 'Draft', review: 'In Review', approved: 'Approved',
+    filed: 'Filed', archived: 'Archived', confirmed: 'Confirmed',
   }
   return labels[status] || status
 }
@@ -170,6 +251,72 @@ function timeAgo(dateStr: string): string {
       <div>
         <h2>Welcome, {{ auth.user?.full_name || 'User' }}</h2>
         <p class="company">{{ auth.user?.company_name }}</p>
+      </div>
+    </div>
+
+    <!-- Financial Health Overview -->
+    <div v-if="financials" class="financial-overview" data-testid="financial-overview">
+      <h3 class="section-title">Financial Health</h3>
+      <div class="finance-cards">
+        <div class="finance-card">
+          <div class="finance-label">Revenue (This Month)</div>
+          <div class="finance-value" :class="{ positive: isPositive(financials.revenue) }">
+            &#8369;{{ fmtCompact(financials.revenue) }}
+          </div>
+        </div>
+        <div class="finance-card">
+          <div class="finance-label">Expenses</div>
+          <div class="finance-value expense">
+            &#8369;{{ fmtCompact(financials.expenses) }}
+          </div>
+        </div>
+        <div class="finance-card">
+          <div class="finance-label">Net Income</div>
+          <div class="finance-value" :class="{ positive: isPositive(financials.net_income), negative: isNegative(financials.net_income) }">
+            &#8369;{{ fmtCompact(financials.net_income) }}
+          </div>
+        </div>
+        <div class="finance-card">
+          <div class="finance-label">Cash Balance</div>
+          <div class="finance-value">
+            &#8369;{{ fmtCompact(financials.cash_balance) }}
+          </div>
+        </div>
+        <div class="finance-card">
+          <div class="finance-label">Receivables (AR)</div>
+          <div class="finance-value">
+            &#8369;{{ fmtCompact(financials.accounts_receivable) }}
+          </div>
+        </div>
+        <div class="finance-card">
+          <div class="finance-label">Payables (AP)</div>
+          <div class="finance-value">
+            &#8369;{{ fmtCompact(financials.accounts_payable) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- P&L Trend Chart -->
+      <div v-if="financials.monthly_pl?.length" class="pl-chart-card">
+        <h4 class="chart-subtitle">6-Month P&L Trend</h4>
+        <div class="pl-chart">
+          <svg viewBox="0 0 400 140" class="pl-svg">
+            <!-- Revenue line -->
+            <polyline :points="plPoints('revenue')" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Expenses line -->
+            <polyline :points="plPoints('expenses')" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 2" />
+            <!-- Net Income line -->
+            <polyline :points="plPoints('net')" fill="none" stroke="var(--brand-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div class="pl-labels">
+            <span v-for="p in financials.monthly_pl" :key="p.month" class="trend-label">{{ p.month.slice(5) }}</span>
+          </div>
+          <div class="pl-legend">
+            <span class="legend-item"><span class="legend-line revenue"></span> Revenue</span>
+            <span class="legend-item"><span class="legend-line expenses"></span> Expenses</span>
+            <span class="legend-item"><span class="legend-line net"></span> Net Income</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -310,35 +457,19 @@ function timeAgo(dateStr: string): string {
       <div class="col-main">
         <h3 class="section-title">Quick Actions</h3>
         <div class="cards">
-          <router-link to="/upload" class="card" data-testid="dashboard-quick-upload">
-            <span class="card-icon">📤</span>
-            <h3>Upload Data</h3>
-            <p>Upload sales & purchase records</p>
-          </router-link>
-          <router-link to="/reports" class="card">
-            <span class="card-icon">📋</span>
-            <h3>Generate Report</h3>
-            <p>{{ { SG: 'Create GST F5 and more', LK: 'Create VAT Return and more' }[auth.jurisdiction] ?? 'Create BIR 2550M and more' }}</p>
-          </router-link>
-          <router-link to="/bank-reconciliation" class="card">
-            <span class="card-icon">🏦</span>
-            <h3>Bank Recon</h3>
-            <p>Auto-reconcile bank & billing</p>
-          </router-link>
-          <router-link to="/receipts" class="card">
-            <span class="card-icon">🧾</span>
-            <h3>Receipt Scanner</h3>
-            <p>OCR receipt processing</p>
-          </router-link>
-          <router-link to="/chat" class="card">
-            <span class="card-icon">💬</span>
-            <h3>AI Assistant</h3>
-            <p>Ask tax questions</p>
-          </router-link>
-          <router-link to="/withholding" class="card">
-            <span class="card-icon">📑</span>
-            <h3>Withholding Tax</h3>
-            <p>{{ { SG: 'WHT & S45 Certificates', LK: 'WHT & SVAT Certificates' }[auth.jurisdiction] ?? 'EWT, BIR 2307 & SAWT' }}</p>
+          <router-link
+            v-for="action in quickActions"
+            :key="action.to"
+            :to="action.to"
+            class="card"
+            :data-testid="action.to === '/upload' ? 'dashboard-quick-upload' : undefined"
+          >
+            <div class="card-header">
+              <span class="card-icon">{{ action.icon }}</span>
+              <span v-if="action.badge > 0" class="card-badge">{{ action.badge }}</span>
+            </div>
+            <h3>{{ action.title }}</h3>
+            <p>{{ action.desc }}</p>
           </router-link>
         </div>
       </div>
@@ -420,6 +551,72 @@ function timeAgo(dateStr: string): string {
 }
 .company { color: var(--text-muted); }
 
+/* Financial Health Overview */
+.financial-overview {
+  margin-bottom: 28px;
+}
+.finance-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.finance-card {
+  background: var(--bg-surface);
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid var(--border-default);
+}
+.finance-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.finance-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.finance-value.positive { color: #16a34a; }
+.finance-value.negative { color: #dc2626; }
+.finance-value.expense { color: #ea580c; }
+
+/* P&L trend chart */
+.pl-chart-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  padding: 20px;
+}
+.chart-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.pl-svg { width: 100%; height: auto; }
+.pl-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 20px 0;
+}
+.pl-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.pl-legend .legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-line {
+  display: inline-block;
+  width: 20px;
+  height: 2px;
+}
+.legend-line.revenue { background: #10b981; }
+.legend-line.expenses { background: #ef4444; border-top: 2px dashed #ef4444; height: 0; }
+.legend-line.net { background: var(--brand-primary); height: 3px; }
+
 /* Stats row */
 .stats-row {
   display: grid;
@@ -486,7 +683,7 @@ html.dark .stat-card.highlight { background: rgba(34,197,94,0.1); }
 .donut-total { font-size: 20px; font-weight: 700; color: var(--text-primary); }
 .donut-total-label { font-size: 11px; color: var(--text-muted); }
 .donut-legend { display: flex; flex-direction: column; gap: 6px; }
-.legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.donut-legend .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .legend-label { color: var(--text-secondary); min-width: 70px; }
 .legend-count { font-weight: 600; color: var(--text-primary); }
@@ -540,30 +737,11 @@ html.dark .deadline-item.upcoming { background: rgba(245,158,11,0.1); border-col
 }
 .deadline-badge.overdue { background: #fee2e2; color: #dc2626; }
 .deadline-badge.upcoming { background: #fef3c7; color: #d97706; }
-.deadline-info {
-  flex: 1;
-}
-.deadline-info strong {
-  font-size: 14px;
-  margin-right: 8px;
-  color: var(--text-primary);
-}
-.deadline-name {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.deadline-date {
-  text-align: right;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.deadline-period {
-  display: block;
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--text-muted);
-}
+.deadline-info { flex: 1; }
+.deadline-info strong { font-size: 14px; margin-right: 8px; color: var(--text-primary); }
+.deadline-name { font-size: 13px; color: var(--text-secondary); }
+.deadline-date { text-align: right; font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.deadline-period { display: block; font-size: 11px; font-weight: 400; color: var(--text-muted); }
 
 /* Two column layout */
 .two-col {
@@ -666,7 +844,23 @@ html.dark .mini-days { background: rgba(99,102,241,0.15); }
   transition: box-shadow 0.2s;
 }
 .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
 .card-icon { font-size: 28px; }
+.card-badge {
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+  line-height: 1.4;
+}
 .card h3 { margin: 6px 0 4px; font-size: 15px; color: var(--text-primary); }
 .card p { color: var(--text-muted); font-size: 13px; margin: 0; }
 
@@ -742,5 +936,6 @@ html.dark .ai-status-card.disabled { background: rgba(239,68,68,0.1); border-col
   .col-side { width: 100%; }
   .charts-row { flex-direction: column; }
   .donut-container { flex-direction: column; align-items: center; }
+  .finance-cards { grid-template-columns: repeat(2, 1fr); }
 }
 </style>

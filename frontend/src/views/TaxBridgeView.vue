@@ -269,4 +269,14 @@ function getDisplayFields() {
 .draft-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .auto-badge { display: inline-block; padding: 2px 10px; background: #dcfce7; color: #166534; border-radius: 4px; font-size: 12px; font-weight: 600; }
 .draft-meta { font-size: 13px; color: var(--text-secondary); }
+
+@media (max-width: 768px) {
+  .page { max-width: 100%; }
+  .form-row { flex-direction: column; align-items: stretch; gap: 8px; }
+  .form-row label { width: 100%; }
+  .select { min-width: 0; width: 100%; }
+  .result-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .draft-info { flex-direction: column; align-items: flex-start; }
+  .result-card { padding: 16px; }
+}
 </style>

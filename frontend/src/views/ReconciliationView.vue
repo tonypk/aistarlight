@@ -783,4 +783,18 @@ const statusTextColors: Record<string, string> = {
   margin-top: 12px;
 }
 .page-info { font-size: 13px; color: var(--text-secondary); }
+
+@media (max-width: 768px) {
+  .reconciliation-view { max-width: 100%; }
+  .view-header { flex-direction: column; align-items: flex-start; }
+  .header-actions { width: 100%; }
+  .control-panel { padding: 12px; }
+  .control-row { flex-direction: column; align-items: stretch; }
+  .control-row select { max-width: 100%; }
+  .control-actions { flex-wrap: wrap; }
+  .match-grid { grid-template-columns: repeat(2, 1fr); }
+  .txn-section { padding: 12px; }
+  .txn-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .desc-cell { max-width: 140px; }
+}
 </style>

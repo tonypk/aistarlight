@@ -649,4 +649,16 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
 .amendments-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
 .amendments-table th { text-align: left; padding: 6px 8px; font-size: 12px; color: var(--text-muted); border-bottom: 1px solid var(--border-default); }
 .amendments-table td { padding: 6px 8px; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
+
+@media (max-width: 768px) {
+  .gen-card { padding: 16px; }
+  .form-row { flex-direction: column; align-items: stretch; gap: 8px; }
+  .form-select { min-width: 0; width: 100%; }
+  .gen-btn { width: 100%; }
+  .report-list { padding: 16px; overflow-x: auto; }
+  .report-list table { min-width: 700px; }
+  .actions-cell { flex-wrap: wrap; }
+  .dialog { width: 95vw; padding: 16px; }
+  .fixes-panel { padding: 12px 14px; }
+}
 </style>

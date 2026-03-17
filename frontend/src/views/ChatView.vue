@@ -145,4 +145,13 @@ async function handleSend() {
   cursor: pointer;
 }
 .input-area button:disabled { opacity: 0.6; }
+
+@media (max-width: 768px) {
+  .chat-container { height: calc(100vh - 120px); }
+  .messages { padding: 12px; }
+  .input-area { padding: 10px; }
+  .input-area input { padding: 10px 12px; }
+  .input-area button { padding: 10px 16px; }
+  .suggestions { flex-direction: column; align-items: center; }
+}
 </style>

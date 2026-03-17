@@ -119,4 +119,12 @@ const groupedAccounts = computed(() => {
 .badge-equity { background: #ede9fe; color: #6d28d9; }
 .badge-revenue { background: #d1fae5; color: #065f46; }
 .badge-expense { background: #fef3c7; color: #92400e; }
+
+@media (max-width: 768px) {
+  .page { max-width: 100%; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .desc { max-width: 200px; }
+  .table { min-width: 500px; }
+  .account-group { overflow-x: auto; }
+}
 </style>

@@ -202,4 +202,13 @@ const statusColors: Record<string, string> = {
 .source-link:hover { text-decoration: underline; }
 .highlight-row { background: #fef9c3 !important; animation: highlight-fade 3s ease-out forwards; }
 @keyframes highlight-fade { 0% { background: #fef9c3; } 100% { background: transparent; } }
+
+@media (max-width: 768px) {
+  .page { max-width: 100%; }
+  .detail-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .detail-meta { flex-direction: column; gap: 4px; }
+  .detail-panel { padding: 12px; }
+  .table { min-width: 500px; }
+  .detail-panel { overflow-x: auto; }
+}
 </style>

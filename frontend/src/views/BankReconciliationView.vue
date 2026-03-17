@@ -276,14 +276,33 @@ function actionColor(action: string): string {
   return map[action] || '#6b7280'
 }
 
+function scoreClass(score: number | undefined | null): string {
+  if (score == null) return ''
+  if (score >= 0.9) return 'high'
+  if (score >= 0.7) return 'medium'
+  return 'low'
+}
+
+function formatMatchType(type: string): string {
+  const labels: Record<string, string> = {
+    exact: 'Exact',
+    fuzzy: 'Fuzzy',
+    net_of_tax: 'Net of Tax',
+    split: 'Split',
+  }
+  return labels[type] || type
+}
+
 function exportCSV() {
   if (!batch.value?.match_result) return
   const mr = batch.value.match_result
-  const rows = [['Type', 'ID', 'Amount', 'Date', 'Description', 'Match Status']]
+  const rows = [['Type', 'ID', 'Amount', 'Date', 'Description', 'Match Status', 'Score', 'Match Type']]
 
   for (const p of mr.matched_pairs) {
-    rows.push(['Matched Record', p.record_id, String(p.record_amount), '', '', 'matched'])
-    rows.push(['Matched Bank', p.bank_id, String(p.bank_amount), '', '', 'matched'])
+    const score = p.score?.total != null ? (p.score.total * 100).toFixed(0) + '%' : ''
+    const mtype = p.score?.match_type || ''
+    rows.push(['Matched Record', p.record_id, String(p.record_amount), '', '', 'matched', score, mtype])
+    rows.push(['Matched Bank', p.bank_id, String(p.bank_amount), '', '', 'matched', '', ''])
   }
   for (const u of mr.unmatched_records) {
     rows.push(['Record', u.id, String(u.amount), u.date || '', u.description || '', 'unmatched'])
@@ -493,12 +512,31 @@ function exportCSV() {
         </div>
       </div>
 
+      <!-- Split matches -->
+      <div v-if="batch.match_result?.split_matches?.length" class="section">
+        <h3>Split Matches (N:1)</h3>
+        <table class="data-table">
+          <thead>
+            <tr><th>Bank Entry</th><th>Records</th><th>Record Total</th><th>Bank Amt</th><th>Difference</th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="sm in batch.match_result!.split_matches" :key="sm.match_group_id">
+              <td>{{ sm.bank_id }}</td>
+              <td>{{ sm.record_ids.join(', ') }}</td>
+              <td class="amount">{{ sm.record_total.toFixed(2) }}</td>
+              <td class="amount">{{ sm.bank_amount.toFixed(2) }}</td>
+              <td class="amount">{{ sm.difference.toFixed(2) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <!-- Matched pairs table -->
       <div v-if="matchedCount > 0" class="section">
         <h3>Matched Pairs</h3>
         <table class="data-table">
           <thead>
-            <tr><th>Record</th><th>Bank Entry</th><th>Record Amt</th><th>Bank Amt</th><th>Date Diff</th></tr>
+            <tr><th>Record</th><th>Bank Entry</th><th>Record Amt</th><th>Bank Amt</th><th>Date Diff</th><th>Score</th><th>Type</th></tr>
           </thead>
           <tbody>
             <tr v-for="p in batch.match_result!.matched_pairs.slice(0, 50)" :key="p.match_group_id">
@@ -507,6 +545,16 @@ function exportCSV() {
               <td class="amount">{{ p.record_amount.toFixed(2) }}</td>
               <td class="amount">{{ p.bank_amount.toFixed(2) }}</td>
               <td>{{ p.date_diff_days != null ? p.date_diff_days + 'd' : '—' }}</td>
+              <td>
+                <span class="confidence-badge" :class="scoreClass(p.score?.total)">
+                  {{ p.score?.total != null ? (p.score.total * 100).toFixed(0) + '%' : '—' }}
+                </span>
+              </td>
+              <td>
+                <span v-if="p.score?.match_type" class="match-type-badge" :class="p.score.match_type">
+                  {{ formatMatchType(p.score.match_type) }}
+                </span>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -1114,6 +1162,45 @@ function exportCSV() {
 .discrepancy-item.medium { background: #fef9c3; color: #92400e; }
 .discrepancy-item.high { background: #fef2f2; color: #991b1b; }
 
+/* Match type & confidence badges */
+.confidence-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.confidence-badge.high { background: #dcfce7; color: #16a34a; }
+.confidence-badge.medium { background: #fef9c3; color: #ca8a04; }
+.confidence-badge.low { background: #fef2f2; color: #dc2626; }
+
+.match-type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.match-type-badge.exact { background: #dcfce7; color: #16a34a; }
+.match-type-badge.fuzzy { background: #e0e7ff; color: #4f46e5; }
+.match-type-badge.net_of_tax { background: #fef3c7; color: #92400e; }
+.match-type-badge.split { background: #dbeafe; color: #2563eb; }
+
 .step-content { animation: fadeIn 0.2s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 768px) {
+  .bank-recon { max-width: 100%; padding: 12px; }
+  .header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .header h1 { font-size: 20px; }
+  .stepper { flex-direction: column; gap: 4px; }
+  .step { padding: 8px 12px; }
+  .step-label { display: inline; }
+  .drop-zone { padding: 24px 12px; }
+  .balance-grid { grid-template-columns: repeat(2, 1fr); }
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .actions { flex-wrap: wrap; }
+  .suggestion-header { flex-wrap: wrap; }
+  .explanation-header { flex-wrap: wrap; }
+}
 </style>

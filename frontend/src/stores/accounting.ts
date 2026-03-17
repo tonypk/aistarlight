@@ -16,6 +16,7 @@ import type {
   TrialBalanceRow,
   BalanceSheet,
   IncomeStatement,
+  CashFlowStatement,
   TaxCalculationResult,
 } from "../types/accounting";
 import { useToastStore } from "./toast";
@@ -104,22 +105,55 @@ export const useAccountingStore = defineStore("accounting", () => {
   // --- Financial Statements ---
   const balanceSheet = ref<BalanceSheet | null>(null);
   const incomeStatement = ref<IncomeStatement | null>(null);
+  const cashFlowStatement = ref<CashFlowStatement | null>(null);
 
-  async function fetchBalanceSheet(asOf?: string) {
+  async function fetchBalanceSheet(asOf?: string, compareTo?: string) {
     loading.value = true;
     try {
-      const { data } = await statementsApi.balanceSheet({ as_of: asOf });
+      const { data } = await statementsApi.balanceSheet({
+        as_of: asOf,
+        compare_to: compareTo,
+      });
       balanceSheet.value = data.data;
+    } catch (e: unknown) {
+      toast.error("Failed to load balance sheet");
+      throw e;
     } finally {
       loading.value = false;
     }
   }
 
-  async function fetchIncomeStatement(from: string, to: string) {
+  async function fetchIncomeStatement(
+    from: string,
+    to: string,
+    priorFrom?: string,
+    priorTo?: string,
+  ) {
     loading.value = true;
     try {
-      const { data } = await statementsApi.incomeStatement({ from, to });
+      const { data } = await statementsApi.incomeStatement({
+        from,
+        to,
+        prior_from: priorFrom,
+        prior_to: priorTo,
+      });
       incomeStatement.value = data.data;
+    } catch (e: unknown) {
+      toast.error("Failed to load income statement");
+      throw e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function fetchCashFlow(from: string, to: string) {
+    loading.value = true;
+    try {
+      const { data } = await statementsApi.cashFlow({ from, to });
+      cashFlowStatement.value = data.data;
+    } catch (e: unknown) {
+      toast.error("Failed to load cash flow statement");
+      throw e;
     } finally {
       loading.value = false;
     }
@@ -229,8 +263,10 @@ export const useAccountingStore = defineStore("accounting", () => {
     // Financial Statements
     balanceSheet,
     incomeStatement,
+    cashFlowStatement,
     fetchBalanceSheet,
     fetchIncomeStatement,
+    fetchCashFlow,
     // Tax
     taxResult,
     taxDraft,

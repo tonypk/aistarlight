@@ -202,4 +202,18 @@ h1 { text-align: center; color: #1a1a2e; font-size: 28px; }
 .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .toggle { text-align: center; margin-top: 16px; font-size: 14px; color: var(--text-muted); }
 .toggle a { color: var(--brand-primary); }
+
+@media (max-width: 768px) {
+  .login-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 24px 20px;
+    margin: 16px;
+    border-radius: 12px;
+  }
+  .jurisdiction-options { gap: 8px; }
+  .jurisdiction-btn { padding: 10px 16px; min-width: 80px; }
+  .jurisdiction-btn .flag { font-size: 20px; }
+  .jurisdiction-btn .country-name { font-size: 11px; }
+}
 </style>

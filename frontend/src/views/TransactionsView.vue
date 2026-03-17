@@ -621,4 +621,22 @@ tbody tr:hover {
   gap: 8px;
   justify-content: flex-end;
 }
+
+@media (max-width: 768px) {
+  .transactions-view {
+    padding: 12px;
+    max-width: 100%;
+  }
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .description-cell {
+    max-width: 150px;
+  }
+  .modal {
+    padding: 20px;
+    width: 95vw;
+  }
+}
 </style>

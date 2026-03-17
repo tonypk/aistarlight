@@ -180,4 +180,13 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
   color: inherit;
 }
 .btn:hover { background: var(--bg-surface-hover); }
+
+@media (max-width: 768px) {
+  .withholding-view { max-width: 100%; }
+  .view-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .control-panel { flex-direction: column; align-items: stretch; }
+  .control-actions { flex-direction: column; }
+  .control-actions .btn { width: 100%; text-align: center; }
+  .section { padding: 16px; }
+}
 </style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import { useAgentStore } from '../../stores/agent'
@@ -10,58 +10,106 @@ const auth = useAuthStore()
 const agentStore = useAgentStore()
 const ui = useUIStore()
 
-// Role-based menu: minRole defines minimum access level
-// Sections follow accounting workflow: Input → Process → Record → Report → File → AI Assist
-const menuItems = [
-  // Top — always visible
+interface MenuItem {
+  name: string
+  path: string
+  icon: string
+  minRole: string
+  agentId?: string
+}
+
+interface MenuGroup {
+  id: string
+  label: string
+  icon: string
+  minRole: string
+  items: MenuItem[]
+}
+
+// Grouped navigation structure
+const menuGroups: MenuGroup[] = [
+  {
+    id: 'data',
+    label: 'Data & Transactions',
+    icon: '📂',
+    minRole: 'viewer',
+    items: [
+      { name: 'Upload Data', path: '/upload', icon: '📤', minRole: 'accountant' },
+      { name: 'Receipt Scanner', path: '/receipts', icon: '🧾', minRole: 'accountant' },
+      { name: 'Transactions', path: '/transactions', icon: '💳', minRole: 'viewer' },
+      { name: 'Vendors', path: '/vendors', icon: '🏢', minRole: 'accountant' },
+      { name: 'Classification', path: '/classification', icon: '🏷️', minRole: 'accountant' },
+      { name: 'Tags', path: '/tags', icon: '🏷️', minRole: 'accountant' },
+      { name: 'Approvals', path: '/approvals', icon: '✅', minRole: 'accountant' },
+    ],
+  },
+  {
+    id: 'accounting',
+    label: 'Accounting',
+    icon: '📒',
+    minRole: 'accountant',
+    items: [
+      { name: 'Chart of Accounts', path: '/accounts', icon: '📒', minRole: 'accountant' },
+      { name: 'Journal Entries', path: '/journal-entries', icon: '📝', minRole: 'accountant' },
+      { name: 'General Ledger', path: '/general-ledger', icon: '📓', minRole: 'accountant' },
+      { name: 'Financial Statements', path: '/statements', icon: '📊', minRole: 'accountant' },
+    ],
+  },
+  {
+    id: 'tax',
+    label: 'Tax & Filing',
+    icon: '📋',
+    minRole: 'viewer',
+    items: [
+      { name: 'Prep for Taxes', path: '/tax-prep', icon: '📝', minRole: 'accountant' },
+      { name: 'Invoices', path: '/invoices', icon: '🧾', minRole: 'accountant' },
+      { name: 'Tax from GL', path: '/tax-bridge', icon: '🧮', minRole: 'accountant' },
+      { name: 'Reports', path: '/reports', icon: '📋', minRole: 'viewer' },
+      { name: 'Form Router', path: '/form-router', icon: '🗺️', minRole: 'viewer' },
+      { name: 'Filing Calendar', path: '/calendar', icon: '📅', minRole: 'viewer' },
+      { name: 'Penalty Calculator', path: '/penalty-calculator', icon: '⚠️', minRole: 'accountant' },
+      { name: 'Withholding Tax', path: '/withholding', icon: '📑', minRole: 'accountant' },
+      { name: 'CAS Compliance', path: '/cas-compliance', icon: '🛡️', minRole: 'accountant' },
+    ],
+  },
+  {
+    id: 'recon',
+    label: 'Reconciliation',
+    icon: '🔍',
+    minRole: 'accountant',
+    items: [
+      { name: 'Reconciliation', path: '/reconciliation', icon: '🔍', minRole: 'accountant' },
+      { name: 'Bank Recon', path: '/bank-reconciliation', icon: '🏦', minRole: 'accountant' },
+    ],
+  },
+  {
+    id: 'more',
+    label: 'More',
+    icon: '📦',
+    minRole: 'viewer',
+    items: [
+      { name: 'Filing Agent', path: '', icon: '📋', minRole: 'viewer', agentId: 'filing' },
+      { name: 'Recon Agent', path: '', icon: '🔍', minRole: 'viewer', agentId: 'recon' },
+      { name: 'Journal Agent', path: '', icon: '📝', minRole: 'viewer', agentId: 'journal' },
+      { name: 'Compliance Agent', path: '', icon: '✅', minRole: 'viewer', agentId: 'compliance' },
+      { name: 'Knowledge', path: '/knowledge', icon: '📚', minRole: 'viewer' },
+      { name: 'Learning Insights', path: '/learning', icon: '🎓', minRole: 'viewer' },
+      { name: 'Vendor Policies', path: '/vendor-policies', icon: '📋', minRole: 'accountant' },
+      { name: 'Spending', path: '/spending', icon: '💰', minRole: 'viewer' },
+      { name: 'Period Compare', path: '/compare', icon: '⚖️', minRole: 'viewer' },
+    ],
+  },
+]
+
+// Top-level items (always visible, not grouped)
+const topItems: MenuItem[] = [
   { name: 'Dashboard', path: '/', icon: '📊', minRole: 'viewer' },
   { name: 'AI Chat', path: '/chat', icon: '💬', minRole: 'viewer' },
+]
 
-  // Data Input
-  { name: 'divider', path: '', icon: '', minRole: 'accountant', divider: true, label: 'Data Input' },
-  { name: 'Upload Data', path: '/upload', icon: '📤', minRole: 'accountant' },
-  { name: 'Receipt Scanner', path: '/receipts', icon: '🧾', minRole: 'accountant' },
-  { name: 'Approvals', path: '/approvals', icon: '✅', minRole: 'accountant' },
-  { name: 'Transactions', path: '/transactions', icon: '💳', minRole: 'viewer' },
-  { name: 'Vendors', path: '/vendors', icon: '🏢', minRole: 'accountant' },
-  { name: 'Tags', path: '/tags', icon: '🏷️', minRole: 'accountant' },
-
-  // Processing
-  { name: 'divider', path: '', icon: '', minRole: 'accountant', divider: true, label: 'Processing' },
-  { name: 'Classification', path: '/classification', icon: '🏷️', minRole: 'accountant' },
-  { name: 'Reconciliation', path: '/reconciliation', icon: '🔍', minRole: 'accountant' },
-  { name: 'Bank Recon', path: '/bank-reconciliation', icon: '🏦', minRole: 'accountant' },
-  { name: 'Withholding Tax', path: '/withholding', icon: '📑', minRole: 'accountant' },
-
-  // Ledger
-  { name: 'divider', path: '', icon: '', minRole: 'accountant', divider: true, label: 'Ledger' },
-  { name: 'Chart of Accounts', path: '/accounts', icon: '📒', minRole: 'accountant' },
-  { name: 'Journal Entries', path: '/journal-entries', icon: '📝', minRole: 'accountant' },
-  { name: 'General Ledger', path: '/general-ledger', icon: '📓', minRole: 'accountant' },
-  { name: 'Financial Statements', path: '/statements', icon: '📊', minRole: 'accountant' },
-
-  // Tax & Filing
-  { name: 'divider', path: '', icon: '', minRole: 'viewer', divider: true, label: 'Tax & Filing' },
-  { name: 'Tax from GL', path: '/tax-bridge', icon: '🧮', minRole: 'accountant' },
-  { name: 'Reports', path: '/reports', icon: '📋', minRole: 'viewer' },
-  { name: 'Form Router', path: '/form-router', icon: '🗺️', minRole: 'viewer' },
-  { name: 'Filing Calendar', path: '/calendar', icon: '📅', minRole: 'viewer' },
-  { name: 'Penalty Calculator', path: '/penalty-calculator', icon: '⚠️', minRole: 'accountant' },
-
-  // AI & Insights
-  { name: 'divider', path: '', icon: '', minRole: 'viewer', divider: true, label: 'AI & Insights' },
-  { name: 'Filing Agent', path: '', icon: '📋', minRole: 'viewer', agentId: 'filing' },
-  { name: 'Recon Agent', path: '', icon: '🔍', minRole: 'viewer', agentId: 'recon' },
-  { name: 'Journal Agent', path: '', icon: '📝', minRole: 'viewer', agentId: 'journal' },
-  { name: 'Compliance Agent', path: '', icon: '✅', minRole: 'viewer', agentId: 'compliance' },
-  { name: 'Knowledge', path: '/knowledge', icon: '📚', minRole: 'viewer' },
-  { name: 'Learning Insights', path: '/learning', icon: '🎓', minRole: 'viewer' },
-  { name: 'Vendor Policies', path: '/vendor-policies', icon: '📋', minRole: 'accountant' },
-  { name: 'Spending', path: '/spending', icon: '💰', minRole: 'viewer' },
-  { name: 'Period Compare', path: '/compare', icon: '⚖️', minRole: 'viewer' },
-
-  // System (bottom pinned)
-  { name: 'divider', path: '', icon: '', minRole: 'admin', divider: true, label: 'System' },
+// Bottom items
+const bottomItems: MenuItem[] = [
+  { name: 'Organization', path: '/org-dashboard', icon: '🏢', minRole: 'admin' },
   { name: 'Memory', path: '/memory', icon: '🧠', minRole: 'admin' },
   { name: 'User Guide', path: '/guide', icon: '📖', minRole: 'viewer' },
   { name: 'Settings', path: '/settings', icon: '⚙️', minRole: 'admin' },
@@ -75,10 +123,55 @@ const ROLE_LEVEL: Record<string, number> = {
   owner: 4,
 }
 
-const visibleMenuItems = computed(() => {
-  const userLevel = ROLE_LEVEL[auth.currentRole] || 1
-  return menuItems.filter(item => userLevel >= (ROLE_LEVEL[item.minRole] || 1))
-})
+const userLevel = computed(() => ROLE_LEVEL[auth.currentRole] || 1)
+
+function hasAccess(minRole: string): boolean {
+  return userLevel.value >= (ROLE_LEVEL[minRole] || 1)
+}
+
+const visibleTopItems = computed(() => topItems.filter(i => hasAccess(i.minRole)))
+
+const visibleGroups = computed(() =>
+  menuGroups
+    .filter(g => hasAccess(g.minRole))
+    .map(g => ({
+      ...g,
+      items: g.items.filter(i => hasAccess(i.minRole)),
+    }))
+    .filter(g => g.items.length > 0)
+)
+
+const visibleBottomItems = computed(() => bottomItems.filter(i => hasAccess(i.minRole)))
+
+// Collapsed state persisted in localStorage
+const STORAGE_KEY = 'aistarlight_sidebar_collapsed'
+
+function loadCollapsed(): Record<string, boolean> {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored ? JSON.parse(stored) : {}
+  } catch {
+    return {}
+  }
+}
+
+const collapsed = ref<Record<string, boolean>>(loadCollapsed())
+
+watch(collapsed, (val) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(val))
+}, { deep: true })
+
+function toggleGroup(groupId: string) {
+  collapsed.value = {
+    ...collapsed.value,
+    [groupId]: !collapsed.value[groupId],
+  }
+}
+
+function isGroupCollapsed(groupId: string): boolean {
+  // Default: expanded (false)
+  return !!collapsed.value[groupId]
+}
 
 const isMobile = () => window.innerWidth <= 768
 
@@ -137,22 +230,64 @@ async function handleLogout() {
     </div>
 
     <nav>
-      <template v-for="item in visibleMenuItems" :key="item.path || item.label || item.name">
-        <div v-if="item.divider" class="nav-divider">{{ item.label }}</div>
-        <button
-          v-else-if="item.agentId"
-          class="nav-item nav-agent-btn"
-          @click="handleNavClick(item)"
-        >
-          <span class="icon">{{ item.icon }}</span>
-          {{ item.name }}
-        </button>
+      <!-- Top items (Dashboard, AI Chat) -->
+      <template v-for="item in visibleTopItems" :key="item.path">
         <router-link
-          v-else
           :to="item.path"
           class="nav-item"
           active-class="active"
           :data-testid="`sidebar-nav-${item.path.replace('/', '') || 'dashboard'}`"
+          @click="handleNavClick(item)"
+        >
+          <span class="icon">{{ item.icon }}</span>
+          {{ item.name }}
+        </router-link>
+      </template>
+
+      <!-- Collapsible groups -->
+      <template v-for="group in visibleGroups" :key="group.id">
+        <button
+          class="nav-group-header"
+          @click="toggleGroup(group.id)"
+          :aria-expanded="!isGroupCollapsed(group.id)"
+        >
+          <span class="icon">{{ group.icon }}</span>
+          <span class="group-label">{{ group.label }}</span>
+          <svg class="chevron" :class="{ collapsed: isGroupCollapsed(group.id) }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div v-show="!isGroupCollapsed(group.id)" class="nav-group-items">
+          <template v-for="item in group.items" :key="item.path || item.agentId">
+            <button
+              v-if="item.agentId"
+              class="nav-item nav-item-nested nav-agent-btn"
+              @click="handleNavClick(item)"
+            >
+              <span class="icon">{{ item.icon }}</span>
+              {{ item.name }}
+            </button>
+            <router-link
+              v-else
+              :to="item.path"
+              class="nav-item nav-item-nested"
+              active-class="active"
+              :data-testid="`sidebar-nav-${item.path.replace('/', '')}`"
+              @click="handleNavClick(item)"
+            >
+              <span class="icon">{{ item.icon }}</span>
+              {{ item.name }}
+            </router-link>
+          </template>
+        </div>
+      </template>
+
+      <!-- Bottom items (Settings, Guide, Memory) -->
+      <div class="nav-divider">System</div>
+      <template v-for="item in visibleBottomItems" :key="item.path">
+        <router-link
+          :to="item.path"
+          class="nav-item"
+          active-class="active"
+          :data-testid="`sidebar-nav-${item.path.replace('/', '')}`"
           @click="handleNavClick(item)"
         >
           <span class="icon">{{ item.icon }}</span>
@@ -250,14 +385,16 @@ nav {
 nav::-webkit-scrollbar { width: 4px; }
 nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 nav::-webkit-scrollbar-track { background: transparent; }
+
 .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 20px;
+  padding: 10px 20px;
   color: #ccc;
   text-decoration: none;
   transition: background 0.2s;
+  font-size: 14px;
 }
 .nav-item:hover { background: rgba(255,255,255,0.05); }
 .nav-item.active {
@@ -265,7 +402,45 @@ nav::-webkit-scrollbar-track { background: transparent; }
   color: #fff;
   border-right: 3px solid var(--brand-primary);
 }
-.icon { font-size: 18px; }
+.nav-item-nested {
+  padding-left: 40px;
+  font-size: 13px;
+}
+.icon { font-size: 16px; flex-shrink: 0; }
+
+/* Group header */
+.nav-group-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 20px;
+  color: #e2e8f0;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.2s;
+  margin-top: 4px;
+}
+.nav-group-header:hover { background: rgba(255,255,255,0.05); }
+.group-label { flex: 1; }
+.chevron {
+  transition: transform 0.2s;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+.chevron.collapsed {
+  transform: rotate(-90deg);
+}
+
+.nav-group-items {
+  /* animation can be added later */
+}
+
 .nav-divider {
   padding: 16px 20px 6px;
   font-size: 10px;

@@ -71,10 +71,16 @@ export const journalBridgeApi = {
 
 // --- Bridge 3: GL → Financial Statements ---
 export const statementsApi = {
-  balanceSheet: (params?: { as_of?: string }) =>
+  balanceSheet: (params?: { as_of?: string; compare_to?: string }) =>
     client.get("/statements/balance-sheet", { params }),
-  incomeStatement: (params: { from: string; to: string }) =>
-    client.get("/statements/income-statement", { params }),
+  incomeStatement: (params: {
+    from: string;
+    to: string;
+    prior_from?: string;
+    prior_to?: string;
+  }) => client.get("/statements/income-statement", { params }),
+  cashFlow: (params: { from: string; to: string }) =>
+    client.get("/statements/cash-flow", { params }),
 };
 
 // --- Bridge 4: GL → Tax Engine ---

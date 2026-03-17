@@ -201,6 +201,36 @@ const router = createRouter({
       component: () => import("../views/VendorPoliciesView.vue"),
       meta: { requiresAuth: true, title: "Vendor Policies" },
     },
+    {
+      path: "/invoices",
+      name: "invoices",
+      component: () => import("../views/InvoiceView.vue"),
+      meta: { requiresAuth: true, title: "Invoices" },
+    },
+    {
+      path: "/tax-prep",
+      name: "tax-prep",
+      component: () => import("../views/TaxPrepView.vue"),
+      meta: { requiresAuth: true, title: "Prep for Taxes" },
+    },
+    {
+      path: "/cas-compliance",
+      name: "cas-compliance",
+      component: () => import("../views/CASComplianceView.vue"),
+      meta: { requiresAuth: true, title: "BIR CAS Compliance" },
+    },
+    {
+      path: "/org-dashboard",
+      name: "org-dashboard",
+      component: () => import("../views/OrgDashboardView.vue"),
+      meta: { requiresAuth: true, title: "Organization Dashboard" },
+    },
+    {
+      path: "/org-manage",
+      name: "org-manage",
+      component: () => import("../views/OrgManageView.vue"),
+      meta: { requiresAuth: true, title: "Organization Management" },
+    },
   ],
 });
 
