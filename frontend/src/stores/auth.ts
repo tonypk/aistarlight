@@ -99,6 +99,18 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.removeItem("jurisdiction");
   }
 
+  async function loginWithSSO(ssoToken: string) {
+    const res = await authApi.ssoLogin(ssoToken);
+    const tokens = res.data.data;
+    accessToken.value = tokens.access_token;
+    localStorage.setItem("access_token", tokens.access_token);
+    localStorage.setItem("refresh_token", tokens.refresh_token);
+    if (tokens.jurisdiction) {
+      localStorage.setItem("jurisdiction", tokens.jurisdiction);
+    }
+    await fetchUser();
+  }
+
   async function initUser() {
     if (isAuthenticated.value && !user.value) {
       await fetchUser();
@@ -115,6 +127,7 @@ export const useAuthStore = defineStore("auth", () => {
     jurisdiction,
     userLoading,
     login,
+    loginWithSSO,
     register,
     fetchUser,
     fetchCompanies,

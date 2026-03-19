@@ -16,6 +16,7 @@ interface MenuItem {
   icon: string
   minRole: string
   agentId?: string
+  externalUrl?: string
 }
 
 interface MenuGroup {
@@ -109,6 +110,11 @@ const topItems: MenuItem[] = [
   { name: 'AI Chat', path: '/chat', icon: '💬', minRole: 'viewer' },
 ]
 
+// Cross-app navigation
+const crossAppItems: MenuItem[] = [
+  { name: 'HR & Payroll', path: '', icon: '👥', minRole: 'admin', externalUrl: 'https://aigonhr.clawpapa.win' },
+]
+
 // Bottom items
 const bottomItems: MenuItem[] = [
   { name: 'Organization', path: '/org-dashboard', icon: '🏢', minRole: 'admin' },
@@ -143,6 +149,7 @@ const visibleGroups = computed(() =>
     .filter(g => g.items.length > 0)
 )
 
+const visibleCrossAppItems = computed(() => crossAppItems.filter(i => hasAccess(i.minRole)))
 const visibleBottomItems = computed(() => bottomItems.filter(i => hasAccess(i.minRole)))
 
 // Collapsed state persisted in localStorage
@@ -190,7 +197,11 @@ async function handleSwitchCompany(event: Event) {
   }
 }
 
-function handleNavClick(item: { agentId?: string }) {
+function handleNavClick(item: { agentId?: string; externalUrl?: string }) {
+  if (item.externalUrl) {
+    window.open(item.externalUrl, '_blank')
+    return
+  }
   if (item.agentId) {
     agentStore.openPanel(item.agentId)
   }
@@ -280,6 +291,21 @@ async function handleLogout() {
             </router-link>
           </template>
         </div>
+      </template>
+
+      <!-- Cross-app navigation -->
+      <template v-if="visibleCrossAppItems.length">
+        <div class="nav-divider">Connected Apps</div>
+        <template v-for="item in visibleCrossAppItems" :key="item.externalUrl">
+          <button
+            class="nav-item nav-external-btn"
+            @click="handleNavClick(item)"
+          >
+            <span class="icon">{{ item.icon }}</span>
+            {{ item.name }}
+            <span class="external-badge">&#x2197;</span>
+          </button>
+        </template>
       </template>
 
       <!-- Bottom items (Settings, Guide, Memory) -->
@@ -482,7 +508,8 @@ nav::-webkit-scrollbar-track { background: transparent; }
 }
 .logout-btn:hover { background: rgba(255,255,255,0.1); }
 
-.nav-agent-btn {
+.nav-agent-btn,
+.nav-external-btn {
   width: 100%;
   background: none;
   border: none;
@@ -490,6 +517,11 @@ nav::-webkit-scrollbar-track { background: transparent; }
   font-family: inherit;
   cursor: pointer;
   text-align: left;
+}
+.external-badge {
+  margin-left: auto;
+  font-size: 12px;
+  opacity: 0.5;
 }
 
 @media (max-width: 768px) {

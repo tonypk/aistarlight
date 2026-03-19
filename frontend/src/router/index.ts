@@ -11,6 +11,12 @@ const router = createRouter({
       meta: { title: "Login" },
     },
     {
+      path: "/sso",
+      name: "sso",
+      component: () => import("../views/SSOCallbackView.vue"),
+      meta: { title: "SSO Login" },
+    },
+    {
       path: "/",
       name: "dashboard",
       component: () => import("../views/DashboardView.vue"),

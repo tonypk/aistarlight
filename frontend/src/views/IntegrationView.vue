@@ -10,6 +10,9 @@ const events = ref<IntegrationEvent[]>([])
 const loading = ref(false)
 const page = ref(1)
 const expandedEvent = ref<string | null>(null)
+const showAddSource = ref(false)
+const addLoading = ref(false)
+const newSource = ref({ remote_company_id: '', webhook_secret: '' })
 
 const statusBadge = (status: string) => {
   switch (status) {
@@ -63,6 +66,40 @@ const stats = computed(() => {
   return { total, processed, failed, pending }
 })
 
+async function addSource() {
+  if (!newSource.value.remote_company_id) {
+    toast.error('Remote Company ID is required')
+    return
+  }
+  addLoading.value = true
+  try {
+    await integrationApi.createSource({
+      source_system: 'aigonhr',
+      remote_company_id: newSource.value.remote_company_id,
+      webhook_secret: newSource.value.webhook_secret || undefined,
+    })
+    toast.success('Integration source connected')
+    showAddSource.value = false
+    newSource.value = { remote_company_id: '', webhook_secret: '' }
+    fetchData()
+  } catch {
+    toast.error('Failed to create integration source')
+  } finally {
+    addLoading.value = false
+  }
+}
+
+async function removeSource(id: string) {
+  if (!confirm('Disconnect this integration source?')) return
+  try {
+    await integrationApi.deleteSource(id)
+    toast.success('Integration source removed')
+    fetchData()
+  } catch {
+    toast.error('Failed to remove integration source')
+  }
+}
+
 onMounted(fetchData)
 </script>
 
@@ -98,9 +135,33 @@ onMounted(fetchData)
     </div>
 
     <!-- Sources -->
-    <section class="section" v-if="sources.length > 0">
-      <h2>Connected Sources</h2>
-      <div class="source-cards">
+    <section class="section">
+      <div class="section-header">
+        <h2>Connected Sources</h2>
+        <button v-if="!showAddSource" class="btn btn-primary btn-sm" @click="showAddSource = true">Connect AIGoNHR</button>
+      </div>
+
+      <!-- Add source form -->
+      <div v-if="showAddSource" class="add-source-form">
+        <h3>Connect AIGoNHR</h3>
+        <p class="form-hint">Enter the Remote Company ID from AIGoNHR and the webhook secret generated when you created the accounting link in AIGoNHR.</p>
+        <div class="form-row">
+          <label>Remote Company ID (AIGoNHR)</label>
+          <input v-model="newSource.remote_company_id" placeholder="e.g. 1" />
+        </div>
+        <div class="form-row">
+          <label>Webhook Secret</label>
+          <input v-model="newSource.webhook_secret" type="password" placeholder="Paste the webhook secret from AIGoNHR" />
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" :disabled="addLoading" @click="addSource">
+            {{ addLoading ? 'Connecting...' : 'Connect' }}
+          </button>
+          <button class="btn btn-secondary" @click="showAddSource = false">Cancel</button>
+        </div>
+      </div>
+
+      <div v-if="sources.length > 0" class="source-cards">
         <div v-for="src in sources" :key="src.id" class="source-card">
           <div class="source-header">
             <span class="source-system">{{ src.source_system.toUpperCase() }}</span>
@@ -109,7 +170,13 @@ onMounted(fetchData)
           <div class="source-detail">Remote Company: {{ src.remote_company_id }}</div>
           <div class="source-detail">Last Event: {{ formatDate(src.last_event_at) }}</div>
           <div class="source-detail">Connected: {{ formatDate(src.created_at) }}</div>
+          <div class="source-actions">
+            <button class="btn btn-sm btn-danger" @click="removeSource(src.id)">Disconnect</button>
+          </div>
         </div>
+      </div>
+      <div v-else-if="!showAddSource" class="empty">
+        <p>No integration sources connected. Click "Connect AIGoNHR" to get started.</p>
       </div>
     </section>
 
@@ -175,7 +242,25 @@ onMounted(fetchData)
 .stat-info { border-left: 4px solid #2563eb; }
 
 .section { margin-bottom: 32px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.section-header h2 { margin: 0; }
 .section h2 { font-size: 1.15rem; margin-bottom: 16px; }
+
+.add-source-form { background: white; border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.add-source-form h3 { margin: 0 0 8px; font-size: 1rem; }
+.form-hint { font-size: 0.85rem; color: var(--text-secondary, #6b7280); margin-bottom: 16px; }
+.form-row { margin-bottom: 12px; }
+.form-row label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: var(--text-primary, #374151); }
+.form-row input { width: 100%; padding: 8px 12px; border: 1px solid var(--border, #d1d5db); border-radius: 6px; font-size: 0.875rem; box-sizing: border-box; }
+.form-row input:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79,70,229,0.15); }
+.form-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+.source-actions { margin-top: 10px; }
+.btn-primary { background: #4f46e5; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.875rem; }
+.btn-primary:hover { background: #4338ca; }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-danger { background: #dc2626; color: white; border: none; cursor: pointer; }
+.btn-danger:hover { background: #b91c1c; }
 
 .source-cards { display: flex; gap: 16px; flex-wrap: wrap; }
 .source-card { background: white; border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 16px; min-width: 250px; flex: 1; }

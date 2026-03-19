@@ -3,10 +3,29 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useAccountingStore } from '../stores/accounting'
 import { useAuthStore } from '../stores/auth'
 import { currencyLocale } from '@/utils/currency'
+import { integrationApi } from '../api/integration'
 
 const store = useAccountingStore()
 const auth = useAuthStore()
 const isSG = computed(() => auth.jurisdiction === 'SG')
+
+// HR Integration status
+const hasHRIntegration = ref(false)
+const lastHREventAt = ref<string | null>(null)
+
+async function checkHRIntegration() {
+  try {
+    const res = await integrationApi.listSources()
+    const sources = res.data?.data || res.data || []
+    const active = sources.find((s: { source_system: string; status: string }) => s.source_system === 'aigonhr' && s.status === 'active')
+    if (active) {
+      hasHRIntegration.value = true
+      lastHREventAt.value = active.last_event_at
+    }
+  } catch {
+    // Non-critical
+  }
+}
 
 interface FormTypeOption { value: string; label: string; period: string }
 
@@ -40,7 +59,10 @@ function onFormChange() {
 }
 
 // Fetch latest draft on mount and when form type changes
-onMounted(() => store.fetchLatestDraft(formType.value))
+onMounted(() => {
+  store.fetchLatestDraft(formType.value)
+  checkHRIntegration()
+})
 watch(formType, (ft) => store.fetchLatestDraft(ft))
 
 function formatDraftTime(dt: string | undefined) {
@@ -182,10 +204,20 @@ function getDisplayFields() {
       </div>
     </div>
 
+    <!-- HR Integration badge -->
+    <div v-if="hasHRIntegration" class="hr-badge-banner">
+      <span class="hr-badge">Payroll Auto-fill Active</span>
+      <span class="hr-badge-meta">
+        Connected to AIGoNHR
+        <template v-if="lastHREventAt">&middot; Last event: {{ new Date(lastHREventAt).toLocaleString() }}</template>
+      </span>
+    </div>
+
     <!-- Auto-calculated draft banner -->
     <div v-if="store.taxDraft" class="draft-banner">
       <div class="draft-info">
         <span class="auto-badge">Auto-calculated from GL</span>
+        <span v-if="store.taxDraft.triggered_by === 'payroll_event'" class="payroll-badge">From Payroll</span>
         <span class="draft-meta">
           Last updated: {{ formatDraftTime(store.taxDraft.created_at) }}
           &middot; Period: {{ store.taxDraft.period_start }} to {{ store.taxDraft.period_end }}
@@ -265,6 +297,10 @@ function getDisplayFields() {
 .raw-section { margin-top: 16px; }
 .raw-section summary { cursor: pointer; font-size: 13px; color: var(--text-secondary); padding: 8px 0; }
 .result-table.raw td { font-size: 13px; padding: 6px 12px; }
+.hr-badge-banner { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.hr-badge { display: inline-block; padding: 2px 10px; background: #dbeafe; color: #1d4ed8; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.hr-badge-meta { font-size: 13px; color: var(--text-secondary); }
+.payroll-badge { display: inline-block; padding: 2px 10px; background: #fef3c7; color: #92400e; border-radius: 4px; font-size: 12px; font-weight: 600; }
 .draft-banner { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
 .draft-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .auto-badge { display: inline-block; padding: 2px 10px; background: #dcfce7; color: #166534; border-radius: 4px; font-size: 12px; font-weight: 600; }

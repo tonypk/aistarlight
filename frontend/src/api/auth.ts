@@ -44,4 +44,6 @@ export const authApi = {
     client.post("/auth/create-member", data),
   getTelegramStatus: () => client.get("/telegram/status"),
   generateTelegramLink: () => client.post("/telegram/link-token"),
+  ssoLogin: (ssoToken: string) =>
+    client.post("/auth/sso", { sso_token: ssoToken }),
 };
