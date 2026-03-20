@@ -43,8 +43,17 @@ async function handleSubmit() {
 <template>
   <div class="login-page">
     <div class="login-card">
-      <h1>AIStarlight</h1>
+      <h1>HalaOS</h1>
       <p class="subtitle">Smart Tax Filing System</p>
+
+      <div class="product-switcher">
+        <a href="https://hr.halaos.com/login" class="product-btn">
+          <span class="product-icon">&#x1F465;</span> HR
+        </a>
+        <span class="product-btn active">
+          <span class="product-icon">&#x1F4B0;</span> Finance
+        </span>
+      </div>
 
       <div class="jurisdiction-selector">
         <p class="jurisdiction-label">Select Your Country</p>
@@ -134,6 +143,41 @@ async function handleSubmit() {
 }
 h1 { text-align: center; color: #1a1a2e; font-size: 28px; }
 .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 24px; }
+.product-switcher {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.product-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: 2px solid var(--border-default, #334155);
+  color: var(--text-secondary, #94a3b8);
+  background: transparent;
+  cursor: pointer;
+}
+.product-btn:hover {
+  border-color: #818cf8;
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.1);
+}
+.product-btn.active {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  border-color: transparent;
+  cursor: default;
+}
+.product-icon {
+  font-size: 16px;
+}
 .jurisdiction-selector { margin-bottom: 24px; }
 .jurisdiction-label {
   text-align: center;
