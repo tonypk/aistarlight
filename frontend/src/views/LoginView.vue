@@ -2,9 +2,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { NForm, NFormItem, NInput, NButton, useMessage } from 'naive-ui'
 
 const router = useRouter()
 const auth = useAuthStore()
+const message = useMessage()
 
 const isRegister = ref(false)
 const email = ref('')
@@ -12,11 +14,9 @@ const password = ref('')
 const fullName = ref('')
 const companyName = ref('')
 const selectedJurisdiction = ref('PH')
-const error = ref('')
 const loading = ref(false)
 
 async function handleSubmit() {
-  error.value = ''
   loading.value = true
   try {
     if (isRegister.value) {
@@ -33,7 +33,7 @@ async function handleSubmit() {
     router.push('/')
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } }
-    error.value = err.response?.data?.error || 'Something went wrong'
+    message.error(err.response?.data?.error || 'Something went wrong')
   } finally {
     loading.value = false
   }
@@ -91,30 +91,31 @@ async function handleSubmit() {
         </div>
       </div>
 
-      <form @submit.prevent="handleSubmit">
-        <div v-if="isRegister" class="field">
-          <label>Full Name</label>
-          <input v-model="fullName" type="text" required placeholder="Juan dela Cruz" />
-        </div>
-        <div v-if="isRegister" class="field">
-          <label>Company Name</label>
-          <input v-model="companyName" type="text" required placeholder="My Company Inc." />
-        </div>
-        <div class="field">
-          <label>Email</label>
-          <input v-model="email" type="email" required placeholder="you@company.com" data-testid="login-email" />
-        </div>
-        <div class="field">
-          <label>Password</label>
-          <input v-model="password" type="password" required placeholder="Enter password" data-testid="login-password" />
-        </div>
+      <NForm @submit.prevent="handleSubmit">
+        <NFormItem v-if="isRegister" label="Full Name">
+          <NInput v-model:value="fullName" placeholder="Juan dela Cruz" />
+        </NFormItem>
+        <NFormItem v-if="isRegister" label="Company Name">
+          <NInput v-model:value="companyName" placeholder="My Company Inc." />
+        </NFormItem>
+        <NFormItem label="Email">
+          <NInput v-model:value="email" type="text" placeholder="you@company.com" data-testid="login-email" />
+        </NFormItem>
+        <NFormItem label="Password">
+          <NInput v-model:value="password" type="password" show-password-on="click" placeholder="Enter password" data-testid="login-password" />
+        </NFormItem>
 
-        <p v-if="error" class="error" data-testid="login-error">{{ error }}</p>
-
-        <button type="submit" class="submit-btn" :disabled="loading" data-testid="login-submit">
-          {{ loading ? 'Please wait...' : isRegister ? 'Create Account' : 'Sign In' }}
-        </button>
-      </form>
+        <NButton
+          type="primary"
+          block
+          :loading="loading"
+          attr-type="submit"
+          data-testid="login-submit"
+          @click="handleSubmit"
+        >
+          {{ isRegister ? 'Create Account' : 'Sign In' }}
+        </NButton>
+      </NForm>
 
       <p class="toggle">
         {{ isRegister ? 'Already have an account?' : 'Need an account?' }}
@@ -132,16 +133,16 @@ async function handleSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 50%, #2563eb 100%);
 }
 .login-card {
-  background: var(--bg-surface);
+  background: var(--bg-surface, #ffffff);
   padding: 48px;
   border-radius: 16px;
   width: 400px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
-h1 { text-align: center; color: #1a1a2e; font-size: 28px; }
+h1 { text-align: center; color: #1e3a5f; font-size: 28px; }
 .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 24px; }
 .product-switcher {
   display: flex;
@@ -159,25 +160,23 @@ h1 { text-align: center; color: #1a1a2e; font-size: 28px; }
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s;
-  border: 2px solid var(--border-default, #334155);
-  color: var(--text-secondary, #94a3b8);
+  border: 2px solid var(--border-default, #e5e7eb);
+  color: var(--text-secondary, #555555);
   background: transparent;
   cursor: pointer;
 }
 .product-btn:hover {
-  border-color: #818cf8;
-  color: #a5b4fc;
-  background: rgba(99, 102, 241, 0.1);
+  border-color: #3b82f6;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.05);
 }
 .product-btn.active {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: #fff;
   border-color: transparent;
   cursor: default;
 }
-.product-icon {
-  font-size: 16px;
-}
+.product-icon { font-size: 16px; }
 .jurisdiction-selector { margin-bottom: 24px; }
 .jurisdiction-label {
   text-align: center;
@@ -203,49 +202,26 @@ h1 { text-align: center; color: #1a1a2e; font-size: 28px; }
   min-width: 100px;
 }
 .jurisdiction-btn:hover {
-  border-color: #a5b4fc;
-  background: #f5f3ff;
+  border-color: #93c5fd;
+  background: #eff6ff;
 }
 .jurisdiction-btn.active {
-  border-color: var(--brand-primary);
-  background: #eef2ff;
-  box-shadow: 0 0 0 1px var(--brand-primary);
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 1px #2563eb;
 }
 .jurisdiction-btn .flag {
   font-size: 24px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #1e3a5f;
   margin-bottom: 4px;
 }
 .jurisdiction-btn .country-name {
   font-size: 12px;
   color: var(--text-secondary);
 }
-.field { margin-bottom: 16px; }
-.field label { display: block; margin-bottom: 4px; font-size: 14px; color: var(--text-secondary); }
-.field input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border-input);
-  border-radius: 8px;
-  font-size: 14px;
-}
-.field input:focus { outline: none; border-color: var(--brand-primary); }
-.error { color: #ef4444; font-size: 13px; margin-bottom: 12px; }
-.submit-btn {
-  width: 100%;
-  padding: 12px;
-  background: var(--brand-primary);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-}
-.submit-btn:hover { background: var(--brand-primary-hover); }
-.submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .toggle { text-align: center; margin-top: 16px; font-size: 14px; color: var(--text-muted); }
-.toggle a { color: var(--brand-primary); }
+.toggle a { color: #2563eb; }
 
 @media (max-width: 768px) {
   .login-card {

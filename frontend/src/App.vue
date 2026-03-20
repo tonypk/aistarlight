@@ -1,66 +1,37 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
-import AppHeader from './components/layout/AppHeader.vue'
-import AppSidebar from './components/layout/AppSidebar.vue'
+import { computed } from 'vue'
+import { NConfigProvider, NMessageProvider, NDialogProvider, darkTheme, type GlobalThemeOverrides } from 'naive-ui'
 import ToastContainer from './components/layout/ToastContainer.vue'
-import AIPanel from './components/ai/AIPanel.vue'
-import AITrigger from './components/ai/AITrigger.vue'
-import { useAuthStore } from './stores/auth'
 import { useUIStore } from './stores/ui'
-import { useSwipeGesture } from './composables/useSwipeGesture'
 
-const auth = useAuthStore()
 const ui = useUIStore()
-const route = useRoute()
-const showLayout = computed(() => auth.isAuthenticated && route.name !== 'login')
+const theme = computed(() => ui.isDark ? darkTheme : null)
 
-const { cleanup } = useSwipeGesture({
-  onSwipeRight: () => { ui.sidebarOpen = true },
-  onSwipeLeft: () => { ui.closeSidebar() },
-  edgeOnly: true,
-})
-
-onMounted(() => {
-  auth.initUser()
-})
-
-onUnmounted(() => {
-  cleanup()
-})
+const themeOverrides: GlobalThemeOverrides = {
+  common: {
+    primaryColor: '#2563eb',
+    primaryColorHover: '#3b82f6',
+    primaryColorPressed: '#1d4ed8',
+    primaryColorSuppl: '#60a5fa',
+  },
+}
 </script>
 
 <template>
-  <div class="app">
-    <template v-if="showLayout">
-      <AppSidebar />
-      <div
-        v-if="ui.sidebarOpen"
-        class="sidebar-overlay"
-        @click="ui.closeSidebar()"
-      />
-      <div class="main-area">
-        <AppHeader />
-        <main class="content">
-          <router-view />
-        </main>
-      </div>
-    </template>
-    <template v-else>
-      <router-view />
-    </template>
-    <ToastContainer />
-    <!-- Global AI Layer -->
-    <template v-if="showLayout">
-      <AITrigger />
-      <AIPanel />
-    </template>
-  </div>
+  <NConfigProvider :theme="theme" :theme-overrides="themeOverrides">
+    <NMessageProvider>
+      <NDialogProvider>
+        <router-view />
+      </NDialogProvider>
+    </NMessageProvider>
+  </NConfigProvider>
+  <ToastContainer />
 </template>
 
 <style>
-:root {
-  --bg-app: #f5f7fa;
+:root,
+[data-theme="light"] {
+  --bg-app: #f8fafc;
   --bg-surface: #ffffff;
   --bg-surface-alt: #f9fafb;
   --bg-surface-hover: #f3f4f6;
@@ -70,12 +41,13 @@ onUnmounted(() => {
   --text-muted: #9ca3af;
   --border-default: #e5e7eb;
   --border-input: #d1d5db;
-  --bg-accent: #f0f4ff;
-  --brand-primary: #4f46e5;
-  --brand-primary-hover: #4338ca;
+  --bg-accent: #eff6ff;
+  --brand-primary: #2563eb;
+  --brand-primary-hover: #1d4ed8;
 }
 
-html.dark {
+html.dark,
+[data-theme="dark"] {
   --bg-app: #0f1117;
   --bg-surface: #1c1c27;
   --bg-surface-alt: #252535;
@@ -87,55 +59,13 @@ html.dark {
   --border-default: #2e2e42;
   --border-input: #3a3a54;
   --bg-accent: #1e2a4a;
-  --brand-primary: #6366f1;
-  --brand-primary-hover: #818cf8;
-}
-
-*, *::before, *::after {
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  --brand-primary: #3b82f6;
+  --brand-primary-hover: #60a5fa;
 }
 
 body {
   margin: 0;
   background: var(--bg-app);
   color: var(--text-primary);
-}
-
-.app {
-  display: flex;
-  min-height: 100vh;
-  background: var(--bg-app);
-}
-.main-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  margin-left: 240px;
-  min-width: 0;
-}
-.content {
-  padding: 24px;
-  flex: 1;
-  overflow-x: auto;
-}
-
-.sidebar-overlay {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .main-area {
-    margin-left: 0;
-  }
-  .content {
-    padding: 12px;
-  }
-  .sidebar-overlay {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 99;
-  }
 }
 </style>
