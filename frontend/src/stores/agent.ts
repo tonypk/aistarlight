@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { agentApi } from "../api/agent";
-import type { AgentInfo, ThreadInfo } from "../api/agent";
+import type { AgentInfo, ThreadInfo, ActionPlan } from "../api/agent";
 
 export interface ActionButton {
   label: string;
@@ -23,6 +23,8 @@ export interface AgentMessage {
   }>;
   toolCalls?: Array<{ tool_name?: string; tool_id?: string; result?: string }>;
   actions?: ActionButton[];
+  isActionPlan?: boolean;
+  actionPlan?: ActionPlan;
 }
 
 export const useAgentStore = defineStore("agent", () => {
@@ -35,6 +37,7 @@ export const useAgentStore = defineStore("agent", () => {
   const agentsLoaded = ref(false);
   const threads = ref<ThreadInfo[]>([]);
   const showThreadList = ref(false);
+  const awaitingConfirmation = ref(false);
 
   const activeAgentInfo = computed(() =>
     agents.value.find((a) => a.id === activeAgent.value),
@@ -156,6 +159,21 @@ export const useAgentStore = defineStore("agent", () => {
             toolCalls = calls;
           }
         }
+        if (chunk.action_plan) {
+          // Insert ActionPlanCard as a special message
+          messages.value = [
+            ...messages.value,
+            {
+              role: 'assistant' as const,
+              content: '',
+              isActionPlan: true,
+              actionPlan: chunk.action_plan,
+            },
+          ];
+        }
+        if (chunk.awaiting_confirmation) {
+          awaitingConfirmation.value = true;
+        }
         if (chunk.actions) {
           actions = chunk.actions as ActionButton[];
         }
@@ -195,6 +213,41 @@ export const useAgentStore = defineStore("agent", () => {
     }
   }
 
+  async function confirmAction(planId: string) {
+    try {
+      const res = await agentApi.confirmAction(activeAgent.value, planId);
+      const result = res.data.data;
+      // Update the ActionPlanCard message status
+      messages.value = messages.value.map((m) =>
+        m.isActionPlan && m.actionPlan?.plan_id === planId
+          ? { ...m, actionPlan: { ...m.actionPlan!, status: result.status, result: result.result, error: result.error } }
+          : m,
+      );
+      awaitingConfirmation.value = false;
+    } catch (err) {
+      // Update to failed status
+      messages.value = messages.value.map((m) =>
+        m.isActionPlan && m.actionPlan?.plan_id === planId
+          ? { ...m, actionPlan: { ...m.actionPlan!, status: 'failed', error: 'Failed to confirm action' } }
+          : m,
+      );
+    }
+  }
+
+  async function cancelAction(planId: string) {
+    try {
+      await agentApi.cancelAction(activeAgent.value, planId);
+      messages.value = messages.value.map((m) =>
+        m.isActionPlan && m.actionPlan?.plan_id === planId
+          ? { ...m, actionPlan: { ...m.actionPlan!, status: 'cancelled' } }
+          : m,
+      );
+      awaitingConfirmation.value = false;
+    } catch {
+      // silently fail
+    }
+  }
+
   function clearMessages() {
     messages.value = [];
     activeThreadId.value = null;
@@ -219,6 +272,9 @@ export const useAgentStore = defineStore("agent", () => {
     closePanel,
     sendMessage,
     clearMessages,
+    awaitingConfirmation,
+    confirmAction,
+    cancelAction,
   };
 });
 

@@ -5,6 +5,7 @@ import { useAgentStore } from '../../stores/agent'
 import { useRouteAgent } from '../../composables/useRouteAgent'
 import AgentPicker from './AgentPicker.vue'
 import AgentMessage from './AgentMessage.vue'
+import ActionPlanCard from './ActionPlanCard.vue'
 
 const agentStore = useAgentStore()
 const route = useRoute()
@@ -174,12 +175,23 @@ watch(() => agentStore.messages.length, async () => {
             Context: <code>{{ getRouteContext().current_page }}</code>
           </p>
         </div>
-        <AgentMessage
-          v-for="(msg, i) in agentStore.messages"
-          :key="i"
-          :message="msg"
-          @retry="handleRetry(i)"
-        />
+        <template v-for="(msg, i) in agentStore.messages" :key="i">
+          <ActionPlanCard
+            v-if="msg.isActionPlan && msg.actionPlan"
+            :plan-id="msg.actionPlan.plan_id"
+            :tool-name="msg.actionPlan.tool_name"
+            :summary="msg.actionPlan.summary"
+            :impact="msg.actionPlan.impact"
+            :status="(msg.actionPlan.status || 'pending') as any"
+            :result="msg.actionPlan.result"
+            :error="msg.actionPlan.error"
+          />
+          <AgentMessage
+            v-else
+            :message="msg"
+            @retry="handleRetry(i)"
+          />
+        </template>
       </div>
 
       <div class="input-area">

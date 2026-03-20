@@ -21,6 +21,16 @@ export interface AgentStreamRequest {
   context?: Record<string, unknown>;
 }
 
+export interface ActionPlan {
+  plan_id: string;
+  tool_name: string;
+  summary: string;
+  impact: { affected_count: number; details: string[] };
+  status: string;
+  result?: Record<string, unknown>;
+  error?: string;
+}
+
 export interface AgentStreamEvent {
   token?: string;
   done?: boolean;
@@ -35,6 +45,9 @@ export interface AgentStreamEvent {
   }>;
   actions?: unknown;
   citations?: unknown;
+  action_plan?: ActionPlan;
+  awaiting_confirmation?: boolean;
+  pending_plan_id?: string;
 }
 
 export interface ThreadInfo {
@@ -59,6 +72,15 @@ export const agentApi = {
 
   threadMessages: (agentId: string, threadId: string) =>
     client.get(`/agents/${agentId}/threads/${threadId}/messages`),
+
+  confirmAction: (agentId: string, planId: string) =>
+    client.post(`/agents/${agentId}/actions/${planId}/confirm`),
+
+  cancelAction: (agentId: string, planId: string) =>
+    client.post(`/agents/${agentId}/actions/${planId}/cancel`),
+
+  pendingActions: (agentId: string, threadId: string) =>
+    client.get(`/agents/${agentId}/threads/${threadId}/pending-actions`),
 
   async *stream(
     agentId: string,
