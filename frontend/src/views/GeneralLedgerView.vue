@@ -145,7 +145,7 @@ function totalCredit() {
 .mono { font-family: monospace; }
 .bold { font-weight: 600; }
 .clickable { cursor: pointer; }
-.clickable:hover { background: #f0f4ff; }
+.clickable:hover { background: var(--bg-accent, #f0f4ff); }
 .loading, .empty { text-align: center; padding: 40px; color: #666; }
 .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; text-transform: capitalize; }
 .badge-asset { background: #dbeafe; color: #1d4ed8; }

@@ -118,7 +118,7 @@ function severityIcon(severity: string): string {
   border-radius: 12px;
   padding: 24px;
 }
-h3 { margin: 0 0 16px; font-size: 18px; color: #111827; }
+h3 { margin: 0 0 16px; font-size: 18px; color: var(--text-primary); }
 .section { margin-bottom: 16px; }
 .section-title {
   font-weight: 600;

@@ -948,7 +948,7 @@ section {
 section h3 {
   font-size: 18px;
   margin-bottom: 12px;
-  color: #111827;
+  color: var(--text-primary);
   padding-bottom: 8px;
   border-bottom: 1px solid #f3f4f6;
 }
@@ -1119,7 +1119,7 @@ section li {
   border-bottom: none;
 }
 .faq-item h4 {
-  color: #111827;
+  color: var(--text-primary);
   margin: 0 0 6px;
 }
 .faq-item p {

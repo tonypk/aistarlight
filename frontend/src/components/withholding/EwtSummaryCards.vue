@@ -50,7 +50,7 @@ function fmt(n: number): string {
   padding: 20px;
 }
 .card.accent {
-  background: #f0f4ff;
+  background: var(--bg-accent, #f0f4ff);
   border-color: #2563eb;
 }
 .card-label {
@@ -63,7 +63,7 @@ function fmt(n: number): string {
 .card-value {
   font-size: 22px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
 }
 .card.accent .card-value { color: #2563eb; }
 </style>

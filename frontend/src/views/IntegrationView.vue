@@ -234,7 +234,7 @@ onMounted(fetchData)
 .description { color: var(--text-secondary, #6b7280); margin-bottom: 24px; font-size: 0.9rem; }
 
 .stats-row { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
-.stat-card { background: white; border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 16px 24px; min-width: 120px; }
+.stat-card { background: var(--bg-surface); border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 16px 24px; min-width: 120px; }
 .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text-primary, #1f2937); }
 .stat-label { font-size: 0.8rem; color: var(--text-secondary, #6b7280); margin-top: 4px; }
 .stat-success { border-left: 4px solid #16a34a; }
@@ -246,7 +246,7 @@ onMounted(fetchData)
 .section-header h2 { margin: 0; }
 .section h2 { font-size: 1.15rem; margin-bottom: 16px; }
 
-.add-source-form { background: white; border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.add-source-form { background: var(--bg-surface); border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
 .add-source-form h3 { margin: 0 0 8px; font-size: 1rem; }
 .form-hint { font-size: 0.85rem; color: var(--text-secondary, #6b7280); margin-bottom: 16px; }
 .form-row { margin-bottom: 12px; }
@@ -263,7 +263,7 @@ onMounted(fetchData)
 .btn-danger:hover { background: #b91c1c; }
 
 .source-cards { display: flex; gap: 16px; flex-wrap: wrap; }
-.source-card { background: white; border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 16px; min-width: 250px; flex: 1; }
+.source-card { background: var(--bg-surface); border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 16px; min-width: 250px; flex: 1; }
 .source-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .source-system { font-weight: 700; font-size: 0.95rem; }
 .source-detail { font-size: 0.85rem; color: var(--text-secondary, #6b7280); margin-bottom: 4px; }

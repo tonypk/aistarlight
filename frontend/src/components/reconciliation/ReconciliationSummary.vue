@@ -127,7 +127,7 @@ const lineLabels = computed(() => isSG.value ? lineLabelsSG : lineLabelsPH)
 }
 .stat.warn .stat-val { color: #d97706; }
 .stat.good .stat-val { color: #16a34a; }
-.stat-val { font-size: 24px; font-weight: 700; color: #111827; }
+.stat-val { font-size: 24px; font-weight: 700; color: var(--text-primary); }
 .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
 
 h3 { font-size: 16px; margin: 0 0 12px; }

@@ -208,7 +208,7 @@ function confidenceColor(confidence: number): string {
 }
 .stat-card.active {
   border-color: var(--brand-primary);
-  background: #f0f4ff;
+  background: var(--bg-accent, #f0f4ff);
 }
 .stat-value { font-size: 36px; font-weight: 700; color: var(--text-primary); }
 .stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
@@ -239,7 +239,7 @@ td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
   border-radius: 8px;
   padding: 14px;
   margin-bottom: 10px;
-  background: #f0f4ff;
+  background: var(--bg-accent, #f0f4ff);
 }
 .rule-header {
   display: flex;

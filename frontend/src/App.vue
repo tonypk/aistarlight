@@ -70,6 +70,7 @@ onUnmounted(() => {
   --text-muted: #9ca3af;
   --border-default: #e5e7eb;
   --border-input: #d1d5db;
+  --bg-accent: #f0f4ff;
   --brand-primary: #4f46e5;
   --brand-primary-hover: #4338ca;
 }
@@ -85,6 +86,7 @@ html.dark {
   --text-muted: #6b7280;
   --border-default: #2e2e42;
   --border-input: #3a3a54;
+  --bg-accent: #1e2a4a;
   --brand-primary: #6366f1;
   --brand-primary-hover: #818cf8;
 }

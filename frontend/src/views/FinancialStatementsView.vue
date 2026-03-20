@@ -483,7 +483,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
 .group-header td { padding-top: 12px; font-size: 13px; color: var(--text-secondary); }
 .total-row td { border-top: 1px solid var(--border-default); padding-top: 8px; }
 .subtotal td { border-top: 1px solid #f3f4f6; color: var(--text-primary); }
-.highlight td { background: #f0f4ff; }
+.highlight td { background: var(--bg-accent, #f0f4ff); }
 html.dark .highlight td { background: rgba(99,102,241,0.08); }
 .grand-total td { border-top: 2px solid #111; font-size: 15px; padding-top: 10px; }
 html.dark .grand-total td { border-top-color: #555; }

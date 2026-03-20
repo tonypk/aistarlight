@@ -273,7 +273,7 @@ function handleBack() {
 .version-badge {
   margin-left: auto;
   padding: 4px 10px;
-  background: #f0f4ff;
+  background: var(--bg-accent, #f0f4ff);
   border: 1px solid #c7d2fe;
   border-radius: 6px;
   font-size: 12px;

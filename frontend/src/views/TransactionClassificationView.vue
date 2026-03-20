@@ -359,7 +359,7 @@ const statusTextColors: Record<string, string> = {
 }
 .session-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 .session-info { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-.session-period { font-size: 18px; font-weight: 600; color: #111827; }
+.session-period { font-size: 18px; font-weight: 600; color: var(--text-primary); }
 .status-badge {
   padding: 2px 10px;
   border-radius: 4px;

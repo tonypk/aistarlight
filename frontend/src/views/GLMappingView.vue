@@ -260,11 +260,11 @@ onMounted(() => {
 .btn-danger { background: #fee2e2; color: #991b1b; }
 .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
 
-.select { padding: 8px 12px; border: 1px solid var(--border, #d1d5db); border-radius: 6px; background: white; font-size: 0.875rem; }
+.select { padding: 8px 12px; border: 1px solid var(--border, #d1d5db); border-radius: 6px; background: var(--bg-surface); font-size: 0.875rem; }
 .input { padding: 8px 12px; border: 1px solid var(--border, #d1d5db); border-radius: 6px; width: 100%; font-size: 0.875rem; }
 
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.modal { background: white; border-radius: 12px; padding: 24px; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+.modal { background: var(--bg-surface); border-radius: 12px; padding: 24px; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
 .modal h2 { margin: 0 0 16px; font-size: 1.25rem; }
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; margin-bottom: 4px; font-weight: 500; font-size: 0.875rem; }

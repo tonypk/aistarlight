@@ -210,7 +210,7 @@ watch(() => agentStore.messages.length, async () => {
   right: 0;
   width: 400px;
   height: 100vh;
-  background: white;
+  background: var(--bg-surface);
   box-shadow: -4px 0 20px rgba(0,0,0,0.15);
   display: flex;
   flex-direction: column;

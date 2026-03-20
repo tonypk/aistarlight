@@ -291,7 +291,7 @@ function getDisplayFields() {
 .gl-badge { display: inline-block; padding: 2px 8px; background: #dbeafe; color: #1d4ed8; border-radius: 4px; font-size: 12px; margin-left: 8px; }
 .result-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .result-table td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
-.result-table .highlight td { background: #f0f4ff; font-weight: 500; }
+.result-table .highlight td { background: var(--bg-accent, #f0f4ff); font-weight: 500; }
 .right { text-align: right; }
 .mono { font-family: monospace; }
 .raw-section { margin-top: 16px; }

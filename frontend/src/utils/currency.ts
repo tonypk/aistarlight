@@ -26,15 +26,15 @@ export function currencyLocale(): string {
   return currencyInfo().locale;
 }
 
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number | null | undefined): string {
   return new Intl.NumberFormat(currencyLocale(), {
     style: "currency",
     currency: currencyCode(),
-  }).format(amount);
+  }).format(amount ?? 0);
 }
 
-export function formatAmount(amount: number): string {
-  return amount.toLocaleString(currencyLocale(), {
+export function formatAmount(amount: number | null | undefined): string {
+  return (amount ?? 0).toLocaleString(currencyLocale(), {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });

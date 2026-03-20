@@ -125,7 +125,7 @@ function resolve(status: string) {
   font-weight: 700;
   letter-spacing: 0.5px;
 }
-.type { font-weight: 600; font-size: 14px; color: #111827; }
+.type { font-weight: 600; font-size: 14px; color: var(--text-primary); }
 .status-badge {
   padding: 2px 8px;
   background: var(--border-default);

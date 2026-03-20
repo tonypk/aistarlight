@@ -23,23 +23,27 @@ const totalIncome = computed(() => {
 const netAmount = computed(() => totalIncome.value - totalExpense.value)
 
 const maxCategoryAmount = computed(() => {
-  if (!data.value?.by_category?.length) return 1
-  return Math.max(...data.value.by_category.map(c => parseFloat(c.total)))
+  const items = data.value?.by_category
+  if (!items?.length) return 1
+  return Math.max(...items.map(c => parseFloat(c.total)))
 })
 
 const maxVendorAmount = computed(() => {
-  if (!data.value?.by_vendor?.length) return 1
-  return Math.max(...data.value.by_vendor.map(v => parseFloat(v.total)))
+  const items = data.value?.by_vendor
+  if (!items?.length) return 1
+  return Math.max(...items.map(v => parseFloat(v.total)))
 })
 
 const maxMonthAmount = computed(() => {
-  if (!data.value?.by_month?.length) return 1
-  return Math.max(...data.value.by_month.map(m => parseFloat(m.total)))
+  const items = data.value?.by_month
+  if (!items?.length) return 1
+  return Math.max(...items.map(m => parseFloat(m.total)))
 })
 
-function formatAmount(val: string | number): string {
+function formatAmount(val: string | number | null | undefined): string {
+  if (val == null) return '0.00'
   const n = typeof val === 'string' ? parseFloat(val) : val
-  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return (isNaN(n) ? 0 : n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function barPercent(val: string, max: number): number {

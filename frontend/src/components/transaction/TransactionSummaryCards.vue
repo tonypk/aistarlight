@@ -94,7 +94,7 @@ function fmt(n: number): string {
 .card.exempt { border-left: 4px solid #f59e0b; }
 .card.zero-rated { border-left: 4px solid #10b981; }
 .card-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
-.card-value { font-size: 24px; font-weight: 700; color: #111827; }
+.card-value { font-size: 24px; font-weight: 700; color: var(--text-primary); }
 .card-sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
 
 .confidence-bar {

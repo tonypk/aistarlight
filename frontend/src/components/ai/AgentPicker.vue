@@ -54,7 +54,7 @@ const agentIcons: Record<string, string> = {
   padding: 6px 10px;
   border: 1px solid var(--border-default);
   border-radius: 6px;
-  background: white;
+  background: var(--bg-surface);
   cursor: pointer;
   font-size: 12px;
   white-space: nowrap;
