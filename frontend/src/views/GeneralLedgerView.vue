@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAccountingStore } from '../stores/accounting'
 import { glApi } from '../api/accounting'
 import type { LedgerEntry } from '../types/accounting'
 import { currencyLocale } from '@/utils/currency'
 
+const { t } = useI18n()
 const store = useAccountingStore()
 const asOfDate = ref(new Date().toISOString().slice(0, 10))
 const selectedAccount = ref<{ id: string; number: string; name: string } | null>(null)
@@ -53,24 +55,24 @@ function totalCredit() {
 <template>
   <div class="page">
     <div class="page-header">
-      <h1>General Ledger</h1>
+      <h1>{{ t('generalLedger.title') }}</h1>
     </div>
 
     <!-- Account Ledger Detail -->
     <div v-if="selectedAccount" class="ledger-panel">
       <div class="ledger-header">
         <h2>{{ selectedAccount.number }} - {{ selectedAccount.name }}</h2>
-        <button class="btn btn-secondary" @click="closeLedger">Back to Trial Balance</button>
+        <button class="btn btn-secondary" @click="closeLedger">{{ t('generalLedger.backToTB') }}</button>
       </div>
       <div class="ledger-filters">
-        <label>From <input type="date" v-model="ledgerFrom" class="input" /></label>
-        <label>To <input type="date" v-model="ledgerTo" class="input" /></label>
-        <button class="btn btn-primary" @click="viewLedger(selectedAccount.id, selectedAccount.number, selectedAccount.name)">Refresh</button>
+        <label>{{ t('generalLedger.from') }} <input type="date" v-model="ledgerFrom" class="input" /></label>
+        <label>{{ t('generalLedger.to') }} <input type="date" v-model="ledgerTo" class="input" /></label>
+        <button class="btn btn-primary" @click="viewLedger(selectedAccount.id, selectedAccount.number, selectedAccount.name)">{{ t('generalLedger.refresh') }}</button>
       </div>
-      <div v-if="ledgerLoading" class="loading">Loading ledger...</div>
+      <div v-if="ledgerLoading" class="loading">{{ t('generalLedger.loadingLedger') }}</div>
       <table v-else class="table">
         <thead>
-          <tr><th>Date</th><th>#</th><th>Description</th><th>Ref</th><th class="right">Debit</th><th class="right">Credit</th><th class="right">Balance</th></tr>
+          <tr><th>{{ t('generalLedger.thDate') }}</th><th>#</th><th>{{ t('generalLedger.thDescription') }}</th><th>{{ t('generalLedger.thRef') }}</th><th class="right">{{ t('generalLedger.thDebit') }}</th><th class="right">{{ t('generalLedger.thCredit') }}</th><th class="right">{{ t('generalLedger.thBalance') }}</th></tr>
         </thead>
         <tbody>
           <tr v-for="(entry, i) in ledgerEntries" :key="i">
@@ -84,21 +86,21 @@ function totalCredit() {
           </tr>
         </tbody>
       </table>
-      <div v-if="!ledgerLoading && ledgerEntries.length === 0" class="empty">No entries in this period.</div>
+      <div v-if="!ledgerLoading && ledgerEntries.length === 0" class="empty">{{ t('generalLedger.noEntries') }}</div>
     </div>
 
     <!-- Trial Balance -->
     <div v-else>
       <div class="filters">
-        <label>As of <input type="date" v-model="asOfDate" class="input" /></label>
-        <button class="btn btn-primary" @click="loadTrialBalance">Load</button>
+        <label>{{ t('generalLedger.asOf') }} <input type="date" v-model="asOfDate" class="input" /></label>
+        <button class="btn btn-primary" @click="loadTrialBalance">{{ t('generalLedger.load') }}</button>
       </div>
 
-      <div v-if="store.loading" class="loading">Loading trial balance...</div>
+      <div v-if="store.loading" class="loading">{{ t('generalLedger.loadingTB') }}</div>
 
       <table v-else class="table">
         <thead>
-          <tr><th>Code</th><th>Account</th><th>Type</th><th class="right">Debit</th><th class="right">Credit</th><th class="right">Balance</th></tr>
+          <tr><th>{{ t('generalLedger.thCode') }}</th><th>{{ t('generalLedger.thAccount') }}</th><th>{{ t('generalLedger.thType') }}</th><th class="right">{{ t('generalLedger.thDebit') }}</th><th class="right">{{ t('generalLedger.thCredit') }}</th><th class="right">{{ t('generalLedger.thBalance') }}</th></tr>
         </thead>
         <tbody>
           <tr v-for="row in store.trialBalance" :key="row.account_id" class="clickable" @click="viewLedger(row.account_id, row.account_number, row.account_name)">
@@ -112,7 +114,7 @@ function totalCredit() {
         </tbody>
         <tfoot v-if="store.trialBalance.length > 0">
           <tr class="totals">
-            <td colspan="3"><strong>Totals</strong></td>
+            <td colspan="3"><strong>{{ t('generalLedger.totals') }}</strong></td>
             <td class="right mono bold">{{ formatAmount(totalDebit().toString()) }}</td>
             <td class="right mono bold">{{ formatAmount(totalCredit().toString()) }}</td>
             <td></td>
@@ -121,7 +123,7 @@ function totalCredit() {
       </table>
 
       <div v-if="!store.loading && store.trialBalance.length === 0" class="empty">
-        No posted journal entries yet. Generate and post journal entries to see the trial balance.
+        {{ t('generalLedger.emptyState') }}
       </div>
     </div>
   </div>

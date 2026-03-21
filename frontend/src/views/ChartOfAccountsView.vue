@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAccountingStore } from '../stores/accounting'
 import { useAuthStore } from '@/stores/auth'
 
+const { t } = useI18n()
 const store = useAccountingStore()
 const auth = useAuthStore()
 const filterType = ref('')
@@ -29,11 +31,20 @@ const filteredAccounts = computed(() => {
 
 const accountTypes = ['asset', 'liability', 'equity', 'revenue', 'expense']
 
+const groupLabel = (prefix: string): string => {
+  if (prefix === '1') return t('coa.groupAssets')
+  if (prefix === '2') return t('coa.groupLiabilities')
+  if (prefix === '3') return t('coa.groupEquity')
+  if (prefix === '4') return t('coa.groupRevenue')
+  if (prefix === '5') return t('coa.groupCostOfSales')
+  return t('coa.groupExpenses')
+}
+
 const groupedAccounts = computed(() => {
   const groups: Record<string, typeof filteredAccounts.value> = {}
   for (const acct of filteredAccounts.value) {
     const prefix = acct.account_number.charAt(0)
-    const label = prefix === '1' ? 'Assets' : prefix === '2' ? 'Liabilities' : prefix === '3' ? 'Equity' : prefix === '4' ? 'Revenue' : prefix === '5' ? 'Cost of Sales' : 'Expenses'
+    const label = groupLabel(prefix)
     if (!groups[label]) groups[label] = []
     groups[label].push(acct)
   }
@@ -44,26 +55,26 @@ const groupedAccounts = computed(() => {
 <template>
   <div class="page">
     <div class="page-header">
-      <h1>Chart of Accounts</h1>
+      <h1>{{ t('coa.title') }}</h1>
       <div class="actions">
         <button class="btn btn-secondary" @click="store.seedAccounts()" :disabled="store.loading" data-testid="coa-seed-btn">
-          {{ auth.jurisdiction === 'SG' ? 'Seed SG Standard COA' : 'Seed PH Standard COA' }}
+          {{ auth.jurisdiction === 'SG' ? t('coa.seedSG') : t('coa.seedPH') }}
         </button>
       </div>
     </div>
 
     <div class="filters">
-      <input v-model="search" placeholder="Search by code or name..." class="input" />
+      <input v-model="search" :placeholder="t('coa.searchPlaceholder')" class="input" />
       <select v-model="filterType" class="select">
-        <option value="">All Types</option>
-        <option v-for="t in accountTypes" :key="t" :value="t">{{ t }}</option>
+        <option value="">{{ t('coa.allTypes') }}</option>
+        <option v-for="tp in accountTypes" :key="tp" :value="tp">{{ tp }}</option>
       </select>
     </div>
 
-    <div v-if="store.loading" class="loading">Loading accounts...</div>
+    <div v-if="store.loading" class="loading">{{ t('coa.loadingMsg') }}</div>
 
     <div v-else-if="store.accounts.length === 0" class="empty">
-      <p>No accounts found. Seed the {{ auth.jurisdiction === 'SG' ? 'Singapore' : 'Philippine' }} Standard Chart of Accounts to get started.</p>
+      <p>{{ auth.jurisdiction === 'SG' ? t('coa.emptyStateSG') : t('coa.emptyStatePH') }}</p>
     </div>
 
     <div v-else class="account-groups" data-testid="coa-groups">
@@ -72,11 +83,11 @@ const groupedAccounts = computed(() => {
         <table class="table">
           <thead>
             <tr>
-              <th>Code</th>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Normal</th>
-              <th>Description</th>
+              <th>{{ t('coa.thCode') }}</th>
+              <th>{{ t('coa.thName') }}</th>
+              <th>{{ t('coa.thType') }}</th>
+              <th>{{ t('coa.thNormal') }}</th>
+              <th>{{ t('coa.thDescription') }}</th>
             </tr>
           </thead>
           <tbody>

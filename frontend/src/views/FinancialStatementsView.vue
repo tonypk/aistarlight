@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAccountingStore } from '../stores/accounting'
 import { currencyLocale } from '@/utils/currency'
 
+const { t } = useI18n()
 const store = useAccountingStore()
 const activeTab = ref<'balance-sheet' | 'income-statement' | 'cash-flow'>('balance-sheet')
 
@@ -93,40 +95,40 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
 <template>
   <div class="page">
     <div class="page-header">
-      <h1>Financial Statements</h1>
+      <h1>{{ t('statements.title') }}</h1>
       <label class="compare-toggle">
         <input type="checkbox" v-model="compareEnabled" />
-        Compare Period
+        {{ t('statements.comparePeriod') }}
       </label>
     </div>
 
     <div class="tabs">
-      <button :class="{ active: activeTab === 'balance-sheet' }" @click="activeTab = 'balance-sheet'">Balance Sheet</button>
-      <button :class="{ active: activeTab === 'income-statement' }" @click="activeTab = 'income-statement'">Income Statement</button>
-      <button :class="{ active: activeTab === 'cash-flow' }" @click="activeTab = 'cash-flow'">Cash Flow</button>
+      <button :class="{ active: activeTab === 'balance-sheet' }" @click="activeTab = 'balance-sheet'">{{ t('statements.balanceSheet') }}</button>
+      <button :class="{ active: activeTab === 'income-statement' }" @click="activeTab = 'income-statement'">{{ t('statements.incomeStatement') }}</button>
+      <button :class="{ active: activeTab === 'cash-flow' }" @click="activeTab = 'cash-flow'">{{ t('statements.cashFlow') }}</button>
     </div>
 
     <!-- Balance Sheet -->
     <div v-if="activeTab === 'balance-sheet'">
       <div class="filters">
-        <label>As of <input type="date" v-model="bsDate" class="input" /></label>
+        <label>{{ t('statements.asOf') }} <input type="date" v-model="bsDate" class="input" /></label>
         <template v-if="compareEnabled">
-          <label>Prior <input type="date" v-model="bsCompareDate" class="input" /></label>
+          <label>{{ t('statements.prior') }} <input type="date" v-model="bsCompareDate" class="input" /></label>
         </template>
-        <button class="btn btn-primary" @click="loadBS" :disabled="store.loading">Generate</button>
+        <button class="btn btn-primary" @click="loadBS" :disabled="store.loading">{{ t('statements.generate') }}</button>
       </div>
 
-      <div v-if="store.loading" class="loading">Generating balance sheet...</div>
+      <div v-if="store.loading" class="loading">{{ t('statements.generatingBS') }}</div>
 
       <div v-else-if="store.balanceSheet" class="statement">
-        <h2 class="statement-title">Balance Sheet as of {{ store.balanceSheet.as_of_date?.slice(0, 10) }}</h2>
+        <h2 class="statement-title">{{ t('statements.bsAsOf', { date: store.balanceSheet.as_of_date?.slice(0, 10) }) }}</h2>
 
         <div class="statement-grid">
           <div class="section">
-            <h3>Assets</h3>
+            <h3>{{ t('statements.assets') }}</h3>
             <table class="stmt-table">
               <thead v-if="isComparative">
-                <tr><th></th><th class="right">Current</th><th class="right">Prior</th><th class="right">Change</th></tr>
+                <tr><th></th><th class="right">{{ t('statements.current') }}</th><th class="right">{{ t('statements.priorCol') }}</th><th class="right">{{ t('statements.change') }}</th></tr>
               </thead>
               <tbody>
                 <template v-for="grp in store.balanceSheet.assets" :key="grp.group_name">
@@ -140,7 +142,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
                     </template>
                   </tr>
                   <tr class="subtotal">
-                    <td>Subtotal {{ grp.group_name }}</td>
+                    <td>{{ t('statements.subtotal', { name: grp.group_name }) }}</td>
                     <td class="right mono bold">{{ fmt(grp.total) }}</td>
                     <template v-if="isComparative">
                       <td class="right mono muted">{{ fmt(grp.prior_total) }}</td>
@@ -151,7 +153,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
               </tbody>
               <tfoot>
                 <tr class="total-row">
-                  <td><strong>Total Assets</strong></td>
+                  <td><strong>{{ t('statements.totalAssets') }}</strong></td>
                   <td class="right mono bold">{{ fmt(store.balanceSheet.total_assets) }}</td>
                   <template v-if="isComparative">
                     <td class="right mono muted">{{ fmt(store.balanceSheet.prior_total_assets) }}</td>
@@ -163,10 +165,10 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
           </div>
 
           <div class="section">
-            <h3>Liabilities</h3>
+            <h3>{{ t('statements.liabilities') }}</h3>
             <table class="stmt-table">
               <thead v-if="isComparative">
-                <tr><th></th><th class="right">Current</th><th class="right">Prior</th><th class="right">Change</th></tr>
+                <tr><th></th><th class="right">{{ t('statements.current') }}</th><th class="right">{{ t('statements.priorCol') }}</th><th class="right">{{ t('statements.change') }}</th></tr>
               </thead>
               <tbody>
                 <template v-for="grp in store.balanceSheet.liabilities" :key="grp.group_name">
@@ -183,7 +185,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
               </tbody>
               <tfoot>
                 <tr class="total-row">
-                  <td><strong>Total Liabilities</strong></td>
+                  <td><strong>{{ t('statements.totalLiabilities') }}</strong></td>
                   <td class="right mono bold">{{ fmt(store.balanceSheet.total_liabilities) }}</td>
                   <template v-if="isComparative">
                     <td class="right mono muted">{{ fmt(store.balanceSheet.prior_total_liab) }}</td>
@@ -193,7 +195,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
               </tfoot>
             </table>
 
-            <h3>Equity</h3>
+            <h3>{{ t('statements.equity') }}</h3>
             <table class="stmt-table">
               <tbody>
                 <template v-for="grp in store.balanceSheet.equity" :key="grp.group_name">
@@ -207,7 +209,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
                   </tr>
                 </template>
                 <tr>
-                  <td>Retained Earnings (Current Period)</td>
+                  <td>{{ t('statements.retainedEarnings') }}</td>
                   <td class="right mono">{{ fmt(store.balanceSheet.retained_earnings) }}</td>
                   <template v-if="isComparative">
                     <td class="right mono muted">{{ fmt(store.balanceSheet.prior_retained_earn) }}</td>
@@ -216,10 +218,10 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
                 </tr>
               </tbody>
               <tfoot>
-                <tr class="total-row"><td><strong>Total Equity</strong></td><td class="right mono bold">{{ fmt(store.balanceSheet.total_equity) }}</td>
+                <tr class="total-row"><td><strong>{{ t('statements.totalEquity') }}</strong></td><td class="right mono bold">{{ fmt(store.balanceSheet.total_equity) }}</td>
                   <template v-if="isComparative"><td class="right mono muted">{{ fmt(store.balanceSheet.prior_total_equity) }}</td><td></td></template>
                 </tr>
-                <tr class="grand-total"><td><strong>Total Liabilities + Equity</strong></td><td class="right mono bold">{{ fmt((num(store.balanceSheet.total_liabilities) + num(store.balanceSheet.total_equity)).toString()) }}</td>
+                <tr class="grand-total"><td><strong>{{ t('statements.totalLiabilitiesEquity') }}</strong></td><td class="right mono bold">{{ fmt((num(store.balanceSheet.total_liabilities) + num(store.balanceSheet.total_equity)).toString()) }}</td>
                   <template v-if="isComparative"><td></td><td></td></template>
                 </tr>
               </tfoot>
@@ -228,7 +230,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
         </div>
 
         <div class="balance-check" :class="{ balanced: store.balanceSheet.is_balanced, unbalanced: !store.balanceSheet.is_balanced }">
-          {{ store.balanceSheet.is_balanced ? 'Balanced' : 'UNBALANCED - Assets do not equal Liabilities + Equity' }}
+          {{ store.balanceSheet.is_balanced ? t('statements.balanced') : t('statements.unbalanced') }}
         </div>
       </div>
     </div>
@@ -236,26 +238,26 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
     <!-- Income Statement -->
     <div v-if="activeTab === 'income-statement'">
       <div class="filters">
-        <label>From <input type="date" v-model="isFrom" class="input" /></label>
-        <label>To <input type="date" v-model="isTo" class="input" /></label>
+        <label>{{ t('statements.from') }} <input type="date" v-model="isFrom" class="input" /></label>
+        <label>{{ t('statements.to') }} <input type="date" v-model="isTo" class="input" /></label>
         <template v-if="compareEnabled">
-          <label>Prior From <input type="date" v-model="isPriorFrom" class="input" /></label>
-          <label>Prior To <input type="date" v-model="isPriorTo" class="input" /></label>
+          <label>{{ t('statements.priorFrom') }} <input type="date" v-model="isPriorFrom" class="input" /></label>
+          <label>{{ t('statements.priorTo') }} <input type="date" v-model="isPriorTo" class="input" /></label>
         </template>
-        <button class="btn btn-primary" @click="loadIS" :disabled="store.loading">Generate</button>
+        <button class="btn btn-primary" @click="loadIS" :disabled="store.loading">{{ t('statements.generate') }}</button>
       </div>
 
-      <div v-if="store.loading" class="loading">Generating income statement...</div>
+      <div v-if="store.loading" class="loading">{{ t('statements.generatingIS') }}</div>
 
       <div v-else-if="store.incomeStatement" class="statement">
-        <h2 class="statement-title">Income Statement: {{ store.incomeStatement.period_start?.slice(0, 10) }} to {{ store.incomeStatement.period_end?.slice(0, 10) }}</h2>
+        <h2 class="statement-title">{{ t('statements.isTitle', { from: store.incomeStatement.period_start?.slice(0, 10), to: store.incomeStatement.period_end?.slice(0, 10) }) }}</h2>
 
         <table class="stmt-table wide">
           <thead v-if="isComparative">
-            <tr><th></th><th class="right">Current</th><th class="right">Prior</th><th class="right">Change</th></tr>
+            <tr><th></th><th class="right">{{ t('statements.current') }}</th><th class="right">{{ t('statements.priorCol') }}</th><th class="right">{{ t('statements.change') }}</th></tr>
           </thead>
           <tbody>
-            <tr class="section-header"><td :colspan="isComparative ? 4 : 2"><strong>Revenue</strong></td></tr>
+            <tr class="section-header"><td :colspan="isComparative ? 4 : 2"><strong>{{ t('statements.revenue') }}</strong></td></tr>
             <tr v-for="r in store.incomeStatement.revenue" :key="r.account_id">
               <td class="indent">{{ r.account_code }} {{ r.account_name }}</td>
               <td class="right mono">{{ fmt(r.balance) }}</td>
@@ -265,7 +267,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
               </template>
             </tr>
             <tr class="subtotal">
-              <td>Total Revenue</td>
+              <td>{{ t('statements.totalRevenue') }}</td>
               <td class="right mono bold">{{ fmt(store.incomeStatement.total_revenue) }}</td>
               <template v-if="isComparative">
                 <td class="right mono muted">{{ fmt(store.incomeStatement.prior_revenue) }}</td>
@@ -273,7 +275,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
               </template>
             </tr>
 
-            <tr class="section-header"><td :colspan="isComparative ? 4 : 2"><strong>Cost of Sales</strong></td></tr>
+            <tr class="section-header"><td :colspan="isComparative ? 4 : 2"><strong>{{ t('statements.costOfSales') }}</strong></td></tr>
             <tr v-for="c in store.incomeStatement.cogs" :key="c.account_id">
               <td class="indent">{{ c.account_code }} {{ c.account_name }}</td>
               <td class="right mono">{{ fmt(c.balance) }}</td>
@@ -283,7 +285,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
               </template>
             </tr>
             <tr class="subtotal">
-              <td>Total Cost of Sales</td>
+              <td>{{ t('statements.totalCostOfSales') }}</td>
               <td class="right mono bold">{{ fmt(store.incomeStatement.total_cogs) }}</td>
               <template v-if="isComparative">
                 <td class="right mono muted">{{ fmt(store.incomeStatement.prior_cogs) }}</td>
@@ -291,7 +293,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
               </template>
             </tr>
             <tr class="highlight">
-              <td><strong>Gross Profit</strong></td>
+              <td><strong>{{ t('statements.grossProfit') }}</strong></td>
               <td class="right mono bold">{{ fmt(store.incomeStatement.gross_profit) }}</td>
               <template v-if="isComparative">
                 <td class="right mono muted">{{ fmt(store.incomeStatement.prior_gross_profit) }}</td>
@@ -299,7 +301,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
               </template>
             </tr>
 
-            <tr class="section-header"><td :colspan="isComparative ? 4 : 2"><strong>Operating Expenses</strong></td></tr>
+            <tr class="section-header"><td :colspan="isComparative ? 4 : 2"><strong>{{ t('statements.operatingExpenses') }}</strong></td></tr>
             <tr v-for="e in store.incomeStatement.expenses" :key="e.account_id">
               <td class="indent">{{ e.account_code }} {{ e.account_name }}</td>
               <td class="right mono">{{ fmt(e.balance) }}</td>
@@ -309,7 +311,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
               </template>
             </tr>
             <tr class="subtotal">
-              <td>Total Operating Expenses</td>
+              <td>{{ t('statements.totalOperatingExpenses') }}</td>
               <td class="right mono bold">{{ fmt(store.incomeStatement.total_expenses) }}</td>
               <template v-if="isComparative">
                 <td class="right mono muted">{{ fmt(store.incomeStatement.prior_expenses) }}</td>
@@ -319,7 +321,7 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
           </tbody>
           <tfoot>
             <tr class="grand-total">
-              <td><strong>Net Income</strong></td>
+              <td><strong>{{ t('statements.netIncome') }}</strong></td>
               <td class="right mono bold">{{ fmt(store.incomeStatement.net_income) }}</td>
               <template v-if="isComparative">
                 <td class="right mono muted">{{ fmt(store.incomeStatement.prior_net_income) }}</td>
@@ -334,25 +336,25 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
     <!-- Cash Flow Statement -->
     <div v-if="activeTab === 'cash-flow'">
       <div class="filters">
-        <label>From <input type="date" v-model="cfFrom" class="input" /></label>
-        <label>To <input type="date" v-model="cfTo" class="input" /></label>
-        <button class="btn btn-primary" @click="loadCF" :disabled="store.loading">Generate</button>
+        <label>{{ t('statements.from') }} <input type="date" v-model="cfFrom" class="input" /></label>
+        <label>{{ t('statements.to') }} <input type="date" v-model="cfTo" class="input" /></label>
+        <button class="btn btn-primary" @click="loadCF" :disabled="store.loading">{{ t('statements.generate') }}</button>
       </div>
 
-      <div v-if="store.loading" class="loading">Generating cash flow statement...</div>
+      <div v-if="store.loading" class="loading">{{ t('statements.generatingCF') }}</div>
 
       <div v-else-if="store.cashFlowStatement" class="statement">
-        <h2 class="statement-title">Cash Flow Statement: {{ store.cashFlowStatement.period_start?.slice(0, 10) }} to {{ store.cashFlowStatement.period_end?.slice(0, 10) }}</h2>
+        <h2 class="statement-title">{{ t('statements.cfTitle', { from: store.cashFlowStatement.period_start?.slice(0, 10), to: store.cashFlowStatement.period_end?.slice(0, 10) }) }}</h2>
 
         <table class="stmt-table wide">
           <tbody>
-            <tr class="section-header"><td colspan="2"><strong>Operating Activities</strong></td></tr>
+            <tr class="section-header"><td colspan="2"><strong>{{ t('statements.operatingActivities') }}</strong></td></tr>
             <tr>
-              <td class="indent">Net Income</td>
+              <td class="indent">{{ t('statements.netIncome') }}</td>
               <td class="right mono">{{ fmt(store.cashFlowStatement.net_income) }}</td>
             </tr>
             <tr v-if="num(store.cashFlowStatement.depreciation_amort) !== 0">
-              <td class="indent">Depreciation & Amortization</td>
+              <td class="indent">{{ t('statements.depreciationAmort') }}</td>
               <td class="right mono">{{ fmt(store.cashFlowStatement.depreciation_amort) }}</td>
             </tr>
             <tr v-for="wc in store.cashFlowStatement.working_capital_changes" :key="wc.account_id">
@@ -360,47 +362,47 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
               <td class="right mono">{{ fmt(wc.balance) }}</td>
             </tr>
             <tr class="subtotal">
-              <td><strong>Net Cash from Operations</strong></td>
+              <td><strong>{{ t('statements.netCashOperations') }}</strong></td>
               <td class="right mono bold">{{ fmt(store.cashFlowStatement.operating_total) }}</td>
             </tr>
 
-            <tr class="section-header"><td colspan="2"><strong>Investing Activities</strong></td></tr>
+            <tr class="section-header"><td colspan="2"><strong>{{ t('statements.investingActivities') }}</strong></td></tr>
             <tr v-for="inv in store.cashFlowStatement.investing_items" :key="inv.account_id">
               <td class="indent">{{ inv.account_name }}</td>
               <td class="right mono">{{ fmt(inv.balance) }}</td>
             </tr>
             <tr v-if="!store.cashFlowStatement.investing_items?.length" class="empty-row">
-              <td class="indent muted" colspan="2">No investing activities</td>
+              <td class="indent muted" colspan="2">{{ t('statements.noInvesting') }}</td>
             </tr>
             <tr class="subtotal">
-              <td><strong>Net Cash from Investing</strong></td>
+              <td><strong>{{ t('statements.netCashInvesting') }}</strong></td>
               <td class="right mono bold">{{ fmt(store.cashFlowStatement.investing_total) }}</td>
             </tr>
 
-            <tr class="section-header"><td colspan="2"><strong>Financing Activities</strong></td></tr>
+            <tr class="section-header"><td colspan="2"><strong>{{ t('statements.financingActivities') }}</strong></td></tr>
             <tr v-for="fin in store.cashFlowStatement.financing_items" :key="fin.account_id">
               <td class="indent">{{ fin.account_name }}</td>
               <td class="right mono">{{ fmt(fin.balance) }}</td>
             </tr>
             <tr v-if="!store.cashFlowStatement.financing_items?.length" class="empty-row">
-              <td class="indent muted" colspan="2">No financing activities</td>
+              <td class="indent muted" colspan="2">{{ t('statements.noFinancing') }}</td>
             </tr>
             <tr class="subtotal">
-              <td><strong>Net Cash from Financing</strong></td>
+              <td><strong>{{ t('statements.netCashFinancing') }}</strong></td>
               <td class="right mono bold">{{ fmt(store.cashFlowStatement.financing_total) }}</td>
             </tr>
           </tbody>
           <tfoot>
             <tr class="grand-total">
-              <td><strong>Net Change in Cash</strong></td>
+              <td><strong>{{ t('statements.netChangeCash') }}</strong></td>
               <td class="right mono bold" :class="{ positive: num(store.cashFlowStatement.net_change) > 0, negative: num(store.cashFlowStatement.net_change) < 0 }">{{ fmt(store.cashFlowStatement.net_change) }}</td>
             </tr>
             <tr>
-              <td>Beginning Cash</td>
+              <td>{{ t('statements.beginningCash') }}</td>
               <td class="right mono">{{ fmt(store.cashFlowStatement.beginning_cash) }}</td>
             </tr>
             <tr class="total-row">
-              <td><strong>Ending Cash</strong></td>
+              <td><strong>{{ t('statements.endingCash') }}</strong></td>
               <td class="right mono bold">{{ fmt(store.cashFlowStatement.ending_cash) }}</td>
             </tr>
           </tfoot>
@@ -410,37 +412,37 @@ const isComparative = computed(() => !!store.balanceSheet?.prior_as_of_date || !
 
     <!-- Financial Ratios Panel -->
     <div v-if="ratios && (store.balanceSheet || store.incomeStatement)" class="ratios-panel">
-      <h3 class="section-title">Key Financial Ratios</h3>
+      <h3 class="section-title">{{ t('statements.keyRatios') }}</h3>
       <div class="ratios-grid">
         <div class="ratio-card">
-          <div class="ratio-label">Current Ratio</div>
+          <div class="ratio-label">{{ t('statements.currentRatio') }}</div>
           <div class="ratio-value">{{ ratios.currentRatio }}</div>
-          <div class="ratio-desc">Current Assets / Current Liabilities</div>
+          <div class="ratio-desc">{{ t('statements.currentRatioDesc') }}</div>
         </div>
         <div class="ratio-card">
-          <div class="ratio-label">Debt to Equity</div>
+          <div class="ratio-label">{{ t('statements.debtToEquity') }}</div>
           <div class="ratio-value">{{ ratios.debtToEquity }}</div>
-          <div class="ratio-desc">Total Liabilities / Total Equity</div>
+          <div class="ratio-desc">{{ t('statements.debtToEquityDesc') }}</div>
         </div>
         <div class="ratio-card">
-          <div class="ratio-label">Gross Margin</div>
+          <div class="ratio-label">{{ t('statements.grossMargin') }}</div>
           <div class="ratio-value">{{ ratios.grossMargin }}</div>
-          <div class="ratio-desc">Gross Profit / Revenue</div>
+          <div class="ratio-desc">{{ t('statements.grossMarginDesc') }}</div>
         </div>
         <div class="ratio-card">
-          <div class="ratio-label">Net Margin</div>
+          <div class="ratio-label">{{ t('statements.netMargin') }}</div>
           <div class="ratio-value">{{ ratios.netMargin }}</div>
-          <div class="ratio-desc">Net Income / Revenue</div>
+          <div class="ratio-desc">{{ t('statements.netMarginDesc') }}</div>
         </div>
         <div class="ratio-card">
-          <div class="ratio-label">ROA</div>
+          <div class="ratio-label">{{ t('statements.roa') }}</div>
           <div class="ratio-value">{{ ratios.roa }}</div>
-          <div class="ratio-desc">Net Income / Total Assets</div>
+          <div class="ratio-desc">{{ t('statements.roaDesc') }}</div>
         </div>
         <div class="ratio-card">
-          <div class="ratio-label">ROE</div>
+          <div class="ratio-label">{{ t('statements.roe') }}</div>
           <div class="ratio-value">{{ ratios.roe }}</div>
-          <div class="ratio-desc">Net Income / Total Equity</div>
+          <div class="ratio-desc">{{ t('statements.roeDesc') }}</div>
         </div>
       </div>
     </div>

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useAccountingStore } from '../stores/accounting'
 import { currencyLocale } from '@/utils/currency'
 import InlineAIHint from '../components/ai/InlineAIHint.vue'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const store = useAccountingStore()
@@ -46,7 +48,7 @@ async function postEntry(id: string) {
 }
 
 async function reverseEntry(id: string) {
-  if (!confirm('Reverse this journal entry?')) return
+  if (!confirm(t('journal.reverseConfirm'))) return
   await store.reverseJournalEntry(id)
   if (selectedEntry.value === id) {
     store.fetchJournalEntry(id)
@@ -68,42 +70,42 @@ const statusColors: Record<string, string> = {
 <template>
   <div class="page">
     <div class="page-header">
-      <h1>Journal Entries</h1>
-      <InlineAIHint agent="journal" message="AI can help create and explain journal entries" action-label="Ask Journal Agent" />
+      <h1>{{ t('journal.title') }}</h1>
+      <InlineAIHint agent="journal" :message="t('journal.aiHint')" :action-label="t('journal.askAgent')" />
     </div>
 
     <div class="filters">
       <select v-model="statusFilter" @change="loadEntries" class="select">
-        <option value="">All Status</option>
-        <option value="draft">Draft</option>
-        <option value="posted">Posted</option>
-        <option value="reversed">Reversed</option>
+        <option value="">{{ t('journal.allStatus') }}</option>
+        <option value="draft">{{ t('journal.draft') }}</option>
+        <option value="posted">{{ t('journal.posted') }}</option>
+        <option value="reversed">{{ t('journal.reversed') }}</option>
       </select>
-      <span class="count">{{ store.journalTotal }} entries</span>
+      <span class="count">{{ t('journal.entryCount', { count: store.journalTotal }) }}</span>
     </div>
 
     <!-- Detail Panel -->
     <div v-if="store.currentJournal" class="detail-panel">
       <div class="detail-header">
-        <h2>JE #{{ store.currentJournal.entry_number }}</h2>
+        <h2>{{ t('journal.jeNumber', { num: store.currentJournal.entry_number }) }}</h2>
         <div class="detail-actions">
-          <button v-if="store.currentJournal.status === 'draft'" class="btn btn-primary" @click="postEntry(store.currentJournal.id)">Post</button>
-          <button v-if="store.currentJournal.status === 'posted'" class="btn btn-danger" @click="reverseEntry(store.currentJournal.id)">Reverse</button>
-          <button class="btn btn-secondary" @click="closeDetail">Close</button>
+          <button v-if="store.currentJournal.status === 'draft'" class="btn btn-primary" @click="postEntry(store.currentJournal.id)">{{ t('journal.post') }}</button>
+          <button v-if="store.currentJournal.status === 'posted'" class="btn btn-danger" @click="reverseEntry(store.currentJournal.id)">{{ t('journal.reverse') }}</button>
+          <button class="btn btn-secondary" @click="closeDetail">{{ t('journal.close') }}</button>
         </div>
       </div>
       <div class="detail-meta">
-        <span>Date: {{ store.currentJournal.entry_date?.slice(0, 10) }}</span>
-        <span>Status: <span class="status" :style="{ color: statusColors[store.currentJournal.status] }">{{ store.currentJournal.status }}</span></span>
-        <span v-if="store.currentJournal.reference">Ref: {{ store.currentJournal.reference }}</span>
+        <span>{{ t('journal.date') }}: {{ store.currentJournal.entry_date?.slice(0, 10) }}</span>
+        <span>{{ t('journal.status') }}: <span class="status" :style="{ color: statusColors[store.currentJournal.status] }">{{ store.currentJournal.status }}</span></span>
+        <span v-if="store.currentJournal.reference">{{ t('journal.ref') }}: {{ store.currentJournal.reference }}</span>
         <span v-if="store.currentJournal.description">{{ store.currentJournal.description }}</span>
         <span v-if="store.currentJournal.source_type === 'transaction' && store.currentJournal.source_id">
-          Source: <a class="source-link" @click="router.push({ path: '/transactions', query: { highlight: store.currentJournal.source_id } })">Transaction {{ store.currentJournal.source_id.slice(0, 8) }}...</a>
+          {{ t('journal.source') }}: <a class="source-link" @click="router.push({ path: '/transactions', query: { highlight: store.currentJournal.source_id } })">{{ t('journal.transaction') }} {{ store.currentJournal.source_id.slice(0, 8) }}...</a>
         </span>
       </div>
       <table class="table lines-table">
         <thead>
-          <tr><th>Account</th><th>Description</th><th class="right">Debit</th><th class="right">Credit</th></tr>
+          <tr><th>{{ t('journal.thAccount') }}</th><th>{{ t('journal.thDescription') }}</th><th class="right">{{ t('journal.thDebit') }}</th><th class="right">{{ t('journal.thCredit') }}</th></tr>
         </thead>
         <tbody>
           <tr v-for="line in store.currentJournal.lines" :key="line.id">
@@ -117,16 +119,16 @@ const statusColors: Record<string, string> = {
     </div>
 
     <!-- Entry List -->
-    <div v-if="store.loading && !store.currentJournal" class="loading">Loading...</div>
+    <div v-if="store.loading && !store.currentJournal" class="loading">{{ t('common.loading') }}</div>
     <table v-else class="table">
       <thead>
         <tr>
           <th>#</th>
-          <th>Date</th>
-          <th>Description</th>
-          <th>Source</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th>{{ t('journal.thDate') }}</th>
+          <th>{{ t('journal.thDescription') }}</th>
+          <th>{{ t('journal.thSource') }}</th>
+          <th>{{ t('journal.thStatus') }}</th>
+          <th>{{ t('journal.thActions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -140,23 +142,23 @@ const statusColors: Record<string, string> = {
               class="source-link"
               @click.stop="router.push({ path: '/transactions', query: { highlight: je.source_id } })"
             >{{ je.source_type }}</a>
-            <span v-else>{{ je.source_type || 'manual' }}</span>
+            <span v-else>{{ je.source_type || t('journal.manual') }}</span>
           </td>
           <td>
             <span class="status-badge" :class="'status-' + je.status">{{ je.status }}</span>
           </td>
           <td class="actions" @click.stop>
-            <button v-if="je.status === 'draft'" class="btn-sm btn-primary" @click="postEntry(je.id)">Post</button>
-            <button v-if="je.status === 'posted'" class="btn-sm btn-danger" @click="reverseEntry(je.id)">Reverse</button>
+            <button v-if="je.status === 'draft'" class="btn-sm btn-primary" @click="postEntry(je.id)">{{ t('journal.post') }}</button>
+            <button v-if="je.status === 'posted'" class="btn-sm btn-danger" @click="reverseEntry(je.id)">{{ t('journal.reverse') }}</button>
           </td>
         </tr>
       </tbody>
     </table>
 
     <div class="pagination" v-if="store.journalTotal > 20">
-      <button :disabled="page <= 1" @click="page--; loadEntries()">Prev</button>
-      <span>Page {{ page }}</span>
-      <button :disabled="store.journalEntries.length < 20" @click="page++; loadEntries()">Next</button>
+      <button :disabled="page <= 1" @click="page--; loadEntries()">{{ t('common.prev') }}</button>
+      <span>{{ t('journal.pageNum', { page }) }}</span>
+      <button :disabled="store.journalEntries.length < 20" @click="page++; loadEntries()">{{ t('common.next') }}</button>
     </div>
   </div>
 </template>
