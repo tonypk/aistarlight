@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useWithholdingStore } from '../stores/withholding'
 import { useAuthStore } from '../stores/auth'
 import VendorTable from '../components/vendor/VendorTable.vue'
 import VendorForm from '../components/vendor/VendorForm.vue'
 import type { Vendor, VendorCreateData } from '../types/withholding'
 
+const { t } = useI18n()
 const store = useWithholdingStore()
 const auth = useAuthStore()
 const isSG = computed(() => auth.jurisdiction === 'SG')
@@ -44,7 +46,7 @@ async function handleSubmit(data: VendorCreateData) {
 }
 
 async function handleDelete(id: string) {
-  if (!confirm('Delete this vendor?')) return
+  if (!confirm(t('vendor.deleteConfirm'))) return
   try {
     await store.deleteVendor(id)
   } catch (e: any) {
@@ -60,8 +62,8 @@ async function handleSearch() {
 <template>
   <div class="vendor-view">
     <div class="view-header">
-      <h2>Vendor Management</h2>
-      <button class="btn primary" @click="openCreate">Add Vendor</button>
+      <h2>{{ t('vendor.title') }}</h2>
+      <button class="btn primary" @click="openCreate">{{ t('vendor.addVendor') }}</button>
     </div>
 
     <p v-if="error" class="error">{{ error }}</p>
@@ -69,7 +71,7 @@ async function handleSearch() {
     <div class="search-bar">
       <input
         v-model="searchQuery"
-        :placeholder="isSG ? 'Search by name or UEN...' : 'Search by name or TIN...'"
+        :placeholder="isSG ? t('vendor.searchPlaceholderSG') : t('vendor.searchPlaceholderPH')"
         @keyup.enter="handleSearch"
       />
       <button class="btn" @click="handleSearch">Search</button>
@@ -78,7 +80,7 @@ async function handleSearch() {
     <!-- Form Modal -->
     <div v-if="showForm" class="modal-overlay" @click.self="showForm = false">
       <div class="modal">
-        <h3>{{ editingVendor ? 'Edit Vendor' : 'New Vendor' }}</h3>
+        <h3>{{ editingVendor ? t('vendor.editVendor') : t('vendor.newVendor') }}</h3>
         <VendorForm
           :vendor="editingVendor"
           :jurisdiction="auth.jurisdiction"
@@ -88,7 +90,7 @@ async function handleSearch() {
       </div>
     </div>
 
-    <div v-if="store.loading" class="loading-msg">Loading vendors...</div>
+    <div v-if="store.loading" class="loading-msg">{{ t('vendor.loadingMsg') }}</div>
     <VendorTable
       v-else
       :vendors="store.vendors"

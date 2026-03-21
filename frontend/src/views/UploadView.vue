@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { dataApi } from '../api/data'
 import { parseFileInBrowser, estimateJsonSize } from '../utils/fileParser'
 import FileUploader from '../components/upload/FileUploader.vue'
 import { useUploadStore } from '../stores/upload'
 import { useAuthStore } from '../stores/auth'
 import { getReportTypes } from '../config/targetFieldsByReportType'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const uploadStore = useUploadStore()
@@ -29,13 +32,13 @@ const RAW_UPLOAD_THRESHOLD = 10 * 1024 * 1024 // 10MB
 const errorHint = computed(() => {
   switch (errorCode.value) {
     case 'size':
-      return 'Try removing unnecessary columns or splitting into multiple sheets.'
+      return t('upload.errorHintSize')
     case 'format':
-      return 'Save your file as .xlsx or .csv and try again.'
+      return t('upload.errorHintFormat')
     case 'parse':
-      return 'Make sure the file is not corrupted and the first row contains column headers.'
+      return t('upload.errorHintParse')
     case 'network':
-      return 'Check your internet connection and try again.'
+      return t('upload.errorHintNetwork')
     default:
       return ''
   }
@@ -124,19 +127,19 @@ async function handleFileUploaded(file: File) {
 }
 
 async function handleSmallFile(file: File) {
-  progressStage.value = 'Uploading file...'
+  progressStage.value = t('upload.uploadingFile')
   const res = await dataApi.upload(file, (progress) => {
     uploadProgress.value = Math.round(progress * 80)
-    if (progress > 0.5) progressStage.value = 'Parsing on server...'
+    if (progress > 0.5) progressStage.value = t('upload.parsingOnServer')
   })
   uploadProgress.value = 100
-  progressStage.value = 'Done!'
+  progressStage.value = t('upload.done')
   uploadStore.setUploadResult(res.data.data)
 }
 
 async function handleLargeFile(file: File) {
   // Step 1: Parse in browser (0-60%)
-  progressStage.value = `Reading file (${formatSize(file.size)})...`
+  progressStage.value = t('upload.readingFile', { size: formatSize(file.size) })
   uploadProgress.value = 5
 
   const parsed = await parseFileInBrowser(file, (stage) => {
@@ -150,14 +153,14 @@ async function handleLargeFile(file: File) {
 
   // Step 2: Send JSON to server (60-95%)
   const jsonSize = estimateJsonSize(parsed)
-  progressStage.value = `Sending data (${formatSize(jsonSize)})...`
+  progressStage.value = t('upload.sendingData', { size: formatSize(jsonSize) })
 
   const res = await dataApi.uploadParsed(parsed, (progress) => {
     uploadProgress.value = 60 + Math.round(progress * 35)
   })
 
   uploadProgress.value = 100
-  progressStage.value = 'Done!'
+  progressStage.value = t('upload.done')
   uploadStore.setUploadResult(res.data.data)
 }
 
@@ -174,14 +177,14 @@ function proceedToMapping() {
 
 <template>
   <div class="upload-view">
-    <h2>Upload Financial Data</h2>
-    <p class="desc">Upload your sales and purchase records (Excel or CSV)</p>
+    <h2>{{ t('upload.title') }}</h2>
+    <p class="desc">{{ t('upload.desc') }}</p>
 
     <FileUploader ref="fileUploaderRef" @uploaded="handleFileUploaded" />
 
     <!-- Report Type Selector -->
     <div class="report-type-section">
-      <label class="report-type-label">Report Type</label>
+      <label class="report-type-label">{{ t('upload.reportType') }}</label>
       <select
         class="report-type-select"
         data-testid="upload-report-type"
@@ -229,7 +232,7 @@ function proceedToMapping() {
             class="retry-btn"
             @click="retry"
           >
-            Retry
+            {{ t('common.retry') }}
           </button>
         </div>
       </div>
@@ -246,11 +249,11 @@ function proceedToMapping() {
               clip-rule="evenodd"
             />
           </svg>
-          <span data-testid="upload-filename">Uploaded: <strong>{{ uploadStore.filename }}</strong></span>
+          <span data-testid="upload-filename">{{ t('upload.uploaded') }} <strong>{{ uploadStore.filename }}</strong></span>
         </div>
 
         <div v-for="(sheet, name) in uploadStore.sheets" :key="name" class="sheet">
-          <h3>Sheet: {{ name }} <span class="row-badge">{{ sheet.row_count }} rows</span></h3>
+          <h3>{{ t('upload.sheet', { name }) }} <span class="row-badge">{{ t('upload.rowCount', { count: sheet.row_count }) }}</span></h3>
           <div class="table-wrap">
             <table>
               <thead>
@@ -268,7 +271,7 @@ function proceedToMapping() {
         </div>
 
         <button class="proceed-btn" @click="proceedToMapping" data-testid="upload-proceed-btn">
-          Proceed to Column Mapping
+          {{ t('upload.proceedToMapping') }}
           <svg class="arrow-icon" viewBox="0 0 20 20" fill="currentColor">
             <path
               fill-rule="evenodd"

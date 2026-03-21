@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { dataApi } from '../api/data'
 import type { FieldCandidate, ConflictGroup, MappingCorrectionItem } from '../api/data'
 import { useUploadStore } from '../stores/upload'
@@ -11,6 +12,7 @@ import SearchableFieldSelect from '../components/SearchableFieldSelect.vue'
 import DisambiguationPanel from '../components/DisambiguationPanel.vue'
 import InlineAIHint from '../components/ai/InlineAIHint.vue'
 
+const { t } = useI18n()
 const router = useRouter()
 const uploadStore = useUploadStore()
 const authStore = useAuthStore()
@@ -240,7 +242,7 @@ async function requestAiMapping() {
     aiSuggested.value = true
     templateLoaded.value = false
   } catch {
-    aiError.value = 'AI mapping failed. Please map columns manually.'
+    aiError.value = t('mapping.aiMappingFailed')
   } finally {
     aiLoading.value = false
   }
@@ -314,7 +316,7 @@ function requestPreview() {
     }
   }
   if (!hasMeaningfulMapping) {
-    aiError.value = 'Please map at least one column to a target field.'
+    aiError.value = t('mapping.mapAtLeastOne')
     return
   }
   aiError.value = ''
@@ -391,34 +393,34 @@ function getFieldLabel(target: string): string {
 
 <template>
   <div class="mapping-view">
-    <h2>Column Mapping</h2>
-    <InlineAIHint agent="general" message="AI can answer questions about column mappings" action-label="Ask AI" />
+    <h2>{{ t('mapping.title') }}</h2>
+    <InlineAIHint agent="general" :message="t('mapping.aiHint')" :action-label="t('mapping.askAI')" />
     <p class="desc">
-      Map your spreadsheet columns to
-      <strong>{{ currentReportLabel }}</strong> fields
+      {{ t('mapping.desc') }}
+      <strong>{{ currentReportLabel }}</strong> {{ t('mapping.descFields') }}
     </p>
 
     <div v-if="!uploadStore.hasFile" class="no-file">
-      <p>No file uploaded. Please <router-link to="/upload">upload a file</router-link> first.</p>
+      <p>{{ t('mapping.noFile') }} <router-link to="/upload">{{ t('mapping.noFileLink') }}</router-link> {{ t('mapping.noFileAfter') }}</p>
     </div>
 
     <template v-else-if="!showPreview">
       <!-- File info -->
       <div class="file-info">
-        File: <strong>{{ uploadStore.filename }}</strong>
-        ({{ uploadStore.columns.length }} columns)
+        {{ t('mapping.fileInfo') }} <strong>{{ uploadStore.filename }}</strong>
+        ({{ t('mapping.columns', { count: uploadStore.columns.length }) }})
       </div>
 
       <!-- Data category selector -->
       <div class="category-bar">
-        <label class="category-label">Data type:</label>
+        <label class="category-label">{{ t('mapping.dataType') }}</label>
         <div class="category-options">
           <button
             v-for="opt in [
-              { value: '', label: 'Auto-detect' },
-              { value: 'sales', label: 'Sales (SLS)' },
-              { value: 'purchases', label: 'Purchases (SLP)' },
-              { value: 'combined', label: 'Combined (Sales + Purchases)' },
+              { value: '', label: t('mapping.autoDetect') },
+              { value: 'sales', label: t('mapping.sales') },
+              { value: 'purchases', label: t('mapping.purchases') },
+              { value: 'combined', label: t('mapping.combined') },
             ]"
             :key="opt.value"
             class="category-btn"
@@ -432,13 +434,13 @@ function getFieldLabel(target: string): string {
 
       <!-- Template loaded hint -->
       <div v-if="templateLoaded" class="template-hint">
-        Using saved mapping template. Click "Auto-Map with AI" to get fresh suggestions.
+        {{ t('mapping.templateHint') }}
       </div>
 
       <!-- Conflict banner -->
       <div v-if="hasConflicts" class="conflict-banner">
-        <strong>{{ conflictCount }} conflict(s) detected:</strong>
-        Multiple columns are mapped to the same target field.
+        <strong>{{ t('mapping.conflictsDetected', { count: conflictCount }) }}</strong>
+        {{ t('mapping.conflictsDesc') }}
         <div class="conflict-list">
           <span
             v-for="(cols, target) in duplicateMappings"
@@ -447,7 +449,7 @@ function getFieldLabel(target: string): string {
           >
             <strong>{{ getFieldLabel(String(target)) }}</strong>
             ({{ cols.join(', ') }})
-            <button class="resolve-btn" @click="openDisambiguation(String(target))">Resolve</button>
+            <button class="resolve-btn" @click="openDisambiguation(String(target))">{{ t('mapping.resolve') }}</button>
           </span>
         </div>
       </div>
@@ -460,11 +462,11 @@ function getFieldLabel(target: string): string {
           :disabled="aiLoading"
           data-testid="mapping-ai-btn"
         >
-          {{ aiLoading ? 'AI is analyzing...' : aiSuggested ? 'Re-run AI Mapping' : 'Auto-Map with AI' }}
+          {{ aiLoading ? t('mapping.aiAnalyzing') : aiSuggested ? t('mapping.rerunAI') : t('mapping.autoMapAI') }}
         </button>
 
         <span v-if="aiSuggested" class="confidence-badge" :class="confidenceBadge.cls" data-testid="mapping-confidence">
-          Confidence: {{ confidenceBadge.label }}
+          {{ t('mapping.confidence') }} {{ confidenceBadge.label }}
         </span>
       </div>
 
@@ -473,10 +475,10 @@ function getFieldLabel(target: string): string {
       <!-- Mapping table -->
       <div class="mapping-table" :class="{ 'with-confidence': aiSuggested }">
         <div class="mapping-row header">
-          <span>Your Column</span>
-          <span>Sample Data</span>
-          <span>Maps To</span>
-          <span v-if="aiSuggested">Confidence</span>
+          <span>{{ t('mapping.headerYourColumn') }}</span>
+          <span>{{ t('mapping.headerSampleData') }}</span>
+          <span>{{ t('mapping.headerMapsTo') }}</span>
+          <span v-if="aiSuggested">{{ t('mapping.headerConfidence') }}</span>
         </div>
         <div
           v-for="col in uploadStore.columns"
@@ -513,9 +515,9 @@ function getFieldLabel(target: string): string {
 
       <!-- Unmapped columns warning -->
       <div v-if="unmappedColumns.length > 0" class="unmapped-warning">
-        <strong>Unmapped columns:</strong>
+        <strong>{{ t('mapping.unmappedColumns') }}</strong>
         {{ unmappedColumns.join(', ') }}
-        <p class="unmapped-hint">These columns could not be automatically matched. Map them manually or skip them.</p>
+        <p class="unmapped-hint">{{ t('mapping.unmappedHint') }}</p>
       </div>
 
       <button
@@ -525,15 +527,15 @@ function getFieldLabel(target: string): string {
         :disabled="hasConflicts"
         :title="hasConflicts ? 'Resolve all conflicts before proceeding' : ''"
       >
-        {{ hasConflicts ? `Resolve ${conflictCount} Conflict(s) First` : 'Preview Mapping' }}
+        {{ hasConflicts ? t('mapping.resolveFirst', { count: conflictCount }) : t('mapping.previewMapping') }}
       </button>
     </template>
 
     <!-- Preview -->
     <template v-else>
       <div class="preview-section">
-        <h3>Mapping Preview</h3>
-        <p class="preview-desc">Review the first 5 rows with your mapping applied:</p>
+        <h3>{{ t('mapping.previewTitle') }}</h3>
+        <p class="preview-desc">{{ t('mapping.previewDesc') }}</p>
 
         <div class="preview-table-wrap">
           <table class="preview-table">
@@ -551,8 +553,8 @@ function getFieldLabel(target: string): string {
         </div>
 
         <div class="preview-actions">
-          <button class="back-btn" @click="backToEdit">Back to Edit</button>
-          <button class="confirm-btn" @click="confirmMapping" data-testid="mapping-confirm-btn">Confirm & Continue</button>
+          <button class="back-btn" @click="backToEdit">{{ t('mapping.backToEdit') }}</button>
+          <button class="confirm-btn" @click="confirmMapping" data-testid="mapping-confirm-btn">{{ t('mapping.confirmContinue') }}</button>
         </div>
       </div>
     </template>

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTagStore } from '../stores/tags'
 import type { Tag, CreateTagData } from '../api/tags'
 
+const { t } = useI18n()
 const store = useTagStore()
 const showForm = ref(false)
 const editingTag = ref<Tag | null>(null)
@@ -48,7 +50,7 @@ async function handleSubmit() {
     is_project: formIsProject.value,
   }
   if (!data.name) {
-    error.value = 'Tag name is required'
+    error.value = t('tags.nameRequired')
     return
   }
   try {
@@ -65,7 +67,7 @@ async function handleSubmit() {
 }
 
 async function handleDelete(tag: Tag) {
-  if (!confirm(`Delete tag "${tag.name}"?`)) return
+  if (!confirm(t('tags.deleteConfirm', { name: tag.name }))) return
   try {
     await store.deleteTag(tag.id)
   } catch (e: any) {
@@ -81,8 +83,8 @@ async function handleSearch() {
 <template>
   <div class="tags-view">
     <div class="view-header">
-      <h2>Tag Management</h2>
-      <button class="btn primary" @click="openCreate">Add Tag</button>
+      <h2>{{ t('tags.title') }}</h2>
+      <button class="btn primary" @click="openCreate">{{ t('tags.addTag') }}</button>
     </div>
 
     <p v-if="error" class="error">{{ error }}</p>
@@ -90,7 +92,7 @@ async function handleSearch() {
     <div class="search-bar">
       <input
         v-model="searchQuery"
-        placeholder="Search tags..."
+        :placeholder="t('tags.searchPlaceholder')"
         @keyup.enter="handleSearch"
       />
       <button class="btn" @click="handleSearch">Search</button>
@@ -99,14 +101,14 @@ async function handleSearch() {
     <!-- Form Modal -->
     <div v-if="showForm" class="modal-overlay" @click.self="showForm = false">
       <div class="modal">
-        <h3>{{ editingTag ? 'Edit Tag' : 'New Tag' }}</h3>
+        <h3>{{ editingTag ? t('tags.editTag') : t('tags.newTag') }}</h3>
         <form @submit.prevent="handleSubmit">
           <div class="form-group">
-            <label>Name</label>
-            <input v-model="formName" placeholder="Tag name..." required />
+            <label>{{ t('tags.name') }}</label>
+            <input v-model="formName" :placeholder="t('tags.namePlaceholder')" required />
           </div>
           <div class="form-group">
-            <label>Color</label>
+            <label>{{ t('tags.color') }}</label>
             <div class="color-picker">
               <div class="color-presets">
                 <button
@@ -125,16 +127,16 @@ async function handleSearch() {
           <div class="form-group checkbox-group">
             <label class="checkbox-label">
               <input type="checkbox" v-model="formIsProject" />
-              <span>Use as Project</span>
+              <span>{{ t('tags.useAsProject') }}</span>
             </label>
-            <p class="hint">Project tags appear as project options in the Telegram bot receipt flow.</p>
+            <p class="hint">{{ t('tags.projectHint') }}</p>
           </div>
           <div class="preview-group">
-            <label>Preview</label>
+            <label>{{ t('tags.preview') }}</label>
             <span class="tag-chip" :style="{ background: formColor + '20', color: formColor, borderColor: formColor }">
-              {{ formName || 'Tag name' }}
+              {{ formName || t('tags.tagNameDefault') }}
             </span>
-            <span v-if="formIsProject" class="project-badge">Project</span>
+            <span v-if="formIsProject" class="project-badge">{{ t('tags.project') }}</span>
           </div>
           <div class="form-actions">
             <button type="button" class="btn" @click="showForm = false">Cancel</button>
@@ -144,10 +146,10 @@ async function handleSearch() {
       </div>
     </div>
 
-    <div v-if="store.loading" class="loading-msg">Loading tags...</div>
+    <div v-if="store.loading" class="loading-msg">{{ t('tags.loadingMsg') }}</div>
 
     <div v-else-if="store.tags.length === 0" class="empty">
-      No tags yet. Create one to get started.
+      {{ t('tags.emptyState') }}
     </div>
 
     <div v-else class="tags-grid">
@@ -156,7 +158,7 @@ async function handleSearch() {
           <span class="tag-chip" :style="{ background: tag.color + '20', color: tag.color, borderColor: tag.color }">
             {{ tag.name }}
           </span>
-          <span v-if="tag.is_project" class="project-badge">Project</span>
+          <span v-if="tag.is_project" class="project-badge">{{ t('tags.project') }}</span>
         </div>
         <div class="tag-card-actions">
           <button class="btn-sm" @click="openEdit(tag)">Edit</button>

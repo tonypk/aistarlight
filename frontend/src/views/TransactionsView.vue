@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { transactionsApi } from '../api/transactions'
 import { useTagStore } from '../stores/tags'
 import type { Tag } from '../api/tags'
+
+const { t } = useI18n()
 
 interface Transaction {
   id: string
@@ -166,8 +169,8 @@ onMounted(() => {
 <template>
   <div class="transactions-view">
     <div class="view-header">
-      <h2>Transactions Overview</h2>
-      <span class="total-badge">{{ total }} records</span>
+      <h2>{{ t('transactions.title') }}</h2>
+      <span class="total-badge">{{ t('common.records', { count: total }) }}</span>
     </div>
 
     <!-- Filters -->
@@ -180,27 +183,27 @@ onMounted(() => {
 
       <input
         v-model="category"
-        placeholder="Category..."
+        :placeholder="t('transactions.categoryPlaceholder')"
         @keyup.enter="applyFilters"
       />
 
       <input
         v-model="search"
-        placeholder="Search description..."
+        :placeholder="t('transactions.searchPlaceholder')"
         @keyup.enter="applyFilters"
       />
 
-      <input type="date" v-model="dateFrom" @change="applyFilters" title="From date" />
-      <input type="date" v-model="dateTo" @change="applyFilters" title="To date" />
+      <input type="date" v-model="dateFrom" @change="applyFilters" :title="t('transactions.fromDate')" />
+      <input type="date" v-model="dateTo" @change="applyFilters" :title="t('transactions.toDate')" />
 
-      <button class="btn" @click="applyFilters">Search</button>
-      <button class="btn secondary" @click="clearFilters">Clear</button>
+      <button class="btn" @click="applyFilters">{{ t('common.search') }}</button>
+      <button class="btn secondary" @click="clearFilters">{{ t('common.clear') }}</button>
     </div>
 
     <p v-if="error" class="error">{{ error }}</p>
 
     <!-- Loading -->
-    <div v-if="loading" class="loading">Loading...</div>
+    <div v-if="loading" class="loading">{{ t('transactions.loadingMsg') }}</div>
 
     <!-- Table -->
     <div v-else-if="transactions.length > 0" class="table-container">
@@ -208,15 +211,15 @@ onMounted(() => {
         <thead>
           <tr>
             <th class="text-center">#</th>
-            <th>Date</th>
-            <th>Description</th>
-            <th class="text-right">Amount</th>
-            <th>Category</th>
-            <th>Tags</th>
-            <th>Source</th>
-            <th>Journal</th>
-            <th>Submitted By</th>
-            <th>Image</th>
+            <th>{{ t('transactions.thDate') }}</th>
+            <th>{{ t('transactions.thDescription') }}</th>
+            <th class="text-right">{{ t('transactions.thAmount') }}</th>
+            <th>{{ t('transactions.thCategory') }}</th>
+            <th>{{ t('transactions.thTags') }}</th>
+            <th>{{ t('transactions.thSource') }}</th>
+            <th>{{ t('transactions.thJournal') }}</th>
+            <th>{{ t('transactions.thSubmittedBy') }}</th>
+            <th>{{ t('transactions.thImage') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -236,7 +239,7 @@ onMounted(() => {
                 class="tag-chip"
                 :style="{ background: tag.color + '20', color: tag.color, borderColor: tag.color }"
               >{{ tag.name }}</span>
-              <button class="tag-add-btn" @click.stop="openTagModal(txn.id)" title="Manage tags">+</button>
+              <button class="tag-add-btn" @click.stop="openTagModal(txn.id)" :title="t('transactions.manageTags')">+</button>
             </td>
             <td>
               <span class="badge source" :class="txn.source_type">
@@ -258,8 +261,8 @@ onMounted(() => {
                 :href="txn.receipt_image_url"
                 target="_blank"
                 class="image-link"
-                title="View receipt"
-              >View</a>
+                :title="t('transactions.view')"
+              >{{ t('transactions.view') }}</a>
               <span v-else class="text-muted">-</span>
             </td>
           </tr>
@@ -268,15 +271,15 @@ onMounted(() => {
     </div>
 
     <div v-else class="empty">
-      No transactions found. Try adjusting your filters.
+      {{ t('transactions.emptyState') }}
     </div>
 
     <!-- Tag Assignment Modal -->
     <div v-if="showTagModal" class="modal-overlay" @click.self="showTagModal = false">
       <div class="modal">
-        <h3>Manage Tags</h3>
+        <h3>{{ t('transactions.manageTags') }}</h3>
         <div v-if="tagStore.tags.length === 0" class="empty-tags">
-          No tags created yet. Go to Tag Management to create tags.
+          {{ t('transactions.noTagsYet') }}
         </div>
         <div v-else class="tag-selector">
           <button
@@ -294,17 +297,17 @@ onMounted(() => {
           >{{ tag.name }}</button>
         </div>
         <div class="modal-actions">
-          <button class="btn" @click="showTagModal = false">Cancel</button>
-          <button class="btn primary" @click="saveTransactionTags">Save</button>
+          <button class="btn" @click="showTagModal = false">{{ t('common.cancel') }}</button>
+          <button class="btn primary" @click="saveTransactionTags">{{ t('common.save') }}</button>
         </div>
       </div>
     </div>
 
     <!-- Pagination -->
     <div v-if="totalPages > 1" class="pagination">
-      <button :disabled="page <= 1" @click="goToPage(page - 1)">Prev</button>
-      <span class="page-info">Page {{ page }} of {{ totalPages }}</span>
-      <button :disabled="page >= totalPages" @click="goToPage(page + 1)">Next</button>
+      <button :disabled="page <= 1" @click="goToPage(page - 1)">{{ t('common.prev') }}</button>
+      <span class="page-info">{{ t('common.page', { page, total: totalPages }) }}</span>
+      <button :disabled="page >= totalPages" @click="goToPage(page + 1)">{{ t('common.next') }}</button>
     </div>
   </div>
 </template>

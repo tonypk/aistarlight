@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useTransactionStore } from '../stores/transaction'
 import { useUploadStore } from '../stores/upload'
 import { useAccountingStore } from '../stores/accounting'
@@ -10,6 +11,8 @@ import TransactionTable from '../components/transaction/TransactionTable.vue'
 import BulkActionBar from '../components/transaction/BulkActionBar.vue'
 import type { TransactionFilters } from '../types/transaction'
 import InlineAIHint from '../components/ai/InlineAIHint.vue'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const route = useRoute()
@@ -187,17 +190,17 @@ const statusTextColors: Record<string, string> = {
     <!-- Session List Mode -->
     <template v-if="listMode">
       <div class="view-header">
-        <h2>Transaction Classification</h2>
-        <InlineAIHint agent="classifier" message="AI can classify transactions and explain VAT categories" action-label="Ask Classifier" />
-        <button class="nav-btn" @click="goToUpload">Upload New Data</button>
+        <h2>{{ t('classification.title') }}</h2>
+        <InlineAIHint agent="classifier" :message="t('classification.aiHint')" :action-label="t('classification.askClassifier')" />
+        <button class="nav-btn" @click="goToUpload">{{ t('classification.uploadNewData') }}</button>
       </div>
 
-      <div v-if="store.loading" class="loading-msg">Loading sessions...</div>
+      <div v-if="store.loading" class="loading-msg">{{ t('classification.loadingSessions') }}</div>
 
       <div v-else-if="store.sessions.length === 0" class="empty-state">
-        <p>No reconciliation sessions yet.</p>
-        <p class="hint">Upload data files to start classifying transactions.</p>
-        <button class="nav-btn" @click="goToUpload">Upload Data</button>
+        <p>{{ t('classification.noSessions') }}</p>
+        <p class="hint">{{ t('classification.noSessionsHint') }}</p>
+        <button class="nav-btn" @click="goToUpload">{{ t('classification.uploadData') }}</button>
       </div>
 
       <div v-else class="session-list">
@@ -220,15 +223,15 @@ const statusTextColors: Record<string, string> = {
             </span>
           </div>
           <div class="session-meta">
-            <span>{{ s.source_files?.length ?? 0 }} files</span>
-            <span>Created {{ new Date(s.created_at).toLocaleDateString() }}</span>
+            <span>{{ t('classification.files', { count: s.source_files?.length ?? 0 }) }}</span>
+            <span>{{ t('classification.created', { date: new Date(s.created_at).toLocaleDateString() }) }}</span>
           </div>
           <button
             v-if="s.status === 'draft'"
             class="delete-btn"
             @click.stop="deleteSession(s.id)"
           >
-            Delete
+            {{ t('common.delete') }}
           </button>
         </div>
       </div>
@@ -238,22 +241,22 @@ const statusTextColors: Record<string, string> = {
     <template v-else>
       <div class="view-header">
         <div>
-          <h2>Transaction Classification</h2>
+          <h2>{{ t('classification.title') }}</h2>
           <p class="desc" v-if="store.currentSession" data-testid="classify-status">
-            Period: {{ store.currentSession.period }}
-            | {{ store.transactionTotal }} transactions
-            | Status: {{ store.currentSession.status }}
+            {{ t('classification.period', { period: store.currentSession.period }) }}
+            | {{ t('classification.transactionCount', { count: store.transactionTotal }) }}
+            | {{ t('classification.status', { status: store.currentSession.status }) }}
           </p>
         </div>
         <div class="header-actions">
-          <button class="btn-back" @click="listMode = true; store.reset()">All Sessions</button>
+          <button class="btn-back" @click="listMode = true; store.reset()">{{ t('classification.allSessions') }}</button>
           <button
             class="ai-btn"
             :disabled="store.classifying"
             @click="classify"
             data-testid="classify-ai-btn"
           >
-            {{ store.classifying ? 'Classifying...' : 'AI Classify' }}
+            {{ store.classifying ? t('classification.classifying') : t('classification.aiClassify') }}
           </button>
           <button
             v-if="store.sessionStatus === 'reviewing'"
@@ -261,17 +264,17 @@ const statusTextColors: Record<string, string> = {
             :disabled="store.classifying"
             @click="forceClassify"
           >
-            Re-classify All
+            {{ t('classification.reclassifyAll') }}
           </button>
           <button class="nav-btn" @click="goToReconciliation" data-testid="classify-to-recon-btn">
-            Continue to Reconciliation
+            {{ t('classification.continueToRecon') }}
           </button>
           <button
             class="bridge-btn"
             @click="generateJournalEntries"
             :disabled="generatingJournals || store.sessionStatus === 'draft'"
           >
-            {{ generatingJournals ? 'Generating...' : 'Generate Journal Entries' }}
+            {{ generatingJournals ? t('classification.generatingJournals') : t('classification.generateJournalEntries') }}
           </button>
         </div>
       </div>

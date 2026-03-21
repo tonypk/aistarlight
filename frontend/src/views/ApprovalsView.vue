@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { approvalsApi, type ApprovalSettings, type ReceiptApproval } from '../api/approvals'
 
+const { t } = useI18n()
 const loading = ref(true)
 const settings = ref<ApprovalSettings>({
   is_enabled: false,
@@ -24,10 +26,10 @@ const pendingCount = computed(() => pendingTotal.value)
 
 function triggerLabel(reason: string): string {
   const labels: Record<string, string> = {
-    amount_threshold: 'Amount Threshold',
-    new_vendor: 'New Vendor',
-    risk_flag: 'Risk Flag',
-    manual: 'Manual',
+    amount_threshold: t('approvals.triggerAmountThreshold'),
+    new_vendor: t('approvals.triggerNewVendor'),
+    risk_flag: t('approvals.triggerRiskFlag'),
+    manual: t('approvals.triggerManual'),
   }
   return labels[reason] || reason
 }
@@ -154,25 +156,25 @@ onMounted(fetchData)
 <template>
   <div class="approvals-page">
     <div class="page-header">
-      <h2>Receipt Approvals</h2>
-      <div v-if="pendingCount > 0" class="pending-badge">{{ pendingCount }} pending</div>
+      <h2>{{ t('approvals.title') }}</h2>
+      <div v-if="pendingCount > 0" class="pending-badge">{{ pendingCount }} {{ t('approvals.pending') }}</div>
     </div>
 
     <!-- Tabs -->
     <div class="tabs">
       <button :class="{ active: tab === 'pending' }" @click="tab = 'pending'">
-        Pending <span v-if="pendingCount" class="tab-count">{{ pendingCount }}</span>
+        {{ t('approvals.pendingTab') }} <span v-if="pendingCount" class="tab-count">{{ pendingCount }}</span>
       </button>
-      <button :class="{ active: tab === 'history' }" @click="tab = 'history'">History</button>
-      <button :class="{ active: tab === 'settings' }" @click="tab = 'settings'">Settings</button>
+      <button :class="{ active: tab === 'history' }" @click="tab = 'history'">{{ t('approvals.historyTab') }}</button>
+      <button :class="{ active: tab === 'settings' }" @click="tab = 'settings'">{{ t('approvals.settingsTab') }}</button>
     </div>
 
-    <div v-if="loading" class="loading">Loading...</div>
+    <div v-if="loading" class="loading">{{ t('approvals.loadingMsg') }}</div>
 
     <!-- Pending Tab -->
     <div v-else-if="tab === 'pending'" class="tab-content">
       <div v-if="!pendingApprovals.length" class="empty-state">
-        No pending approvals
+        {{ t('approvals.noPending') }}
       </div>
       <div v-else class="approval-list">
         <div v-for="a in pendingApprovals" :key="a.id" class="approval-card">
@@ -193,14 +195,14 @@ onMounted(fetchData)
               :disabled="actionLoading === a.id"
               @click="approveItem(a.id)"
             >
-              {{ actionLoading === a.id ? '...' : 'Approve' }}
+              {{ actionLoading === a.id ? '...' : t('approvals.approve') }}
             </button>
             <button
               class="btn-reject"
               :disabled="actionLoading === a.id"
               @click="openRejectModal(a.id)"
             >
-              Reject
+              {{ t('approvals.reject') }}
             </button>
           </div>
         </div>
@@ -209,15 +211,15 @@ onMounted(fetchData)
 
     <!-- History Tab -->
     <div v-else-if="tab === 'history'" class="tab-content">
-      <div v-if="!allApprovals.length" class="empty-state">No approval history</div>
+      <div v-if="!allApprovals.length" class="empty-state">{{ t('approvals.noHistory') }}</div>
       <table v-else class="history-table">
         <thead>
           <tr>
-            <th>Receipt</th>
-            <th>Amount</th>
-            <th>Reason</th>
-            <th>Status</th>
-            <th>Date</th>
+            <th>{{ t('approvals.thReceipt') }}</th>
+            <th>{{ t('approvals.thAmount') }}</th>
+            <th>{{ t('approvals.thReason') }}</th>
+            <th>{{ t('approvals.thStatus') }}</th>
+            <th>{{ t('approvals.thDate') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -238,37 +240,37 @@ onMounted(fetchData)
         <div class="setting-row">
           <label class="setting-label">
             <input type="checkbox" v-model="settings.is_enabled" />
-            Enable receipt approval workflow
+            {{ t('approvals.enableWorkflow') }}
           </label>
-          <p class="setting-desc">When enabled, receipts matching the rules below will require approval before processing.</p>
+          <p class="setting-desc">{{ t('approvals.enableWorkflowDesc') }}</p>
         </div>
 
         <div class="setting-row">
-          <label class="setting-label">Amount threshold</label>
+          <label class="setting-label">{{ t('approvals.amountThreshold') }}</label>
           <div class="setting-input-group">
             <input type="number" v-model.number="settings.amount_threshold" min="0" step="100" :disabled="!settings.is_enabled" />
-            <p class="setting-desc">Receipts above this amount require approval.</p>
+            <p class="setting-desc">{{ t('approvals.amountThresholdDesc') }}</p>
           </div>
         </div>
 
         <div class="setting-row">
-          <label class="setting-label">New vendor check</label>
+          <label class="setting-label">{{ t('approvals.newVendorCheck') }}</label>
           <div class="setting-input-group">
             <input type="number" v-model.number="settings.new_vendor_receipts" min="0" max="20" :disabled="!settings.is_enabled" />
-            <p class="setting-desc">First N receipts from a new vendor require approval (0 = disabled).</p>
+            <p class="setting-desc">{{ t('approvals.newVendorCheckDesc') }}</p>
           </div>
         </div>
 
         <div class="setting-row">
           <label class="setting-label">
             <input type="checkbox" v-model="settings.risk_flags_require_approval" :disabled="!settings.is_enabled" />
-            Risk flags require approval
+            {{ t('approvals.riskFlagsRequire') }}
           </label>
-          <p class="setting-desc">Duplicate images and other risk flags will trigger approval.</p>
+          <p class="setting-desc">{{ t('approvals.riskFlagsDesc') }}</p>
         </div>
 
         <button class="btn-save" :disabled="savingSettings" @click="saveSettings">
-          {{ savingSettings ? 'Saving...' : 'Save Settings' }}
+          {{ savingSettings ? t('approvals.saving') : t('approvals.saveSettings') }}
         </button>
       </div>
     </div>

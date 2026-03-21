@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { receiptsApi } from '@/api/receipts'
 import { compressBatch, type CompressResult } from '@/utils/imageCompressor'
 import { useAccountingStore } from '@/stores/accounting'
 import { useAuthStore } from '@/stores/auth'
 import { currencySymbol } from '@/utils/currency'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const accounting = useAccountingStore()
@@ -35,7 +38,13 @@ const showHistory = ref(false)
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/bmp', 'image/tiff', 'image/webp']
 const MAX_FILES = 50
-const STEPS = ['Compress', 'Upload', 'OCR', 'Parse', 'Report']
+const STEPS = computed(() => [
+  t('receipt.stepCompress'),
+  t('receipt.stepUpload'),
+  t('receipt.stepOCR'),
+  t('receipt.stepParse'),
+  t('receipt.stepReport'),
+])
 
 // Default period to current month
 const now = new Date()
@@ -221,7 +230,7 @@ async function convertBatch(batch: any) {
     showHistory.value = false
     router.push({ path: '/classification', query: { session: batch.session_id } })
   } catch {
-    error.value = 'Failed to convert batch to transactions'
+    error.value = t('receipt.failedConvert')
   } finally {
     batchActionLoading.value = null
   }
@@ -235,7 +244,7 @@ async function generateJournalsForBatch(batch: any) {
     showHistory.value = false
     router.push('/journal-entries')
   } catch {
-    error.value = 'Failed to generate journal entries'
+    error.value = t('receipt.failedJournals')
   } finally {
     batchActionLoading.value = null
   }
@@ -252,9 +261,9 @@ function reset() {
 <template>
   <div class="receipt-upload">
     <div class="page-header">
-      <h1>Receipt Scanner</h1>
-      <p class="subtitle">Upload receipt images for automatic OCR, parsing, and {{ isSG ? 'IRAS' : 'BIR' }} report generation</p>
-      <button class="btn-secondary" @click="loadHistory">View History</button>
+      <h1>{{ t('receipt.title') }}</h1>
+      <p class="subtitle">{{ t('receipt.subtitle', { authority: isSG ? 'IRAS' : 'BIR' }) }}</p>
+      <button class="btn-secondary" @click="loadHistory">{{ t('receipt.viewHistory') }}</button>
     </div>
 
     <!-- Step Progress -->
@@ -289,8 +298,8 @@ function reset() {
       >
         <div class="drop-content">
           <span class="drop-icon">&#128247;</span>
-          <p>Drag & drop receipt images here</p>
-          <p class="drop-hint">or click to browse (JPG, PNG, TIFF, WEBP — max {{ MAX_FILES }} files)</p>
+          <p>{{ t('receipt.dropZone') }}</p>
+          <p class="drop-hint">{{ t('receipt.dropHint', { max: MAX_FILES }) }}</p>
         </div>
         <input
           ref="fileInput"
@@ -305,7 +314,7 @@ function reset() {
       <!-- Compressing Indicator -->
       <div v-if="compressing" class="compress-status">
         <div class="compress-spinner"></div>
-        <span>Compressing images... {{ compressProgress.done }}/{{ compressProgress.total }}</span>
+        <span>{{ t('receipt.compressing', { done: compressProgress.done, total: compressProgress.total }) }}</span>
         <div class="compress-bar">
           <div class="compress-bar-fill" :style="{ width: (compressProgress.total ? compressProgress.done / compressProgress.total * 100 : 0) + '%' }"></div>
         </div>
@@ -313,18 +322,18 @@ function reset() {
 
       <!-- Compression Stats -->
       <div v-if="compressionStats && !compressing" class="compress-stats">
-        <span class="stats-label">Compressed:</span>
+        <span class="stats-label">{{ t('receipt.compressed') }}</span>
         <span class="stats-original">{{ formatSize(compressionStats.totalOriginal) }}</span>
         <span class="stats-arrow">&rarr;</span>
         <span class="stats-compressed">{{ formatSize(compressionStats.totalCompressed) }}</span>
-        <span class="stats-ratio">({{ ((1 - compressionStats.totalCompressed / compressionStats.totalOriginal) * 100).toFixed(0) }}% saved)</span>
+        <span class="stats-ratio">{{ t('receipt.saved', { percent: ((1 - compressionStats.totalCompressed / compressionStats.totalOriginal) * 100).toFixed(0) }) }}</span>
       </div>
 
       <!-- Previews -->
       <div v-if="previews.length > 0" class="preview-section">
         <div class="preview-header">
-          <span>{{ previews.length }} file(s) selected</span>
-          <button class="btn-text" @click="clearFiles">Clear All</button>
+          <span>{{ t('receipt.filesSelected', { count: previews.length }) }}</span>
+          <button class="btn-text" @click="clearFiles">{{ t('receipt.clearAll') }}</button>
         </div>
         <div class="preview-grid">
           <div v-for="(p, i) in previews" :key="i" class="preview-card">
@@ -353,7 +362,7 @@ function reset() {
         @click="processReceipts"
       >
         <span v-if="processing" class="spinner"></span>
-        {{ processing ? 'Processing...' : 'Process Receipts' }}
+        {{ processing ? t('receipt.processing') : t('receipt.processReceipts') }}
       </button>
     </div>
 
@@ -362,15 +371,15 @@ function reset() {
       <div class="results-summary">
         <div class="summary-card success">
           <span class="summary-number">{{ successCount }}</span>
-          <span class="summary-label">Parsed</span>
+          <span class="summary-label">{{ t('receipt.parsed') }}</span>
         </div>
         <div class="summary-card" :class="failCount > 0 ? 'fail' : 'neutral'">
           <span class="summary-number">{{ failCount }}</span>
-          <span class="summary-label">Failed</span>
+          <span class="summary-label">{{ t('receipt.failed') }}</span>
         </div>
         <div class="summary-card neutral">
           <span class="summary-number">{{ result.total_images }}</span>
-          <span class="summary-label">Total</span>
+          <span class="summary-label">{{ t('receipt.total') }}</span>
         </div>
       </div>
 
@@ -380,13 +389,13 @@ function reset() {
           <thead>
             <tr>
               <th>#</th>
-              <th>File</th>
-              <th>Vendor</th>
-              <th>Amount</th>
-              <th>VAT Type</th>
-              <th>Date</th>
-              <th>Confidence</th>
-              <th>Status</th>
+              <th>{{ t('receipt.thFile') }}</th>
+              <th>{{ t('receipt.thVendor') }}</th>
+              <th>{{ t('receipt.thAmount') }}</th>
+              <th>{{ t('receipt.thVatType') }}</th>
+              <th>{{ t('receipt.thDate') }}</th>
+              <th>{{ t('receipt.thConfidence') }}</th>
+              <th>{{ t('receipt.thStatus') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -430,14 +439,14 @@ function reset() {
           class="btn-primary"
           @click="goToReport(result.report_id)"
         >
-          View Report
+          {{ t('receipt.viewReport') }}
         </button>
         <button
           v-if="result.session_id"
           class="btn-secondary"
           @click="goToSession(result.session_id)"
         >
-          View Transactions
+          {{ t('receipt.viewTransactions') }}
         </button>
         <button
           v-if="result.batch_id && result.session_id"
@@ -445,10 +454,10 @@ function reset() {
           :disabled="converting"
           @click="convertToTransactions"
         >
-          {{ converting ? 'Converting...' : 'Convert to Transactions' }}
+          {{ converting ? t('receipt.converting') : t('receipt.convertToTransactions') }}
         </button>
         <button class="btn-secondary" @click="reset">
-          Upload More
+          {{ t('receipt.uploadMore') }}
         </button>
       </div>
     </div>
@@ -457,19 +466,19 @@ function reset() {
     <div v-if="showHistory" class="modal-overlay" @click.self="showHistory = false">
       <div class="modal">
         <div class="modal-header">
-          <h2>Receipt Batch History</h2>
+          <h2>{{ t('receipt.batchHistoryTitle') }}</h2>
           <button class="close-btn" @click="showHistory = false">&times;</button>
         </div>
         <div class="modal-body">
-          <div v-if="batches.length === 0" class="empty-state">No batches yet.</div>
+          <div v-if="batches.length === 0" class="empty-state">{{ t('receipt.noBatches') }}</div>
           <table v-else class="results-table">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Period</th>
-                <th>Images</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{{ t('receipt.thDate') }}</th>
+                <th>{{ t('receipt.thPeriod') }}</th>
+                <th>{{ t('receipt.thImages') }}</th>
+                <th>{{ t('receipt.thStatus') }}</th>
+                <th>{{ t('receipt.thActions') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -482,10 +491,10 @@ function reset() {
                 </td>
                 <td class="batch-actions">
                   <button v-if="b.report_id" class="btn-text" @click="goToReport(b.report_id); showHistory = false">
-                    Report
+                    {{ t('receipt.report') }}
                   </button>
                   <button v-if="b.session_id" class="btn-text" @click="goToSession(b.session_id); showHistory = false">
-                    Transactions
+                    {{ t('receipt.transactions') }}
                   </button>
                   <button
                     v-if="b.status === 'completed' && b.session_id"
@@ -493,7 +502,7 @@ function reset() {
                     :disabled="batchActionLoading === `convert-${b.id}`"
                     @click="convertBatch(b)"
                   >
-                    {{ batchActionLoading === `convert-${b.id}` ? 'Converting...' : 'Convert' }}
+                    {{ batchActionLoading === `convert-${b.id}` ? t('receipt.convertingBatch') : t('receipt.convert') }}
                   </button>
                   <button
                     v-if="b.status === 'completed' && b.session_id"
@@ -501,7 +510,7 @@ function reset() {
                     :disabled="batchActionLoading === `journal-${b.id}`"
                     @click="generateJournalsForBatch(b)"
                   >
-                    {{ batchActionLoading === `journal-${b.id}` ? 'Generating...' : 'Journal Entries' }}
+                    {{ batchActionLoading === `journal-${b.id}` ? t('receipt.generatingJournals') : t('receipt.journalEntries') }}
                   </button>
                 </td>
               </tr>
