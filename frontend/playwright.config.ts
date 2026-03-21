@@ -9,7 +9,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: [["html", { open: "never" }]],
   use: {
-    baseURL: "https://tax.clawpapa.win",
+    baseURL: "https://finance.halaos.com",
     storageState: "./e2e/.auth/user.json",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
