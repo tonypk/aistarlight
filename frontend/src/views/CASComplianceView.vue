@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { casApi } from '../api/cas'
 import type { ComplianceResult, ComplianceCheckSummary, SubsidiaryLedgerEntry } from '../api/cas'
+
+const { t } = useI18n()
 
 // State
 const latestCheck = ref<ComplianceResult | null>(null)
@@ -19,11 +22,11 @@ const dateTo = ref('')
 const ledgerLoading = ref(false)
 
 const journalBooks = [
-  { value: 'general_journal', label: 'General Journal' },
-  { value: 'sales_journal', label: 'Sales Journal' },
-  { value: 'purchases_journal', label: 'Purchases Journal' },
-  { value: 'cash_receipts', label: 'Cash Receipts Journal' },
-  { value: 'cash_disbursements', label: 'Cash Disbursements Journal' },
+  { value: 'general_journal', labelKey: 'casCompliance.generalJournal' },
+  { value: 'sales_journal', labelKey: 'casCompliance.salesJournal' },
+  { value: 'purchases_journal', labelKey: 'casCompliance.purchasesJournal' },
+  { value: 'cash_receipts', labelKey: 'casCompliance.cashReceipts' },
+  { value: 'cash_disbursements', labelKey: 'casCompliance.cashDisbursements' },
 ]
 
 // Load data
@@ -58,7 +61,7 @@ async function runComplianceCheck() {
     latestCheck.value = res.data.data
     await loadHistory()
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : 'Failed to run compliance check'
+    error.value = e instanceof Error ? e.message : t('casCompliance.checkFailed')
   } finally {
     runningCheck.value = false
   }
@@ -98,23 +101,23 @@ onMounted(async () => {
 <template>
   <div class="cas-compliance-view">
     <div class="page-header">
-      <h1>BIR CAS Compliance</h1>
-      <p class="subtitle">Computerized Accounting System certification readiness</p>
+      <h1>{{ t('casCompliance.title') }}</h1>
+      <p class="subtitle">{{ t('casCompliance.subtitle') }}</p>
     </div>
 
     <!-- Tabs -->
     <div class="tabs">
       <button
         v-for="tab in [
-          { key: 'overview', label: 'Compliance Overview' },
-          { key: 'ledger', label: 'Subsidiary Ledgers' },
-          { key: 'history', label: 'Check History' },
+          { key: 'overview', labelKey: 'casCompliance.tabOverview' },
+          { key: 'ledger', labelKey: 'casCompliance.tabLedger' },
+          { key: 'history', labelKey: 'casCompliance.tabHistory' },
         ]"
         :key="tab.key"
         :class="['tab-btn', { active: activeTab === tab.key }]"
         @click="activeTab = tab.key as typeof activeTab"
       >
-        {{ tab.label }}
+        {{ t(tab.labelKey) }}
       </button>
     </div>
 
@@ -122,20 +125,20 @@ onMounted(async () => {
     <div v-if="activeTab === 'overview'" class="tab-content">
       <div class="action-bar">
         <button class="btn btn-primary" :disabled="runningCheck" @click="runComplianceCheck">
-          {{ runningCheck ? 'Running check...' : 'Run Compliance Check' }}
+          {{ runningCheck ? t('casCompliance.runningCheck') : t('casCompliance.runCheck') }}
         </button>
       </div>
 
       <div v-if="error" class="error-message">{{ error }}</div>
 
-      <div v-if="loading" class="loading">Loading...</div>
+      <div v-if="loading" class="loading">{{ t('casCompliance.loading') }}</div>
 
       <div v-else-if="latestCheck" class="compliance-overview">
         <!-- Overall Status -->
         <div :class="['overall-status', latestCheck.overall_pass ? 'pass' : 'fail']">
           <span class="status-icon">{{ latestCheck.overall_pass ? '&#10003;' : '&#10007;' }}</span>
           <span class="status-text">
-            {{ latestCheck.overall_pass ? 'CAS Compliant' : 'Not Compliant' }}
+            {{ latestCheck.overall_pass ? t('casCompliance.casCompliant') : t('casCompliance.notCompliant') }}
           </span>
         </div>
 
@@ -143,12 +146,12 @@ onMounted(async () => {
         <div class="check-grid">
           <div
             v-for="item in [
-              { key: 'sequential_numbering_ok', label: 'Sequential Numbering', desc: 'Gap-free company-wide document numbering' },
-              { key: 'hash_chain_intact', label: 'Hash Chain Integrity', desc: 'SHA-256 tamper-proof audit chain' },
-              { key: 'double_entry_balanced', label: 'Double-Entry Balance', desc: 'All debits equal credits' },
-              { key: 'periods_properly_closed', label: 'Accounting Periods', desc: 'Prior periods properly closed' },
-              { key: 'audit_trail_complete', label: 'Audit Trail', desc: 'Complete audit log with hash chain' },
-              { key: 'subsidiary_ledgers_ok', label: 'Subsidiary Ledgers', desc: 'BIR journal book classifications' },
+              { key: 'sequential_numbering_ok', labelKey: 'casCompliance.sequentialNumbering', descKey: 'casCompliance.sequentialNumberingDesc' },
+              { key: 'hash_chain_intact', labelKey: 'casCompliance.hashChainIntegrity', descKey: 'casCompliance.hashChainIntegrityDesc' },
+              { key: 'double_entry_balanced', labelKey: 'casCompliance.doubleEntryBalance', descKey: 'casCompliance.doubleEntryBalanceDesc' },
+              { key: 'periods_properly_closed', labelKey: 'casCompliance.accountingPeriods', descKey: 'casCompliance.accountingPeriodsDesc' },
+              { key: 'audit_trail_complete', labelKey: 'casCompliance.auditTrail', descKey: 'casCompliance.auditTrailDesc' },
+              { key: 'subsidiary_ledgers_ok', labelKey: 'casCompliance.subsidiaryLedgers', descKey: 'casCompliance.subsidiaryLedgersDesc' },
             ]"
             :key="item.key"
             :class="['check-card', (latestCheck as Record<string, unknown>)[item.key] ? 'pass' : 'fail']"
@@ -157,22 +160,22 @@ onMounted(async () => {
               {{ (latestCheck as Record<string, unknown>)[item.key] ? '&#10003;' : '&#10007;' }}
             </div>
             <div class="check-info">
-              <h3>{{ item.label }}</h3>
-              <p>{{ item.desc }}</p>
+              <h3>{{ t(item.labelKey) }}</h3>
+              <p>{{ t(item.descKey) }}</p>
             </div>
           </div>
         </div>
 
         <!-- Details -->
         <div v-if="latestCheck.details" class="details-section">
-          <h3>Check Details</h3>
+          <h3>{{ t('casCompliance.checkDetails') }}</h3>
           <div class="detail-items">
             <div v-if="latestCheck.details.unposted_drafts !== undefined" class="detail-item">
-              <span class="detail-label">Unposted Draft Entries:</span>
+              <span class="detail-label">{{ t('casCompliance.unpostedDrafts') }}</span>
               <span class="detail-value">{{ latestCheck.details.unposted_drafts }}</span>
             </div>
             <div v-if="latestCheck.details.journal_books" class="detail-item">
-              <span class="detail-label">Journal Book Entries:</span>
+              <span class="detail-label">{{ t('casCompliance.journalBookEntries') }}</span>
               <div class="book-counts">
                 <span
                   v-for="(count, book) in (latestCheck.details.journal_books as Record<string, number>)"
@@ -184,15 +187,15 @@ onMounted(async () => {
               </div>
             </div>
             <div v-if="latestCheck.details.sequence_gaps" class="detail-item warning">
-              <span class="detail-label">Sequence Gaps Found:</span>
+              <span class="detail-label">{{ t('casCompliance.sequenceGaps') }}</span>
               <span class="detail-value">
-                {{ (latestCheck.details.sequence_gaps as unknown[]).length }} gap(s) detected
+                {{ t('casCompliance.gapsDetected', { count: (latestCheck.details.sequence_gaps as unknown[]).length }) }}
               </span>
             </div>
             <div v-if="latestCheck.details.hash_chain_breaks" class="detail-item warning">
-              <span class="detail-label">Hash Chain Breaks:</span>
+              <span class="detail-label">{{ t('casCompliance.hashChainBreaks') }}</span>
               <span class="detail-value">
-                {{ (latestCheck.details.hash_chain_breaks as unknown[]).length }} break(s) detected
+                {{ t('casCompliance.breaksDetected', { count: (latestCheck.details.hash_chain_breaks as unknown[]).length }) }}
               </span>
             </div>
           </div>
@@ -200,8 +203,8 @@ onMounted(async () => {
       </div>
 
       <div v-else class="empty-state">
-        <p>No compliance checks have been run yet.</p>
-        <p>Click "Run Compliance Check" to verify your CAS readiness.</p>
+        <p>{{ t('casCompliance.noChecksYet') }}</p>
+        <p>{{ t('casCompliance.noChecksHint') }}</p>
       </div>
     </div>
 
@@ -209,23 +212,23 @@ onMounted(async () => {
     <div v-if="activeTab === 'ledger'" class="tab-content">
       <div class="ledger-filters">
         <div class="filter-group">
-          <label>Journal Book</label>
+          <label>{{ t('casCompliance.journalBook') }}</label>
           <select v-model="selectedBook">
             <option v-for="book in journalBooks" :key="book.value" :value="book.value">
-              {{ book.label }}
+              {{ t(book.labelKey) }}
             </option>
           </select>
         </div>
         <div class="filter-group">
-          <label>From</label>
+          <label>{{ t('casCompliance.from') }}</label>
           <input type="date" v-model="dateFrom" />
         </div>
         <div class="filter-group">
-          <label>To</label>
+          <label>{{ t('casCompliance.to') }}</label>
           <input type="date" v-model="dateTo" />
         </div>
         <button class="btn btn-primary" :disabled="ledgerLoading" @click="loadSubsidiaryLedger">
-          {{ ledgerLoading ? 'Loading...' : 'Load Ledger' }}
+          {{ ledgerLoading ? t('casCompliance.loadingLedger') : t('casCompliance.loadLedger') }}
         </button>
       </div>
 
@@ -233,15 +236,15 @@ onMounted(async () => {
         <table class="ledger-table">
           <thead>
             <tr>
-              <th>Seq #</th>
-              <th>Date</th>
-              <th>Entry #</th>
-              <th>Description</th>
-              <th>Account</th>
-              <th class="text-right">Debit</th>
-              <th class="text-right">Credit</th>
-              <th>Tax Code</th>
-              <th class="text-right">Tax Amount</th>
+              <th>{{ t('casCompliance.thSeq') }}</th>
+              <th>{{ t('casCompliance.thDate') }}</th>
+              <th>{{ t('casCompliance.thEntryNum') }}</th>
+              <th>{{ t('casCompliance.thDescription') }}</th>
+              <th>{{ t('casCompliance.thAccount') }}</th>
+              <th class="text-right">{{ t('casCompliance.thDebit') }}</th>
+              <th class="text-right">{{ t('casCompliance.thCredit') }}</th>
+              <th>{{ t('casCompliance.thTaxCode') }}</th>
+              <th class="text-right">{{ t('casCompliance.thTaxAmount') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -260,7 +263,7 @@ onMounted(async () => {
         </table>
       </div>
       <div v-else class="empty-state">
-        <p>Select a journal book type and click "Load Ledger" to view entries.</p>
+        <p>{{ t('casCompliance.ledgerEmpty') }}</p>
       </div>
     </div>
 
@@ -270,21 +273,21 @@ onMounted(async () => {
         <table class="history-table">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Overall</th>
-              <th>Seq #</th>
-              <th>Hash Chain</th>
-              <th>Double Entry</th>
-              <th>Periods</th>
-              <th>Audit Trail</th>
-              <th>Sub Ledgers</th>
+              <th>{{ t('casCompliance.thDate') }}</th>
+              <th>{{ t('casCompliance.thOverall') }}</th>
+              <th>{{ t('casCompliance.thSeq') }}</th>
+              <th>{{ t('casCompliance.thHashChain') }}</th>
+              <th>{{ t('casCompliance.thDoubleEntry') }}</th>
+              <th>{{ t('casCompliance.thPeriods') }}</th>
+              <th>{{ t('casCompliance.thAuditTrail') }}</th>
+              <th>{{ t('casCompliance.thSubLedgers') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="check in checkHistory" :key="check.id">
               <td>{{ formatDate(check.check_date) }}</td>
               <td><span :class="['status-badge', check.overall_pass ? 'pass' : 'fail']">
-                {{ check.overall_pass ? 'PASS' : 'FAIL' }}
+                {{ check.overall_pass ? t('casCompliance.pass') : t('casCompliance.fail') }}
               </span></td>
               <td><span :class="['status-dot', check.sequential_numbering_ok ? 'pass' : 'fail']"></span></td>
               <td><span :class="['status-dot', check.hash_chain_intact ? 'pass' : 'fail']"></span></td>
@@ -297,7 +300,7 @@ onMounted(async () => {
         </table>
       </div>
       <div v-else class="empty-state">
-        <p>No compliance check history available.</p>
+        <p>{{ t('casCompliance.noHistory') }}</p>
       </div>
     </div>
   </div>

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { client } from '../api/client'
 import { currencySymbol, formatCurrency } from '@/utils/currency'
 import { useAuthStore } from '../stores/auth'
 import { getReportTypes } from '../config/targetFieldsByReportType'
+
+const { t } = useI18n()
 
 interface PenaltyResult {
   surcharge: number
@@ -34,7 +37,7 @@ const formTypes = computed(() => getReportTypes(auth.jurisdiction).filter(r => r
 
 async function calculate() {
   if (!period.value || daysLate.value <= 0 || taxDue.value <= 0) {
-    error.value = 'Please fill in all fields with valid values.'
+    error.value = t('penaltyCalc.fillAllFields')
     return
   }
   loading.value = true
@@ -50,7 +53,7 @@ async function calculate() {
     result.value = res.data.data
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } }
-    error.value = err.response?.data?.error || 'Calculation failed'
+    error.value = err.response?.data?.error || t('penaltyCalc.calculationFailed')
   } finally {
     loading.value = false
   }
@@ -63,57 +66,57 @@ function formatPeso(val: number): string {
 
 <template>
   <div class="penalty-calc">
-    <h2>Penalty Calculator</h2>
-    <p class="subtitle">{{ isSG ? 'Calculate late filing penalties for IRAS returns' : 'Calculate surcharge, interest, and compromise penalties for late BIR filings' }}</p>
+    <h2>{{ t('penaltyCalc.title') }}</h2>
+    <p class="subtitle">{{ isSG ? t('penaltyCalc.subtitleSG') : t('penaltyCalc.subtitlePH') }}</p>
 
     <div class="form-grid">
       <div class="field">
-        <label>Form Type</label>
+        <label>{{ t('penaltyCalc.formType') }}</label>
         <select v-model="formType">
           <option v-for="ft in formTypes" :key="ft.value" :value="ft.value">{{ ft.label }}</option>
         </select>
       </div>
       <div class="field">
-        <label>Period (YYYY-MM)</label>
+        <label>{{ t('penaltyCalc.periodLabel') }}</label>
         <input v-model="period" type="month" placeholder="2026-01" />
       </div>
       <div class="field">
-        <label>Days Late</label>
+        <label>{{ t('penaltyCalc.daysLate') }}</label>
         <input v-model.number="daysLate" type="number" min="1" />
       </div>
       <div class="field">
-        <label>Basic Tax Due ({{ currencySymbol() }})</label>
+        <label>{{ t('penaltyCalc.basicTaxDue', { symbol: currencySymbol() }) }}</label>
         <input v-model.number="taxDue" type="number" min="0" step="0.01" />
       </div>
     </div>
 
     <button class="calc-btn" :disabled="loading" @click="calculate">
-      {{ loading ? 'Calculating...' : 'Calculate Penalty' }}
+      {{ loading ? t('penaltyCalc.calculating') : t('penaltyCalc.calculatePenalty') }}
     </button>
 
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="result" class="result-card">
-      <h3>Penalty Breakdown</h3>
+      <h3>{{ t('penaltyCalc.penaltyBreakdown') }}</h3>
       <table class="result-table">
         <tbody>
           <tr>
-            <td>Surcharge ({{ (parseFloat(result.details.surcharge_rate) * 100).toFixed(0) }}%)</td>
+            <td>{{ t('penaltyCalc.surcharge', { rate: (parseFloat(result.details.surcharge_rate) * 100).toFixed(0) }) }}</td>
             <td class="amount">{{ formatPeso(result.surcharge) }}</td>
             <td class="ref">{{ result.details.surcharge_ref }}</td>
           </tr>
           <tr>
-            <td>Interest ({{ (parseFloat(result.details.interest_rate) * 100).toFixed(0) }}% p.a. x {{ daysLate }} days)</td>
+            <td>{{ t('penaltyCalc.interest', { rate: (parseFloat(result.details.interest_rate) * 100).toFixed(0), days: daysLate }) }}</td>
             <td class="amount">{{ formatPeso(result.interest) }}</td>
             <td class="ref">{{ result.details.interest_ref }}</td>
           </tr>
           <tr>
-            <td>Compromise Penalty</td>
+            <td>{{ t('penaltyCalc.compromisePenalty') }}</td>
             <td class="amount">{{ formatPeso(result.compromise) }}</td>
             <td class="ref">{{ result.details.compromise_ref }}</td>
           </tr>
           <tr class="total-row">
-            <td><strong>Total Penalty</strong></td>
+            <td><strong>{{ t('penaltyCalc.totalPenalty') }}</strong></td>
             <td class="amount"><strong>{{ formatPeso(result.total_penalty) }}</strong></td>
             <td></td>
           </tr>

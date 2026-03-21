@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useWithholdingStore } from '../stores/withholding'
 import { useAuthStore } from '../stores/auth'
 import EwtSummaryCards from '../components/withholding/EwtSummaryCards.vue'
 import CertificateTable from '../components/withholding/CertificateTable.vue'
 
+const { t } = useI18n()
 const store = useWithholdingStore()
 const auth = useAuthStore()
 const isSG = computed(() => auth.jurisdiction === 'SG')
@@ -41,7 +43,7 @@ async function loadData() {
       store.fetchCertificates(1, 50, selectedPeriod.value),
     ])
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Failed to load data'
+    error.value = e?.response?.data?.error ?? t('withholding.loadFailed')
   }
 }
 
@@ -49,7 +51,7 @@ async function handleDownloadCert(certId: string) {
   try {
     await store.downloadCertificate(certId)
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Download failed'
+    error.value = e?.response?.data?.error ?? t('withholding.downloadFailed')
   }
 }
 
@@ -57,7 +59,7 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
   try {
     await store.downloadSawt(selectedPeriod.value, format)
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? (isSG.value ? 'WHT summary download failed' : 'SAWT download failed')
+    error.value = e?.response?.data?.error ?? (isSG.value ? t('withholding.whtDownloadFailed') : t('withholding.sawtDownloadFailed'))
   }
 }
 </script>
@@ -65,9 +67,9 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
 <template>
   <div class="withholding-view">
     <div class="view-header">
-      <h2>{{ isSG ? 'Withholding Tax (S45) Dashboard' : 'Withholding Tax Dashboard' }}</h2>
+      <h2>{{ isSG ? t('withholding.titleSG') : t('withholding.titlePH') }}</h2>
       <div class="header-actions">
-        <router-link to="/vendors" class="btn">Manage Vendors</router-link>
+        <router-link to="/vendors" class="btn">{{ t('withholding.manageVendors') }}</router-link>
       </div>
     </div>
 
@@ -76,14 +78,14 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
     <!-- Period Selector -->
     <div class="control-panel">
       <div class="control-row">
-        <label>Period:</label>
+        <label>{{ t('withholding.period') }}</label>
         <select v-model="selectedPeriod" @change="loadData">
           <option v-for="p in periodOptions" :key="p" :value="p">{{ p }}</option>
         </select>
       </div>
       <div class="control-actions">
-        <button class="btn" @click="handleDownloadSawt('csv')">{{ isSG ? 'Download WHT Summary (CSV)' : 'Download SAWT (CSV)' }}</button>
-        <button class="btn" @click="handleDownloadSawt('pdf')">{{ isSG ? 'Download WHT Summary (PDF)' : 'Download SAWT (PDF)' }}</button>
+        <button class="btn" @click="handleDownloadSawt('csv')">{{ isSG ? t('withholding.downloadWhtCsv') : t('withholding.downloadSawtCsv') }}</button>
+        <button class="btn" @click="handleDownloadSawt('pdf')">{{ isSG ? t('withholding.downloadWhtPdf') : t('withholding.downloadSawtPdf') }}</button>
       </div>
     </div>
 
@@ -91,18 +93,15 @@ async function handleDownloadSawt(format: 'csv' | 'pdf') {
     <EwtSummaryCards v-if="store.ewtSummary" :summary="store.ewtSummary" :jurisdiction="auth.jurisdiction" />
 
     <div v-if="!store.ewtSummary && !store.loading" class="empty-state">
-      <p>No withholding tax data for this period.</p>
+      <p>{{ t('withholding.noData') }}</p>
       <p class="hint">
-        {{ isSG
-          ? 'To generate data: Go to Reconciliation, classify transactions for WHT, then generate S45 certificates.'
-          : 'To generate data: Go to Reconciliation, classify transactions for EWT, then generate BIR 2307 certificates.'
-        }}
+        {{ isSG ? t('withholding.hintSG') : t('withholding.hintPH') }}
       </p>
     </div>
 
     <!-- Certificates -->
     <div class="section" v-if="store.certificates.length > 0">
-      <h3>{{ isSG ? 'S45 WHT Certificates' : 'BIR 2307 Certificates' }}</h3>
+      <h3>{{ isSG ? t('withholding.certTitleSG') : t('withholding.certTitlePH') }}</h3>
       <CertificateTable
         :certificates="store.certificates"
         :jurisdiction="auth.jurisdiction"

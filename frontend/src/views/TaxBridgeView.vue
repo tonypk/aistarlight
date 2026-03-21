@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAccountingStore } from '../stores/accounting'
 import { useAuthStore } from '../stores/auth'
 import { currencyLocale } from '@/utils/currency'
 import { integrationApi } from '../api/integration'
 
+const { t } = useI18n()
 const store = useAccountingStore()
 const auth = useAuthStore()
 const isSG = computed(() => auth.jurisdiction === 'SG')
@@ -176,52 +178,52 @@ function getDisplayFields() {
 <template>
   <div class="page">
     <div class="page-header">
-      <h1>Tax Calculation from GL</h1>
-      <p class="subtitle">{{ isSG ? 'Auto-populate IRAS tax forms from General Ledger balances' : 'Auto-populate BIR tax forms from General Ledger balances' }}</p>
+      <h1>{{ t('taxBridge.title') }}</h1>
+      <p class="subtitle">{{ isSG ? t('taxBridge.subtitleSG') : t('taxBridge.subtitlePH') }}</p>
     </div>
 
     <div class="form-card">
       <div class="form-row">
         <label>
-          {{ isSG ? 'Tax Form' : 'BIR Form' }}
+          {{ isSG ? t('taxBridge.taxForm') : t('taxBridge.birForm') }}
           <select v-model="formType" @change="onFormChange" class="select">
             <option v-for="f in formTypes" :key="f.value" :value="f.value">{{ f.label }}</option>
           </select>
         </label>
 
         <label v-if="selectedForm.period === 'month'">
-          Period
+          {{ t('taxBridge.period') }}
           <input type="month" v-model="periodMonth" class="input" />
         </label>
         <label v-else>
-          Year
+          {{ t('taxBridge.year') }}
           <input type="number" v-model="year" min="2020" max="2030" class="input" />
         </label>
 
         <button class="btn btn-primary" @click="calculate" :disabled="store.loading">
-          {{ store.loading ? 'Calculating...' : 'Calculate from GL' }}
+          {{ store.loading ? t('taxBridge.calculating') : t('taxBridge.calculateFromGL') }}
         </button>
       </div>
     </div>
 
     <!-- HR Integration badge -->
     <div v-if="hasHRIntegration" class="hr-badge-banner">
-      <span class="hr-badge">Payroll Auto-fill Active</span>
+      <span class="hr-badge">{{ t('taxBridge.payrollActive') }}</span>
       <span class="hr-badge-meta">
-        Connected to AIGoNHR
-        <template v-if="lastHREventAt">&middot; Last event: {{ new Date(lastHREventAt).toLocaleString() }}</template>
+        {{ t('taxBridge.connectedHR') }}
+        <template v-if="lastHREventAt">&middot; {{ t('taxBridge.lastEvent', { time: new Date(lastHREventAt).toLocaleString() }) }}</template>
       </span>
     </div>
 
     <!-- Auto-calculated draft banner -->
     <div v-if="store.taxDraft" class="draft-banner">
       <div class="draft-info">
-        <span class="auto-badge">Auto-calculated from GL</span>
-        <span v-if="store.taxDraft.triggered_by === 'payroll_event'" class="payroll-badge">From Payroll</span>
+        <span class="auto-badge">{{ t('taxBridge.autoCalcFromGL') }}</span>
+        <span v-if="store.taxDraft.triggered_by === 'payroll_event'" class="payroll-badge">{{ t('taxBridge.fromPayroll') }}</span>
         <span class="draft-meta">
-          Last updated: {{ formatDraftTime(store.taxDraft.created_at) }}
-          &middot; Period: {{ store.taxDraft.period_start }} to {{ store.taxDraft.period_end }}
-          &middot; Triggered by: {{ store.taxDraft.triggered_by }}
+          {{ t('taxBridge.lastUpdated', { time: formatDraftTime(store.taxDraft.created_at) }) }}
+          &middot; {{ t('taxBridge.periodRange', { start: store.taxDraft.period_start, end: store.taxDraft.period_end }) }}
+          &middot; {{ t('taxBridge.triggeredBy', { trigger: store.taxDraft.triggered_by }) }}
         </span>
       </div>
     </div>
@@ -229,17 +231,17 @@ function getDisplayFields() {
     <!-- Results -->
     <div v-if="store.taxResult" class="result-card">
       <div class="result-header">
-        <h2>{{ store.taxResult.form_type }} Calculation Result</h2>
+        <h2>{{ t('taxBridge.calcResult', { form: store.taxResult.form_type }) }}</h2>
         <div class="result-actions">
           <button v-if="formType === 'BIR_2550M' && !isSG" class="btn btn-secondary" @click="exportDAT">
-            Export DAT File
+            {{ t('taxBridge.exportDat') }}
           </button>
         </div>
       </div>
 
       <div class="result-meta">
-        Period: {{ store.taxResult.period_start?.slice(0, 10) }} to {{ store.taxResult.period_end?.slice(0, 10) }}
-        <span v-if="store.taxResult.result?.gl_source" class="gl-badge">From GL</span>
+        {{ t('taxBridge.resultPeriod', { start: store.taxResult.period_start?.slice(0, 10), end: store.taxResult.period_end?.slice(0, 10) }) }}
+        <span v-if="store.taxResult.result?.gl_source" class="gl-badge">{{ t('taxBridge.fromGL') }}</span>
       </div>
 
       <table class="result-table">
@@ -253,7 +255,7 @@ function getDisplayFields() {
 
       <!-- Raw result expandable -->
       <details class="raw-section">
-        <summary>View all fields</summary>
+        <summary>{{ t('taxBridge.viewAllFields') }}</summary>
         <table class="result-table raw">
           <tbody>
             <tr v-for="(val, key) in store.taxResult.result" :key="key">
