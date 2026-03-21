@@ -2,10 +2,12 @@
 import { onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
+const { t } = useI18n()
 
 const error = ref('')
 const loading = ref(true)
@@ -33,12 +35,12 @@ onMounted(async () => {
   <div class="sso-callback">
     <div v-if="loading" class="sso-loading">
       <div class="spinner"></div>
-      <p>Signing you in...</p>
+      <p>{{ t('common.loading') }}</p>
     </div>
     <div v-else-if="error" class="sso-error">
       <h2>SSO Login Failed</h2>
       <p>{{ error }}</p>
-      <router-link to="/login" class="login-link">Go to Login</router-link>
+      <router-link to="/login" class="login-link">{{ t('auth.login') }}</router-link>
     </div>
   </div>
 </template>
@@ -49,8 +51,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #0f0f23;
-  color: #e2e8f0;
+  background: var(--bg-app);
 }
 .sso-loading {
   text-align: center;
@@ -58,8 +59,8 @@ onMounted(async () => {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #6366f1;
+  border: 3px solid var(--border-default);
+  border-top-color: var(--brand-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 16px;
@@ -69,25 +70,26 @@ onMounted(async () => {
 }
 .sso-loading p {
   font-size: 16px;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 .sso-error {
   text-align: center;
   max-width: 400px;
   padding: 32px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
   border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 .sso-error h2 {
   color: #f87171;
   margin-bottom: 12px;
 }
 .sso-error p {
-  color: #94a3b8;
+  color: var(--text-secondary);
   margin-bottom: 20px;
 }
 .login-link {
-  color: #6366f1;
+  color: var(--brand-primary);
   text-decoration: none;
   font-weight: 600;
 }
