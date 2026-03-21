@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { client } from '../api/client'
+
+const { t } = useI18n()
 
 interface FilingEvent {
   form: string
@@ -38,33 +41,33 @@ function formatDate(iso: string): string {
 }
 
 function daysLabel(days: number): string {
-  if (days < 0) return `${Math.abs(days)}d overdue`
-  if (days === 0) return 'Due today'
-  if (days === 1) return 'Tomorrow'
-  return `${days} days`
+  if (days < 0) return t('filingCalendar.daysOverdue', { days: Math.abs(days) })
+  if (days === 0) return t('filingCalendar.dueToday')
+  if (days === 1) return t('filingCalendar.tomorrow')
+  return t('filingCalendar.daysRemaining', { days })
 }
 </script>
 
 <template>
   <div class="calendar-view">
     <div class="header">
-      <h2>Filing Calendar</h2>
+      <h2>{{ t('filingCalendar.title') }}</h2>
       <div class="controls">
         <select v-model="monthsAhead" @change="loadCalendar()">
-          <option :value="1">1 month</option>
-          <option :value="3">3 months</option>
-          <option :value="6">6 months</option>
-          <option :value="12">12 months</option>
+          <option :value="1">{{ t('filingCalendar.month1') }}</option>
+          <option :value="3">{{ t('filingCalendar.month3') }}</option>
+          <option :value="6">{{ t('filingCalendar.month6') }}</option>
+          <option :value="12">{{ t('filingCalendar.month12') }}</option>
         </select>
       </div>
     </div>
 
-    <div v-if="loading" class="loading">Loading calendar...</div>
+    <div v-if="loading" class="loading">{{ t('filingCalendar.loadingCalendar') }}</div>
 
     <template v-else>
       <!-- Overdue -->
       <div v-if="overdueEvents.length" class="section">
-        <h3 class="section-title overdue-title">Overdue ({{ overdueEvents.length }})</h3>
+        <h3 class="section-title overdue-title">{{ t('filingCalendar.overdue', { count: overdueEvents.length }) }}</h3>
         <div class="event-list">
           <div v-for="e in overdueEvents" :key="e.form + e.deadline" class="event-card overdue">
             <div class="event-left">
@@ -82,7 +85,7 @@ function daysLabel(days: number): string {
 
       <!-- Upcoming (within 7 days) -->
       <div v-if="upcomingEvents.length" class="section">
-        <h3 class="section-title upcoming-title">Due This Week ({{ upcomingEvents.length }})</h3>
+        <h3 class="section-title upcoming-title">{{ t('filingCalendar.dueThisWeek', { count: upcomingEvents.length }) }}</h3>
         <div class="event-list">
           <div v-for="e in upcomingEvents" :key="e.form + e.deadline" class="event-card upcoming">
             <div class="event-left">
@@ -100,15 +103,15 @@ function daysLabel(days: number): string {
 
       <!-- Scheduled -->
       <div v-if="scheduledEvents.length" class="section">
-        <h3 class="section-title">Upcoming Deadlines ({{ scheduledEvents.length }})</h3>
+        <h3 class="section-title">{{ t('filingCalendar.upcomingDeadlines', { count: scheduledEvents.length }) }}</h3>
         <table class="calendar-table">
           <thead>
             <tr>
-              <th>Form</th>
-              <th>Description</th>
-              <th>Period</th>
-              <th>Deadline</th>
-              <th>Days Left</th>
+              <th>{{ t('filingCalendar.thForm') }}</th>
+              <th>{{ t('filingCalendar.thDescription') }}</th>
+              <th>{{ t('filingCalendar.thPeriod') }}</th>
+              <th>{{ t('filingCalendar.thDeadline') }}</th>
+              <th>{{ t('filingCalendar.thDaysLeft') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -124,7 +127,7 @@ function daysLabel(days: number): string {
       </div>
 
       <div v-if="!events.length" class="empty">
-        No filing deadlines found for the selected period.
+        {{ t('filingCalendar.noDeadlines') }}
       </div>
     </template>
   </div>

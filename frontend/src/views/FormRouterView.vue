@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { client } from '../api/client'
 import { useAuthStore } from '../stores/auth'
+
+const { t } = useI18n()
 
 const auth = useAuthStore()
 const isSG = computed(() => auth.jurisdiction === 'SG')
@@ -43,9 +46,9 @@ async function getRecommendations() {
 
 function freqLabel(freq: string): string {
   const map: Record<string, string> = {
-    monthly: 'Monthly',
-    quarterly: 'Quarterly',
-    annual: 'Annual',
+    monthly: t('formRouter.monthly'),
+    quarterly: t('formRouter.quarterly'),
+    annual: t('formRouter.annual'),
   }
   return map[freq] || freq
 }
@@ -62,36 +65,36 @@ function freqClass(freq: string): string {
 
 <template>
   <div class="form-router">
-    <h2>Form Router</h2>
-    <p class="subtitle">Find out which {{ isSG ? 'IRAS' : 'BIR' }} forms your company needs to file</p>
+    <h2>{{ t('formRouter.title') }}</h2>
+    <p class="subtitle">{{ t('formRouter.subtitle', { authority: isSG ? 'IRAS' : 'BIR' }) }}</p>
 
     <div class="profile-form">
       <div class="field">
         <label>
           <input type="checkbox" v-model="vatRegistered" />
-          {{ isSG ? 'GST Registered' : 'VAT Registered' }}
+          {{ isSG ? t('formRouter.gstRegistered') : t('formRouter.vatRegistered') }}
         </label>
       </div>
       <div class="field">
         <label>
           <input type="checkbox" v-model="hasEmployees" />
-          Has Employees
+          {{ t('formRouter.hasEmployees') }}
         </label>
       </div>
       <div class="field">
-        <label>Entity Type</label>
+        <label>{{ t('formRouter.entityType') }}</label>
         <select v-model="entityType">
-          <option value="corporation">Corporation</option>
-          <option value="individual">Individual / Sole Proprietor</option>
+          <option value="corporation">{{ t('formRouter.corporation') }}</option>
+          <option value="individual">{{ t('formRouter.individual') }}</option>
         </select>
       </div>
       <button class="recommend-btn" :disabled="loading" @click="getRecommendations">
-        {{ loading ? 'Loading...' : 'Get Recommendations' }}
+        {{ loading ? t('formRouter.loading') : t('formRouter.getRecommendations') }}
       </button>
     </div>
 
     <div v-if="hasSearched && recommendations.length" class="results">
-      <h3>Required Forms ({{ recommendations.filter(r => r.required).length }} required, {{ recommendations.filter(r => !r.required).length }} optional)</h3>
+      <h3>{{ t('formRouter.requiredForms', { required: recommendations.filter(r => r.required).length, optional: recommendations.filter(r => !r.required).length }) }}</h3>
       <div class="form-cards">
         <div
           v-for="rec in recommendations"
@@ -106,15 +109,15 @@ function freqClass(freq: string): string {
           <div class="card-name">{{ rec.name }}</div>
           <div class="card-reason">{{ rec.reason }}</div>
           <div v-if="rec.deadline_day" class="card-deadline">
-            Deadline: {{ rec.deadline_day }}th of following month
+            {{ t('formRouter.deadline', { day: rec.deadline_day }) }}
           </div>
-          <span v-if="!rec.required" class="optional-badge">Optional</span>
+          <span v-if="!rec.required" class="optional-badge">{{ t('formRouter.optional') }}</span>
         </div>
       </div>
     </div>
 
     <div v-if="hasSearched && !recommendations.length && !loading" class="no-results">
-      No form recommendations found.
+      {{ t('formRouter.noResults') }}
     </div>
   </div>
 </template>

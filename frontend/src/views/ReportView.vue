@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ComplianceScoreBadge from '../components/report/ComplianceScoreBadge.vue'
 import ReportPreview from '../components/report/ReportPreview.vue'
@@ -8,6 +9,8 @@ import { useReportStore } from '../stores/report'
 import { useUploadStore } from '../stores/upload'
 import { useAuthStore } from '../stores/auth'
 import { reconciliationApi } from '../api/transactions'
+
+const { t } = useI18n()
 
 interface SessionOption {
   id: string
@@ -116,13 +119,13 @@ async function handleGenerate() {
         column_mappings: uploadStore.confirmedMappings,
       })
     } else {
-      error.value = 'Please select a session or upload a file first'
+      error.value = t('reports.selectSessionOrUpload')
       return
     }
     await reportStore.fetchReports()
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } }
-    error.value = err.response?.data?.error || 'Failed to generate report'
+    error.value = err.response?.data?.error || t('reports.generateFailed')
   } finally {
     generating.value = false
   }
@@ -168,9 +171,9 @@ async function handleTransition(id: string, targetStatus: string, comment?: stri
     if (err.response?.data?.data?.failed_checks) {
       complianceFixes.value = err.response.data.data.failed_checks
       complianceFixReportId.value = id
-      error.value = err.response.data.error || 'Compliance check failed'
+      error.value = err.response.data.error || t('taxPrep.complianceCheckFailed')
     } else {
-      error.value = err.response?.data?.error || 'Transition failed'
+      error.value = err.response?.data?.error || t('reports.transitionFailed')
     }
   } finally {
     transitioning.value = null
@@ -187,7 +190,7 @@ async function handleAmend(id: string) {
     }
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } }
-    error.value = err.response?.data?.error || 'Failed to create amendment'
+    error.value = err.response?.data?.error || t('reports.amendFailed')
   } finally {
     transitioning.value = null
   }
@@ -208,18 +211,18 @@ async function toggleAmendments(id: string) {
 
 function getWorkflowActions(status: string): { label: string; target: string; color: string }[] {
   const map: Record<string, { label: string; target: string; color: string }[]> = {
-    draft: [{ label: 'Submit for Review', target: 'review', color: '#3b82f6' }],
+    draft: [{ label: t('reports.submitForReview'), target: 'review', color: '#3b82f6' }],
     review: [
-      { label: 'Approve', target: 'approved', color: '#22c55e' },
-      { label: 'Reject', target: 'rejected', color: '#ef4444' },
-      { label: 'Return to Draft', target: 'draft', color: '#f59e0b' },
+      { label: t('reports.approve'), target: 'approved', color: '#22c55e' },
+      { label: t('reports.reject'), target: 'rejected', color: '#ef4444' },
+      { label: t('reports.returnToDraft'), target: 'draft', color: '#f59e0b' },
     ],
     approved: [
-      { label: 'Mark as Filed', target: 'filed', color: '#8b5cf6' },
-      { label: 'Return to Review', target: 'review', color: '#f59e0b' },
+      { label: t('reports.markAsFiled'), target: 'filed', color: '#8b5cf6' },
+      { label: t('reports.returnToReview'), target: 'review', color: '#f59e0b' },
     ],
-    rejected: [{ label: 'Return to Draft', target: 'draft', color: '#f59e0b' }],
-    filed: [{ label: 'Archive', target: 'archived', color: '#6b7280' }],
+    rejected: [{ label: t('reports.returnToDraft'), target: 'draft', color: '#f59e0b' }],
+    filed: [{ label: t('reports.archive'), target: 'archived', color: '#6b7280' }],
     archived: [],
   }
   return map[status] || []
@@ -250,15 +253,15 @@ function formatFormType(type: string): string {
 <template>
   <div class="report-view">
     <div class="header-row">
-      <h2>Reports</h2>
+      <h2>{{ t('reports.title') }}</h2>
     </div>
 
     <!-- Generation form -->
     <div class="gen-card">
-      <h3>Generate Report</h3>
+      <h3>{{ t('reports.generateReport') }}</h3>
 
       <div class="form-row">
-        <label>Form Type:</label>
+        <label>{{ t('reports.formType') }}</label>
         <select v-model="selectedFormType" class="form-select" data-testid="report-form-type">
           <option v-for="form in availableForms" :key="form.form_type" :value="form.form_type">
             {{ formatFormType(form.form_type) }} — {{ form.name }}
@@ -267,9 +270,9 @@ function formatFormType(type: string): string {
       </div>
 
       <div class="form-row">
-        <label>Data Source:</label>
+        <label>{{ t('reports.dataSource') }}</label>
         <select v-model="selectedSessionId" class="form-select">
-          <option value="">— Select a session —</option>
+          <option value="">{{ t('reports.selectSession') }}</option>
           <option v-for="s in sessions" :key="s.id" :value="s.id">
             {{ s.period }} ({{ s.status }}) — {{ new Date(s.created_at).toLocaleDateString() }}
           </option>
@@ -277,20 +280,20 @@ function formatFormType(type: string): string {
       </div>
 
       <div v-if="dataSource === 'session'" class="data-source">
-        Generating from session data (VAT summary from reconciliation)
+        {{ t('reports.generatingFromSession') }}
       </div>
       <div v-else-if="dataSource === 'file'" class="data-source">
-        Using uploaded file: <strong>{{ uploadStore.filename }}</strong>
-        with {{ Object.keys(uploadStore.confirmedMappings).length }} mapped columns
+        {{ t('reports.usingUploadedFile') }} <strong>{{ uploadStore.filename }}</strong>
+        {{ t('reports.mappedColumns', { count: Object.keys(uploadStore.confirmedMappings).length }) }}
       </div>
       <div v-else class="data-source data-source-warn">
-        No data source selected.
-        <router-link to="/classification">Classify transactions</router-link> or
-        <router-link to="/upload">upload a file</router-link> first.
+        {{ t('reports.noDataSource') }}
+        <router-link to="/classification">{{ t('reports.classifyTransactions') }}</router-link> {{ t('reports.or') }}
+        <router-link to="/upload">{{ t('reports.uploadFile') }}</router-link> {{ t('reports.first') }}
       </div>
 
       <div class="form-row">
-        <label>Period:</label>
+        <label>{{ t('reports.period') }}</label>
         <input type="month" v-model="period" data-testid="report-period" />
         <button
           class="gen-btn"
@@ -298,7 +301,7 @@ function formatFormType(type: string): string {
           :disabled="generating || !canGenerate"
           data-testid="report-generate-btn"
         >
-          {{ generating ? 'Generating...' : 'Generate Report' }}
+          {{ generating ? t('reports.generating') : t('reports.generateReportBtn') }}
         </button>
       </div>
       <p v-if="error" class="error">{{ error }}</p>
@@ -306,7 +309,7 @@ function formatFormType(type: string): string {
 
     <!-- F1: Compliance Fix Suggestions -->
     <div v-if="complianceFixes.length" class="fixes-panel">
-      <h4>Compliance Issues to Fix</h4>
+      <h4>{{ t('reports.complianceIssuesToFix') }}</h4>
       <div v-for="fix in complianceFixes" :key="fix.check_id" class="fix-item" :class="fix.severity">
         <div class="fix-header">
           <span class="fix-severity" :class="fix.severity">{{ fix.severity }}</span>
@@ -314,41 +317,41 @@ function formatFormType(type: string): string {
         </div>
         <p class="fix-message">{{ fix.message }}</p>
         <p class="fix-suggestion">{{ fix.fix_suggestion }}</p>
-        <span v-if="fix.target_field" class="fix-field">Field: {{ fix.target_field }}</span>
+        <span v-if="fix.target_field" class="fix-field">{{ t('reports.field', { field: fix.target_field }) }}</span>
       </div>
       <button v-if="complianceFixReportId" class="edit-btn" @click="handleEdit(complianceFixReportId)">
-        Edit Report to Fix Issues
+        {{ t('reports.editReportToFix') }}
       </button>
     </div>
 
     <!-- F8: Transition Comment Dialog -->
     <div v-if="showCommentDialog" class="dialog-overlay" @click.self="showCommentDialog = false">
       <div class="dialog">
-        <h4>{{ pendingTransition?.target === 'approved' ? 'Approve' : pendingTransition?.target === 'rejected' ? 'Reject' : 'File' }} Report</h4>
-        <label>Comment (optional):</label>
-        <textarea v-model="transitionComment" rows="3" placeholder="Add a comment..."></textarea>
+        <h4>{{ pendingTransition?.target === 'approved' ? t('reports.approve') : pendingTransition?.target === 'rejected' ? t('reports.reject') : t('reports.file') }} {{ t('reports.report') }}</h4>
+        <label>{{ t('reports.commentOptional') }}</label>
+        <textarea v-model="transitionComment" rows="3" :placeholder="t('reports.addComment')"></textarea>
         <div class="dialog-actions">
-          <button class="cancel-btn" @click="showCommentDialog = false">Cancel</button>
-          <button class="confirm-btn" @click="confirmTransition">Confirm</button>
+          <button class="cancel-btn" @click="showCommentDialog = false">{{ t('common.cancel') }}</button>
+          <button class="confirm-btn" @click="confirmTransition">{{ t('common.confirm') }}</button>
         </div>
       </div>
     </div>
 
     <!-- F9: Amendment Chain -->
     <div v-if="showAmendments && amendments.length" class="amendments-panel">
-      <h4>Amendment Chain</h4>
+      <h4>{{ t('reports.amendmentChain') }}</h4>
       <table class="amendments-table">
-        <thead><tr><th>#</th><th>Status</th><th>Period</th><th>Created</th></tr></thead>
+        <thead><tr><th>#</th><th>{{ t('reports.thStatus') }}</th><th>{{ t('reports.thPeriod') }}</th><th>{{ t('reports.thCreated') }}</th></tr></thead>
         <tbody>
           <tr v-for="a in amendments" :key="(a as any).id">
-            <td>{{ (a as any).amendment_number === 0 ? 'Original' : 'Amendment #' + (a as any).amendment_number }}</td>
+            <td>{{ (a as any).amendment_number === 0 ? t('reports.original') : t('reports.amendmentNum', { num: (a as any).amendment_number }) }}</td>
             <td><span class="badge" :class="statusColor((a as any).status)">{{ (a as any).status }}</span></td>
             <td>{{ (a as any).period }}</td>
             <td>{{ new Date((a as any).created_at).toLocaleDateString() }}</td>
           </tr>
         </tbody>
       </table>
-      <button class="cancel-btn" @click="showAmendments = null">Close</button>
+      <button class="cancel-btn" @click="showAmendments = null">{{ t('reports.close') }}</button>
     </div>
 
     <!-- Current report preview -->
@@ -362,16 +365,16 @@ function formatFormType(type: string): string {
 
     <!-- Report history -->
     <div class="report-list" v-if="reportStore.reports.length" data-testid="report-table">
-      <h3>Previous Reports</h3>
+      <h3>{{ t('reports.previousReports') }}</h3>
       <table>
         <thead>
           <tr>
-            <th>Type</th>
-            <th>Period</th>
-            <th>Status</th>
-            <th>Compliance</th>
-            <th>Created</th>
-            <th>Actions</th>
+            <th>{{ t('reports.thType') }}</th>
+            <th>{{ t('reports.thPeriod') }}</th>
+            <th>{{ t('reports.thStatus') }}</th>
+            <th>{{ t('reports.thCompliance') }}</th>
+            <th>{{ t('reports.thCreated') }}</th>
+            <th>{{ t('reports.thActions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -382,25 +385,25 @@ function formatFormType(type: string): string {
             <td><ComplianceScoreBadge :score="r.compliance_score ?? null" /></td>
             <td>{{ new Date(r.created_at).toLocaleDateString() }}</td>
             <td class="actions-cell">
-              <button class="dl-btn" @click="handleDownload(r.id)">PDF</button>
-              <button class="csv-btn" @click="reportStore.exportCsv(r.id)">CSV</button>
-              <button class="excel-btn" @click="reportStore.exportExcel(r.id)">Excel</button>
+              <button class="dl-btn" @click="handleDownload(r.id)">{{ t('reports.pdf') }}</button>
+              <button class="csv-btn" @click="reportStore.exportCsv(r.id)">{{ t('reports.csv') }}</button>
+              <button class="excel-btn" @click="reportStore.exportExcel(r.id)">{{ t('reports.excel') }}</button>
               <button
                 v-if="isEditable(r.status)"
                 class="edit-btn"
                 @click="handleEdit(r.id)"
-              >Edit</button>
+              >{{ t('common.edit') }}</button>
               <button
                 v-if="r.status === 'filed'"
                 class="amend-btn"
                 :disabled="transitioning === r.id"
                 @click="handleAmend(r.id)"
-              >Amend</button>
+              >{{ t('reports.amend') }}</button>
               <button
                 v-if="(r as any).amendment_number > 0 || (r as any).original_report_id"
                 class="chain-btn"
                 @click="toggleAmendments(r.id)"
-              >Chain</button>
+              >{{ t('reports.chain') }}</button>
               <button
                 v-for="action in getWorkflowActions(r.status)"
                 :key="action.target"

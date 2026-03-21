@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, reactive } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AuditTrail from '../components/report/AuditTrail.vue'
 import CorrectionHistory from '../components/correction/CorrectionHistory.vue'
@@ -7,6 +8,8 @@ import ValidationResultsPanel from '../components/report/ValidationResultsPanel.
 import { formsApi, type FormSection } from '../api/forms'
 import { useReportStore } from '../stores/report'
 import { currencyLocale, currencySymbol } from '@/utils/currency'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -151,7 +154,7 @@ async function handleSave() {
     reportStore.fetchAuditLogs(reportId)
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } }
-    error.value = err.response?.data?.error || 'Failed to save changes'
+    error.value = err.response?.data?.error || t('reportEdit.saveFailed')
   } finally {
     saving.value = false
   }
@@ -165,27 +168,27 @@ function handleBack() {
 <template>
   <div class="edit-view">
     <div class="header-row">
-      <button class="back-btn" @click="handleBack">&larr; Back to Reports</button>
-      <h2>Edit Report</h2>
+      <button class="back-btn" @click="handleBack">&larr; {{ t('reportEdit.backToReports') }}</button>
+      <h2>{{ t('reportEdit.title') }}</h2>
       <div class="version-badge">v{{ reportVersion }}</div>
     </div>
 
     <div v-if="reportStore.currentReport" class="edit-card">
       <div class="report-meta">
-        <span><strong>Type:</strong> {{ reportStore.currentReport.report_type }}</span>
-        <span><strong>Period:</strong> {{ reportStore.currentReport.period }}</span>
-        <span><strong>Status:</strong>
+        <span><strong>{{ t('reportEdit.type') }}</strong> {{ reportStore.currentReport.report_type }}</span>
+        <span><strong>{{ t('reportEdit.period') }}</strong> {{ reportStore.currentReport.period }}</span>
+        <span><strong>{{ t('reportEdit.status') }}</strong>
           <span class="badge" :class="reportStore.currentReport.status as string">
             {{ reportStore.currentReport.status }}
           </span>
         </span>
-        <span v-if="schemaLoaded" class="schema-badge">Schema-driven</span>
+        <span v-if="schemaLoaded" class="schema-badge">{{ t('reportEdit.schemaDriven') }}</span>
       </div>
 
       <div class="options-row">
         <label class="toggle">
           <input type="checkbox" v-model="recalculate" />
-          Auto-recalculate dependent fields
+          {{ t('reportEdit.autoRecalculate') }}
         </label>
       </div>
 
@@ -224,7 +227,7 @@ function handleBack() {
 
       <!-- Change summary -->
       <div v-if="hasChanges" class="diff-preview">
-        <h4>Pending Changes</h4>
+        <h4>{{ t('reportEdit.pendingChanges') }}</h4>
         <div v-for="(newVal, key) in changedFields" :key="key" class="diff-item">
           <span class="diff-field">{{ key }}:</span>
           <span class="diff-old">{{ originalFields[key] }}</span>
@@ -234,17 +237,17 @@ function handleBack() {
       </div>
 
       <div class="notes-row">
-        <label>Notes (optional):</label>
-        <input type="text" v-model="notes" placeholder="Reason for changes..." class="notes-input" data-testid="edit-notes" />
+        <label>{{ t('reportEdit.notesOptional') }}</label>
+        <input type="text" v-model="notes" :placeholder="t('reportEdit.notesPlaceholder')" class="notes-input" data-testid="edit-notes" />
       </div>
 
       <p v-if="error" class="error">{{ error }}</p>
 
       <div class="actions">
         <button class="save-btn" @click="handleSave" :disabled="!hasChanges || saving" data-testid="edit-save-btn">
-          {{ saving ? 'Saving...' : 'Save Changes' }}
+          {{ saving ? t('reportEdit.saving') : t('reportEdit.saveChanges') }}
         </button>
-        <button class="cancel-btn" @click="handleBack">Cancel</button>
+        <button class="cancel-btn" @click="handleBack">{{ t('reportEdit.cancel') }}</button>
       </div>
     </div>
 

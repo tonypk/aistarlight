@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { taxBridgeApi, taxExportApi } from '../api/accounting'
 import { reportsApi } from '../api/reports'
 import { complianceApi } from '../api/compliance'
 import { client } from '../api/client'
 import type { FormSummary } from '../api/forms'
+
+const { t } = useI18n()
 
 // Wizard step
 const step = ref(1)
@@ -127,7 +130,7 @@ async function calculateFromGL() {
     taxResult.value = data.data
     step.value = 2
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'GL calculation failed. Make sure you have journal entries for this period.'
+    error.value = e?.response?.data?.error ?? t('taxPrep.glCalcFailed')
   } finally {
     loading.value = false
   }
@@ -153,7 +156,7 @@ async function saveAsReport() {
     reportId.value = data.data?.id
     step.value = 3
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Failed to save report'
+    error.value = e?.response?.data?.error ?? t('taxPrep.saveReportFailed')
   } finally {
     loading.value = false
   }
@@ -169,7 +172,7 @@ async function runCompliance() {
     validation.value = data.data
     step.value = 4
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Compliance check failed'
+    error.value = e?.response?.data?.error ?? t('taxPrep.complianceCheckFailed')
   } finally {
     loading.value = false
   }
@@ -188,7 +191,7 @@ async function exportDAT() {
     a.click()
     URL.revokeObjectURL(url)
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Export not available for this form type yet'
+    error.value = e?.response?.data?.error ?? t('taxPrep.exportNotAvailable')
   }
 }
 
@@ -204,7 +207,7 @@ async function downloadPDF() {
     a.click()
     URL.revokeObjectURL(url)
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'PDF export failed'
+    error.value = e?.response?.data?.error ?? t('taxPrep.pdfExportFailed')
   }
 }
 
@@ -220,7 +223,7 @@ async function downloadExcel() {
     a.click()
     URL.revokeObjectURL(url)
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Excel export failed'
+    error.value = e?.response?.data?.error ?? t('taxPrep.excelExportFailed')
   }
 }
 
@@ -246,15 +249,15 @@ function startOver() {
 <template>
   <div class="tax-prep">
     <div class="view-header">
-      <h2>Prep for Taxes</h2>
-      <button v-if="step > 1" class="btn" @click="startOver">Start Over</button>
+      <h2>{{ t('taxPrep.title') }}</h2>
+      <button v-if="step > 1" class="btn" @click="startOver">{{ t('taxPrep.startOver') }}</button>
     </div>
 
     <!-- Progress Steps -->
     <div class="steps-bar">
       <div v-for="s in 4" :key="s" :class="['step-item', { active: step === s, done: step > s }]" @click="goToStep(s)">
         <div class="step-num">{{ step > s ? '&#10003;' : s }}</div>
-        <div class="step-label">{{ ['Select Period', 'Review GL Data', 'Save Report', 'Compliance'][s - 1] }}</div>
+        <div class="step-label">{{ [t('taxPrep.stepSelectPeriod'), t('taxPrep.stepReviewGL'), t('taxPrep.stepSaveReport'), t('taxPrep.stepCompliance')][s - 1] }}</div>
       </div>
     </div>
 
@@ -262,10 +265,10 @@ function startOver() {
 
     <!-- Step 1: Select Period & Form -->
     <div v-if="step === 1" class="step-content">
-      <h3>Step 1: Select Tax Form & Period</h3>
+      <h3>{{ t('taxPrep.step1Title') }}</h3>
 
       <div class="form-section">
-        <label>Tax Form</label>
+        <label>{{ t('taxPrep.taxForm') }}</label>
         <div class="form-cards">
           <div
             v-for="form in recommendedForms"
@@ -275,31 +278,31 @@ function startOver() {
           >
             <div class="form-card-header">
               <strong>{{ form.form_type.replace(/_/g, ' ') }}</strong>
-              <span v-if="form.required" class="badge badge-red">Required</span>
+              <span v-if="form.required" class="badge badge-red">{{ t('taxPrep.required') }}</span>
             </div>
             <div class="form-card-name">{{ form.name }}</div>
-            <div class="form-card-freq">{{ form.frequency }} | Due: Day {{ form.deadline_day || '-' }}</div>
+            <div class="form-card-freq">{{ form.frequency }} | {{ t('taxPrep.due', { day: form.deadline_day || '-' }) }}</div>
             <div class="form-card-reason">{{ form.reason }}</div>
           </div>
         </div>
 
         <div v-if="!recommendedForms.length" class="manual-select">
           <select v-model="formType">
-            <option value="BIR_2550M">BIR 2550M - Monthly VAT</option>
-            <option value="BIR_2550Q">BIR 2550Q - Quarterly VAT</option>
-            <option value="BIR_0619E">BIR 0619E - Monthly EWT</option>
-            <option value="BIR_1601C">BIR 1601C - Monthly Compensation</option>
-            <option value="BIR_1701">BIR 1701 - Annual ITR (Individual)</option>
-            <option value="BIR_1702">BIR 1702 - Annual ITR (Corporation)</option>
+            <option value="BIR_2550M">BIR 2550M - {{ t('taxPrep.monthlyVAT') }}</option>
+            <option value="BIR_2550Q">BIR 2550Q - {{ t('taxPrep.quarterlyVAT') }}</option>
+            <option value="BIR_0619E">BIR 0619E - {{ t('taxPrep.monthlyEWT') }}</option>
+            <option value="BIR_1601C">BIR 1601C - {{ t('taxPrep.monthlyCompensation') }}</option>
+            <option value="BIR_1701">BIR 1701 - {{ t('taxPrep.annualITRIndividual') }}</option>
+            <option value="BIR_1702">BIR 1702 - {{ t('taxPrep.annualITRCorporation') }}</option>
           </select>
         </div>
       </div>
 
       <div class="form-section">
-        <label>Filing Period</label>
+        <label>{{ t('taxPrep.filingPeriod') }}</label>
         <div class="period-shortcuts">
-          <button class="btn-sm" @click="setMonthlyPeriod(-1)">Last Month</button>
-          <button class="btn-sm" @click="setMonthlyPeriod(0)">This Month</button>
+          <button class="btn-sm" @click="setMonthlyPeriod(-1)">{{ t('taxPrep.lastMonth') }}</button>
+          <button class="btn-sm" @click="setMonthlyPeriod(0)">{{ t('taxPrep.thisMonth') }}</button>
           <button class="btn-sm" @click="setQuarterlyPeriod(1)">Q1</button>
           <button class="btn-sm" @click="setQuarterlyPeriod(2)">Q2</button>
           <button class="btn-sm" @click="setQuarterlyPeriod(3)">Q3</button>
@@ -309,11 +312,11 @@ function startOver() {
         </div>
         <div class="date-range">
           <div class="form-group">
-            <label>From</label>
+            <label>{{ t('taxPrep.from') }}</label>
             <input type="date" v-model="periodStart" />
           </div>
           <div class="form-group">
-            <label>To</label>
+            <label>{{ t('taxPrep.to') }}</label>
             <input type="date" v-model="periodEnd" />
           </div>
         </div>
@@ -321,20 +324,20 @@ function startOver() {
 
       <div class="step-actions">
         <button class="btn primary" :disabled="!periodStart || !periodEnd || loading" @click="calculateFromGL">
-          {{ loading ? 'Calculating...' : 'Calculate from GL' }}
+          {{ loading ? t('taxPrep.calculating') : t('taxPrep.calculateFromGL') }}
         </button>
       </div>
     </div>
 
     <!-- Step 2: Review GL Data -->
     <div v-if="step === 2" class="step-content">
-      <h3>Step 2: Review GL Auto-Fill — {{ formLabel }}</h3>
-      <p class="step-subtitle">Period: {{ periodLabel }} ({{ periodStart }} to {{ periodEnd }})</p>
+      <h3>{{ t('taxPrep.step2Title') }} — {{ formLabel }}</h3>
+      <p class="step-subtitle">{{ t('taxPrep.period', { period: periodLabel, start: periodStart, end: periodEnd }) }}</p>
 
       <div v-if="taxResult" class="gl-results">
         <table class="data-table">
           <thead>
-            <tr><th>Line</th><th>Description</th><th class="money">Amount (PHP)</th></tr>
+            <tr><th>{{ t('taxPrep.thLine') }}</th><th>{{ t('taxPrep.thDescription') }}</th><th class="money">{{ t('taxPrep.thAmount') }}</th></tr>
           </thead>
           <tbody>
             <tr v-for="entry in resultEntries" :key="entry.key" :class="{ 'total-row': entry.key.includes('total') || entry.key.includes('payable') }">
@@ -344,52 +347,52 @@ function startOver() {
             </tr>
           </tbody>
         </table>
-        <p class="gl-note">Data sourced from General Ledger. Review amounts before saving.</p>
+        <p class="gl-note">{{ t('taxPrep.glNote') }}</p>
       </div>
 
       <div class="step-actions">
-        <button class="btn" @click="step = 1">Back</button>
+        <button class="btn" @click="step = 1">{{ t('taxPrep.back') }}</button>
         <button class="btn primary" :disabled="loading" @click="saveAsReport">
-          {{ loading ? 'Saving...' : 'Save as Report' }}
+          {{ loading ? t('taxPrep.saving') : t('taxPrep.saveAsReport') }}
         </button>
       </div>
     </div>
 
     <!-- Step 3: Report Saved -->
     <div v-if="step === 3" class="step-content">
-      <h3>Step 3: Report Saved</h3>
+      <h3>{{ t('taxPrep.step3Title') }}</h3>
       <div class="success-box">
         <div class="success-icon">&#10003;</div>
         <div>
-          <strong>{{ formLabel }}</strong> report for <strong>{{ periodLabel }}</strong> has been saved as a draft.
-          <div v-if="report" class="report-id">Report ID: {{ report.id }}</div>
+          {{ t('taxPrep.reportSavedMsg', { form: formLabel, period: periodLabel }) }}
+          <div v-if="report" class="report-id">{{ t('taxPrep.reportId', { id: report.id }) }}</div>
         </div>
       </div>
 
       <div class="step-actions">
-        <button class="btn" @click="step = 2">Back</button>
+        <button class="btn" @click="step = 2">{{ t('taxPrep.back') }}</button>
         <button class="btn primary" :disabled="loading" @click="runCompliance">
-          {{ loading ? 'Validating...' : 'Run Compliance Check' }}
+          {{ loading ? t('taxPrep.validating') : t('taxPrep.runComplianceCheck') }}
         </button>
       </div>
     </div>
 
     <!-- Step 4: Compliance & Export -->
     <div v-if="step === 4" class="step-content">
-      <h3>Step 4: Compliance Check & Export</h3>
+      <h3>{{ t('taxPrep.step4Title') }}</h3>
 
       <div v-if="validation" class="compliance-section">
         <div class="score-card" :style="{ borderLeftColor: scoreColor }">
           <div class="score-value" :style="{ color: scoreColor }">{{ validation.overall_score }}</div>
-          <div class="score-label">Compliance Score</div>
+          <div class="score-label">{{ t('taxPrep.complianceScore') }}</div>
           <div class="score-status">
-            {{ validation.overall_score >= 80 ? 'Ready to file' : validation.overall_score >= 60 ? 'Review recommended' : 'Issues found' }}
+            {{ validation.overall_score >= 80 ? t('taxPrep.readyToFile') : validation.overall_score >= 60 ? t('taxPrep.reviewRecommended') : t('taxPrep.issuesFound') }}
           </div>
         </div>
 
         <!-- Issues -->
         <div v-if="criticalChecks.length" class="check-group">
-          <h4 class="severity-critical">Critical Issues ({{ criticalChecks.length }})</h4>
+          <h4 class="severity-critical">{{ t('taxPrep.criticalIssues', { count: criticalChecks.length }) }}</h4>
           <div v-for="c in criticalChecks" :key="c.check_id" class="check-item critical">
             <span class="check-icon">&#10007;</span>
             <div><strong>{{ c.check_name }}</strong><br/>{{ c.message }}</div>
@@ -397,7 +400,7 @@ function startOver() {
         </div>
 
         <div v-if="highChecks.length" class="check-group">
-          <h4 class="severity-high">High Issues ({{ highChecks.length }})</h4>
+          <h4 class="severity-high">{{ t('taxPrep.highIssues', { count: highChecks.length }) }}</h4>
           <div v-for="c in highChecks" :key="c.check_id" class="check-item high">
             <span class="check-icon">&#10007;</span>
             <div><strong>{{ c.check_name }}</strong><br/>{{ c.message }}</div>
@@ -405,7 +408,7 @@ function startOver() {
         </div>
 
         <div v-if="mediumChecks.length" class="check-group">
-          <h4 class="severity-medium">Medium Issues ({{ mediumChecks.length }})</h4>
+          <h4 class="severity-medium">{{ t('taxPrep.mediumIssues', { count: mediumChecks.length }) }}</h4>
           <div v-for="c in mediumChecks" :key="c.check_id" class="check-item medium">
             <span class="check-icon">!</span>
             <div><strong>{{ c.check_name }}</strong><br/>{{ c.message }}</div>
@@ -414,7 +417,7 @@ function startOver() {
 
         <div v-if="passedChecks.length" class="check-group">
           <details>
-            <summary class="severity-passed">Passed Checks ({{ passedChecks.length }})</summary>
+            <summary class="severity-passed">{{ t('taxPrep.passedChecks', { count: passedChecks.length }) }}</summary>
             <div v-for="c in passedChecks" :key="c.check_id" class="check-item passed">
               <span class="check-icon">&#10003;</span>
               <div>{{ c.check_name }}</div>
@@ -424,12 +427,12 @@ function startOver() {
 
         <!-- RAG Findings -->
         <div v-if="validation.rag_findings?.length" class="check-group">
-          <h4>AI-Powered Findings</h4>
+          <h4>{{ t('taxPrep.aiFindings') }}</h4>
           <div v-for="(f, i) in validation.rag_findings" :key="i" class="rag-finding">
             <span :class="['badge', f.severity === 'high' ? 'badge-red' : f.severity === 'medium' ? 'badge-orange' : 'badge-gray']">{{ f.severity }}</span>
             <div>
               {{ f.finding }}
-              <div v-if="f.regulation_reference" class="reg-ref">Ref: {{ f.regulation_reference }}</div>
+              <div v-if="f.regulation_reference" class="reg-ref">{{ t('taxPrep.ref', { ref: f.regulation_reference }) }}</div>
             </div>
           </div>
         </div>
@@ -437,24 +440,24 @@ function startOver() {
 
       <!-- Export Actions -->
       <div class="export-section">
-        <h4>Export Options</h4>
+        <h4>{{ t('taxPrep.exportOptions') }}</h4>
         <div class="export-buttons">
           <button class="btn primary" @click="exportDAT">
-            Export eBIRForms (.dat)
+            {{ t('taxPrep.exportEBIR') }}
           </button>
           <button class="btn" @click="downloadPDF">
-            Download PDF
+            {{ t('taxPrep.downloadPDF') }}
           </button>
           <button class="btn" @click="downloadExcel">
-            Download Excel
+            {{ t('taxPrep.downloadExcel') }}
           </button>
         </div>
-        <p class="export-note">eBIRForms DAT export supports all BIR forms: 2550M, 2550Q, 1601C, 0619E, 1701, 1702, 2316, 2307, and SAWT.</p>
+        <p class="export-note">{{ t('taxPrep.exportNote') }}</p>
       </div>
 
       <div class="step-actions">
-        <button class="btn" @click="step = 3">Back</button>
-        <button class="btn" @click="startOver">File Another Form</button>
+        <button class="btn" @click="step = 3">{{ t('taxPrep.back') }}</button>
+        <button class="btn" @click="startOver">{{ t('taxPrep.fileAnotherForm') }}</button>
       </div>
     </div>
   </div>
