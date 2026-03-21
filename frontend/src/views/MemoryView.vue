@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { client } from '../api/client'
+
+const { t } = useI18n()
 
 interface Preference {
   id: string
@@ -41,12 +44,12 @@ onMounted(async () => {
 })
 
 async function deletePreference(reportType: string) {
-  if (!confirm(`Delete preferences for ${reportType}?`)) return
+  if (!confirm(t('memory.deleteConfirm', { reportType }))) return
   try {
     await client.delete(`/memory/preferences/${reportType}`)
     preferences.value = preferences.value.filter(p => p.report_type !== reportType)
   } catch {
-    alert('Failed to delete preference. Please try again.')
+    alert(t('memory.deleteFailed'))
   }
 }
 
@@ -57,42 +60,42 @@ function formatDate(iso: string) {
 
 <template>
   <div class="memory-view">
-    <h2>AI Memory</h2>
-    <p class="desc">View and manage what the AI remembers about your preferences</p>
+    <h2>{{ t('memory.title') }}</h2>
+    <p class="desc">{{ t('memory.desc') }}</p>
 
     <div class="tabs">
       <button :class="{ active: activeTab === 'preferences' }" @click="activeTab = 'preferences'">
-        Preferences ({{ preferences.length }})
+        {{ t('memory.preferencesTab', { count: preferences.length }) }}
       </button>
       <button :class="{ active: activeTab === 'corrections' }" @click="activeTab = 'corrections'">
-        Corrections ({{ corrections.length }})
+        {{ t('memory.correctionsTab', { count: corrections.length }) }}
       </button>
     </div>
 
-    <div v-if="loading" class="loading">Loading...</div>
+    <div v-if="loading" class="loading">{{ t('memory.loading') }}</div>
 
     <!-- Preferences tab -->
     <template v-else-if="activeTab === 'preferences'">
       <div v-if="!preferences.length" class="empty">
-        <p>No saved preferences yet. The AI will learn your preferences as you use it.</p>
+        <p>{{ t('memory.emptyPreferences') }}</p>
       </div>
 
       <div v-else class="pref-list">
         <div v-for="pref in preferences" :key="pref.id" class="pref-card">
           <div class="pref-header">
             <h3>{{ pref.report_type }}</h3>
-            <button class="del-btn" @click="deletePreference(pref.report_type)">Delete</button>
+            <button class="del-btn" @click="deletePreference(pref.report_type)">{{ t('common.delete') }}</button>
           </div>
 
           <div v-if="Object.keys(pref.column_mappings).length" class="section">
-            <h4>Column Mappings</h4>
+            <h4>{{ t('memory.columnMappings') }}</h4>
             <div v-for="(target, source) in pref.column_mappings" :key="source" class="mapping-item">
               <span>{{ source }}</span> &rarr; <span>{{ target }}</span>
             </div>
           </div>
 
           <div v-if="Object.keys(pref.format_rules).length" class="section">
-            <h4>Format Rules</h4>
+            <h4>{{ t('memory.formatRules') }}</h4>
             <pre>{{ JSON.stringify(pref.format_rules, null, 2) }}</pre>
           </div>
         </div>
@@ -102,19 +105,19 @@ function formatDate(iso: string) {
     <!-- Corrections tab -->
     <template v-else-if="activeTab === 'corrections'">
       <div v-if="!corrections.length" class="empty">
-        <p>No correction history yet. Corrections are recorded when you modify AI-generated values.</p>
+        <p>{{ t('memory.emptyCorrections') }}</p>
       </div>
 
       <div v-else class="corrections-list">
         <table>
           <thead>
             <tr>
-              <th>Report Type</th>
-              <th>Field</th>
-              <th>Old Value</th>
-              <th>New Value</th>
-              <th>Reason</th>
-              <th>Date</th>
+              <th>{{ t('memory.thReportType') }}</th>
+              <th>{{ t('memory.thField') }}</th>
+              <th>{{ t('memory.thOldValue') }}</th>
+              <th>{{ t('memory.thNewValue') }}</th>
+              <th>{{ t('memory.thReason') }}</th>
+              <th>{{ t('memory.thDate') }}</th>
             </tr>
           </thead>
           <tbody>

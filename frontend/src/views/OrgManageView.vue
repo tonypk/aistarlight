@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import {
   orgApi,
   type Organization,
   type OrgMember,
 } from "../api/org";
+
+const { t } = useI18n();
 
 const orgs = ref<Organization[]>([]);
 const selectedOrgId = ref("");
@@ -37,7 +40,7 @@ async function loadOrgs() {
       await loadMembers();
     }
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : "Failed to load";
+    error.value = e instanceof Error ? e.message : t('orgManage.loadFailed');
   } finally {
     loading.value = false;
   }
@@ -61,11 +64,11 @@ async function createOrg() {
     await orgApi.create({ name: newOrgName.value.trim() });
     newOrgName.value = "";
     showCreateForm.value = false;
-    successMsg.value = "Organization created!";
+    successMsg.value = t('orgManage.orgCreated');
     await loadOrgs();
     setTimeout(() => (successMsg.value = ""), 3000);
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : "Failed to create";
+    error.value = e instanceof Error ? e.message : t('orgManage.createFailed');
   } finally {
     creating.value = false;
   }
@@ -79,11 +82,11 @@ async function updateOrgSettings() {
       name: selectedOrg.value.name,
       slug: selectedOrg.value.slug,
     });
-    successMsg.value = "Settings saved!";
+    successMsg.value = t('orgManage.settingsSaved');
     await loadOrgs();
     setTimeout(() => (successMsg.value = ""), 3000);
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : "Failed to update";
+    error.value = e instanceof Error ? e.message : t('orgManage.updateFailed');
   }
 }
 
@@ -97,11 +100,11 @@ async function addMember() {
     await orgApi.addMember(selectedOrgId.value, newMemberEmail.value.trim(), newMemberRole.value);
     newMemberEmail.value = "";
     showAddMember.value = false;
-    successMsg.value = "Member added!";
+    successMsg.value = t('orgManage.memberAdded');
     await loadMembers();
     setTimeout(() => (successMsg.value = ""), 3000);
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : "Failed to add member";
+    error.value = e instanceof Error ? e.message : t('orgManage.addMemberFailed');
   } finally {
     addingMember.value = false;
   }
@@ -111,31 +114,31 @@ async function updateRole(userId: string, role: string) {
   if (!selectedOrgId.value) return;
   try {
     await orgApi.updateMemberRole(selectedOrgId.value, userId, role);
-    successMsg.value = "Role updated!";
+    successMsg.value = t('orgManage.roleUpdated');
     await loadMembers();
     setTimeout(() => (successMsg.value = ""), 3000);
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : "Failed to update role";
+    error.value = e instanceof Error ? e.message : t('orgManage.updateRoleFailed');
   }
 }
 
 async function removeMember(userId: string, name: string) {
-  if (!confirm(`Remove ${name} from this organization?`)) return;
+  if (!confirm(t('orgManage.removeMemberConfirm', { name }))) return;
   try {
     await orgApi.removeMember(selectedOrgId.value, userId);
-    successMsg.value = "Member removed";
+    successMsg.value = t('orgManage.memberRemoved');
     await loadMembers();
     setTimeout(() => (successMsg.value = ""), 3000);
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : "Failed to remove";
+    error.value = e instanceof Error ? e.message : t('orgManage.removeMemberFailed');
   }
 }
 
 function roleLabel(role: string): string {
   const labels: Record<string, string> = {
-    org_owner: "Owner",
-    org_admin: "Admin",
-    org_member: "Member",
+    org_owner: t('orgManage.roleOwner'),
+    org_admin: t('orgManage.roleAdmin'),
+    org_member: t('orgManage.roleMember'),
   };
   return labels[role] || role;
 }
@@ -152,7 +155,7 @@ onMounted(loadOrgs);
 <template>
   <div class="org-manage">
     <div class="view-header">
-      <h1>Organization Management</h1>
+      <h1>{{ t('orgManage.title') }}</h1>
       <div class="header-actions">
         <select
           v-if="orgs.length > 1"
@@ -165,7 +168,7 @@ onMounted(loadOrgs);
           </option>
         </select>
         <button class="btn btn-primary" @click="showCreateForm = true">
-          + New Organization
+          {{ t('orgManage.newOrganization') }}
         </button>
       </div>
     </div>
@@ -176,26 +179,26 @@ onMounted(loadOrgs);
     <!-- Create Org Modal -->
     <div v-if="showCreateForm" class="modal-overlay" @click.self="showCreateForm = false">
       <div class="modal-content">
-        <h3>Create Organization</h3>
+        <h3>{{ t('orgManage.createOrgTitle') }}</h3>
         <div class="form-group">
-          <label>Organization Name</label>
+          <label>{{ t('orgManage.orgNameLabel') }}</label>
           <input
             v-model="newOrgName"
             type="text"
-            placeholder="e.g. Acme Accounting Firm"
+            :placeholder="t('orgManage.orgNamePlaceholder')"
             @keyup.enter="createOrg"
           />
         </div>
         <div class="modal-actions">
-          <button class="btn btn-outline" @click="showCreateForm = false">Cancel</button>
+          <button class="btn btn-outline" @click="showCreateForm = false">{{ t('orgManage.cancel') }}</button>
           <button class="btn btn-primary" :disabled="creating || !newOrgName.trim()" @click="createOrg">
-            {{ creating ? "Creating..." : "Create" }}
+            {{ creating ? t('orgManage.creating') : t('orgManage.create') }}
           </button>
         </div>
       </div>
     </div>
 
-    <div v-if="loading" class="loading">Loading...</div>
+    <div v-if="loading" class="loading">{{ t('orgManage.loading') }}</div>
 
     <template v-if="selectedOrg && !loading">
       <!-- Org Info Card -->
@@ -208,7 +211,7 @@ onMounted(loadOrgs);
           <div class="org-meta">
             <span class="plan-badge">{{ selectedOrg.plan }}</span>
             <span class="limit-info">
-              {{ selectedOrg.max_companies }} companies / {{ selectedOrg.max_users }} users
+              {{ t('orgManage.companiesLimit', { companies: selectedOrg.max_companies, users: selectedOrg.max_users }) }}
             </span>
           </div>
         </div>
@@ -217,19 +220,19 @@ onMounted(loadOrgs);
       <!-- Tabs -->
       <div class="tabs">
         <button :class="{ active: tab === 'members' }" @click="tab = 'members'">
-          Members ({{ members.length }})
+          {{ t('orgManage.membersTab', { count: members.length }) }}
         </button>
         <button :class="{ active: tab === 'settings' }" @click="tab = 'settings'">
-          Settings
+          {{ t('orgManage.settingsTab') }}
         </button>
       </div>
 
       <!-- Members Tab -->
       <div v-if="tab === 'members'" class="tab-content">
         <div class="section-header">
-          <h3>Team Members</h3>
+          <h3>{{ t('orgManage.teamMembers') }}</h3>
           <button class="btn btn-primary btn-sm" @click="showAddMember = true">
-            + Add Member
+            {{ t('orgManage.addMember') }}
           </button>
         </div>
 
@@ -238,17 +241,17 @@ onMounted(loadOrgs);
           <input
             v-model="newMemberEmail"
             type="text"
-            placeholder="User ID (UUID)"
+            :placeholder="t('orgManage.userIdPlaceholder')"
             class="form-input"
           />
           <select v-model="newMemberRole" class="form-select">
-            <option value="org_member">Member</option>
-            <option value="org_admin">Admin</option>
+            <option value="org_member">{{ t('orgManage.member') }}</option>
+            <option value="org_admin">{{ t('orgManage.admin') }}</option>
           </select>
           <button class="btn btn-primary btn-sm" :disabled="addingMember" @click="addMember">
-            {{ addingMember ? "Adding..." : "Add" }}
+            {{ addingMember ? t('orgManage.adding') : t('orgManage.add') }}
           </button>
-          <button class="btn btn-outline btn-sm" @click="showAddMember = false">Cancel</button>
+          <button class="btn btn-outline btn-sm" @click="showAddMember = false">{{ t('orgManage.cancel') }}</button>
         </div>
 
         <div class="members-list">
@@ -270,20 +273,20 @@ onMounted(loadOrgs);
                 @change="updateRole(m.user_id, ($event.target as HTMLSelectElement).value)"
                 class="role-select"
               >
-                <option value="org_member">Member</option>
-                <option value="org_admin">Admin</option>
+                <option value="org_member">{{ t('orgManage.member') }}</option>
+                <option value="org_admin">{{ t('orgManage.admin') }}</option>
               </select>
               <button
                 v-if="m.role !== 'org_owner'"
                 class="btn-icon danger"
                 @click="removeMember(m.user_id, m.full_name || m.email)"
-                title="Remove member"
+                :title="t('orgManage.memberRemoved')"
               >
                 &times;
               </button>
             </div>
           </div>
-          <div v-if="members.length === 0" class="empty">No members found</div>
+          <div v-if="members.length === 0" class="empty">{{ t('orgManage.noMembers') }}</div>
         </div>
       </div>
 
@@ -291,30 +294,30 @@ onMounted(loadOrgs);
       <div v-if="tab === 'settings'" class="tab-content">
         <div class="settings-form">
           <div class="form-group">
-            <label>Organization Name</label>
+            <label>{{ t('orgManage.settingsOrgName') }}</label>
             <input v-model="selectedOrg.name" type="text" />
           </div>
           <div class="form-group">
-            <label>Slug (URL-friendly identifier)</label>
+            <label>{{ t('orgManage.settingsSlug') }}</label>
             <input v-model="selectedOrg.slug" type="text" />
           </div>
           <div class="form-group">
-            <label>Plan</label>
+            <label>{{ t('orgManage.settingsPlan') }}</label>
             <input :value="selectedOrg.plan" type="text" disabled />
-            <small>Contact support to change your plan</small>
+            <small>{{ t('orgManage.settingsPlanHint') }}</small>
           </div>
           <button class="btn btn-primary" @click="updateOrgSettings">
-            Save Settings
+            {{ t('orgManage.saveSettings') }}
           </button>
         </div>
       </div>
     </template>
 
     <div v-if="!selectedOrg && !loading && orgs.length === 0" class="empty-state">
-      <h3>No Organizations</h3>
-      <p>Create an organization to manage multiple companies and team members.</p>
+      <h3>{{ t('orgManage.noOrgsTitle') }}</h3>
+      <p>{{ t('orgManage.noOrgsDesc') }}</p>
       <button class="btn btn-primary" @click="showCreateForm = true">
-        Create Your First Organization
+        {{ t('orgManage.createFirstOrg') }}
       </button>
     </div>
   </div>

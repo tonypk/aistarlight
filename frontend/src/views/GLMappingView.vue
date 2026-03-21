@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { integrationApi, type GLMappingRule, type CreateGLMappingRequest } from '../api/integration'
 import { useAccountingStore } from '../stores/accounting'
 import { useAuthStore } from '@/stores/auth'
 import { useToastStore } from '@/stores/toast'
 
+const { t } = useI18n()
 const accountingStore = useAccountingStore()
 const auth = useAuthStore()
 const toast = useToastStore()
@@ -26,12 +28,12 @@ const form = ref<CreateGLMappingRequest>({
 
 const dimensions = ['earning', 'deduction', 'contribution', 'net_pay']
 
-const dimensionLabels: Record<string, string> = {
-  earning: 'Earning (DR)',
-  deduction: 'Deduction (CR)',
-  contribution: 'Employer Contribution (DR)',
-  net_pay: 'Net Pay (CR)',
-}
+const dimensionLabels = computed<Record<string, string>>(() => ({
+  earning: t('glMapping.earningDR'),
+  deduction: t('glMapping.deductionCR'),
+  contribution: t('glMapping.contributionDR'),
+  net_pay: t('glMapping.netPayCR'),
+}))
 
 const grouped = computed(() => {
   const groups: Record<string, GLMappingRule[]> = {}
@@ -49,7 +51,7 @@ async function fetchMappings() {
     const { data } = await integrationApi.listMappings(jurisdiction.value)
     mappings.value = data.data || []
   } catch (e) {
-    toast.error('Failed to load GL mappings')
+    toast.error(t('glMapping.loadFailed'))
   } finally {
     loading.value = false
   }
@@ -58,11 +60,11 @@ async function fetchMappings() {
 async function seedDefaults() {
   try {
     const { data } = await integrationApi.seedDefaults(jurisdiction.value)
-    toast.success(`Seeded ${data.data?.accounts_created || 0} accounts, ${data.data?.mappings_created || 0} mappings`)
+    toast.success(t('glMapping.seededSuccess', { accounts: data.data?.accounts_created || 0, mappings: data.data?.mappings_created || 0 }))
     await fetchMappings()
     await accountingStore.fetchAccounts()
   } catch (e) {
-    toast.error('Failed to seed defaults')
+    toast.error(t('glMapping.seedFailed'))
   }
 }
 
@@ -100,26 +102,26 @@ async function saveMapping() {
         debit_credit: form.value.debit_credit,
         priority: form.value.priority,
       })
-      toast.success('Mapping updated')
+      toast.success(t('glMapping.mappingUpdated'))
     } else {
       await integrationApi.createMapping(form.value)
-      toast.success('Mapping created')
+      toast.success(t('glMapping.mappingCreated'))
     }
     showForm.value = false
     await fetchMappings()
   } catch (e) {
-    toast.error('Failed to save mapping')
+    toast.error(t('glMapping.saveFailed'))
   }
 }
 
 async function deleteMapping(id: string) {
-  if (!confirm('Delete this mapping rule?')) return
+  if (!confirm(t('glMapping.deleteConfirm'))) return
   try {
     await integrationApi.deleteMapping(id)
-    toast.success('Mapping deleted')
+    toast.success(t('glMapping.mappingDeleted'))
     await fetchMappings()
   } catch (e) {
-    toast.error('Failed to delete mapping')
+    toast.error(t('glMapping.deleteFailed'))
   }
 }
 
@@ -132,27 +134,26 @@ onMounted(() => {
 <template>
   <div class="page">
     <div class="page-header">
-      <h1>Payroll GL Mapping</h1>
+      <h1>{{ t('glMapping.title') }}</h1>
       <div class="actions">
         <select v-model="jurisdiction" class="select" @change="fetchMappings()">
-          <option value="PH">Philippines</option>
-          <option value="LK">Sri Lanka</option>
-          <option value="SG">Singapore</option>
+          <option value="PH">{{ t('glMapping.philippines') }}</option>
+          <option value="LK">{{ t('glMapping.sriLanka') }}</option>
+          <option value="SG">{{ t('glMapping.singapore') }}</option>
         </select>
-        <button class="btn btn-secondary" @click="seedDefaults()">Seed Defaults</button>
-        <button class="btn btn-primary" @click="openCreate()">Add Mapping</button>
+        <button class="btn btn-secondary" @click="seedDefaults()">{{ t('glMapping.seedDefaults') }}</button>
+        <button class="btn btn-primary" @click="openCreate()">{{ t('glMapping.addMapping') }}</button>
       </div>
     </div>
 
     <p class="description">
-      Map payroll components (earnings, deductions, contributions) to your Chart of Accounts.
-      These rules determine how payroll journal entries are created from AIGoNHR data.
+      {{ t('glMapping.desc') }}
     </p>
 
-    <div v-if="loading" class="loading">Loading mappings...</div>
+    <div v-if="loading" class="loading">{{ t('glMapping.loadingMappings') }}</div>
 
     <div v-else-if="mappings.length === 0" class="empty">
-      <p>No GL mappings configured. Click "Seed Defaults" to create standard {{ jurisdiction }} payroll mappings.</p>
+      <p>{{ t('glMapping.emptyState', { jurisdiction }) }}</p>
     </div>
 
     <div v-else class="mapping-groups">
@@ -161,12 +162,12 @@ onMounted(() => {
         <table class="table">
           <thead>
             <tr>
-              <th>Source Value</th>
-              <th>GL Account</th>
-              <th>D/C</th>
-              <th>Priority</th>
-              <th>Active</th>
-              <th>Actions</th>
+              <th>{{ t('glMapping.thSourceValue') }}</th>
+              <th>{{ t('glMapping.thGlAccount') }}</th>
+              <th>{{ t('glMapping.thDC') }}</th>
+              <th>{{ t('glMapping.thPriority') }}</th>
+              <th>{{ t('glMapping.thActive') }}</th>
+              <th>{{ t('glMapping.thActions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -175,10 +176,10 @@ onMounted(() => {
               <td>{{ rule.account_number }} - {{ rule.account_name }}</td>
               <td><span :class="['badge', rule.debit_credit === 'debit' ? 'badge-debit' : 'badge-credit']">{{ rule.debit_credit.toUpperCase() }}</span></td>
               <td>{{ rule.priority }}</td>
-              <td><span :class="['badge', rule.is_active ? 'badge-active' : 'badge-inactive']">{{ rule.is_active ? 'Active' : 'Inactive' }}</span></td>
+              <td><span :class="['badge', rule.is_active ? 'badge-active' : 'badge-inactive']">{{ rule.is_active ? t('glMapping.active') : t('glMapping.inactive') }}</span></td>
               <td>
-                <button class="btn btn-sm btn-secondary" @click="openEdit(rule)">Edit</button>
-                <button class="btn btn-sm btn-danger" @click="deleteMapping(rule.id)">Delete</button>
+                <button class="btn btn-sm btn-secondary" @click="openEdit(rule)">{{ t('common.edit') }}</button>
+                <button class="btn btn-sm btn-danger" @click="deleteMapping(rule.id)">{{ t('common.delete') }}</button>
               </td>
             </tr>
           </tbody>
@@ -189,41 +190,41 @@ onMounted(() => {
     <!-- Create/Edit Modal -->
     <div v-if="showForm" class="modal-overlay" @click.self="showForm = false">
       <div class="modal">
-        <h2>{{ editingId ? 'Edit' : 'Create' }} GL Mapping</h2>
+        <h2>{{ editingId ? t('glMapping.editMapping') : t('glMapping.createMapping') }}</h2>
         <form @submit.prevent="saveMapping()">
           <div class="form-group" v-if="!editingId">
-            <label>Dimension</label>
+            <label>{{ t('glMapping.dimension') }}</label>
             <select v-model="form.source_dimension" class="select">
               <option v-for="d in dimensions" :key="d" :value="d">{{ dimensionLabels[d] || d }}</option>
             </select>
           </div>
           <div class="form-group" v-if="!editingId">
-            <label>Source Value</label>
-            <input v-model="form.source_value" class="input" placeholder="e.g., basic_pay, sss_employee" required />
+            <label>{{ t('glMapping.sourceValue') }}</label>
+            <input v-model="form.source_value" class="input" :placeholder="t('glMapping.sourceValuePlaceholder')" required />
           </div>
           <div class="form-group">
-            <label>GL Account</label>
+            <label>{{ t('glMapping.glAccount') }}</label>
             <select v-model="form.target_account_id" class="select" required>
-              <option value="">Select account...</option>
+              <option value="">{{ t('glMapping.selectAccount') }}</option>
               <option v-for="acct in accountingStore.accounts" :key="acct.id" :value="acct.id">
                 {{ acct.account_number }} - {{ acct.name }}
               </option>
             </select>
           </div>
           <div class="form-group">
-            <label>Debit / Credit</label>
+            <label>{{ t('glMapping.debitCredit') }}</label>
             <select v-model="form.debit_credit" class="select">
-              <option value="debit">Debit</option>
-              <option value="credit">Credit</option>
+              <option value="debit">{{ t('glMapping.debit') }}</option>
+              <option value="credit">{{ t('glMapping.credit') }}</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Priority</label>
+            <label>{{ t('glMapping.priority') }}</label>
             <input v-model.number="form.priority" type="number" class="input" />
           </div>
           <div class="form-actions">
-            <button type="button" class="btn btn-secondary" @click="showForm = false">Cancel</button>
-            <button type="submit" class="btn btn-primary">{{ editingId ? 'Update' : 'Create' }}</button>
+            <button type="button" class="btn btn-secondary" @click="showForm = false">{{ t('common.cancel') }}</button>
+            <button type="submit" class="btn btn-primary">{{ editingId ? t('common.update') : t('common.create') }}</button>
           </div>
         </form>
       </div>

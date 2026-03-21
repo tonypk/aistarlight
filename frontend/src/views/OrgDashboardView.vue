@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useAuthStore } from "../stores/auth";
 import {
   orgApi,
@@ -9,6 +10,7 @@ import {
   type BatchComplianceResult,
 } from "../api/org";
 
+const { t } = useI18n();
 const router = useRouter();
 const auth = useAuthStore();
 
@@ -31,7 +33,7 @@ async function loadOrgs() {
       await loadDashboard();
     }
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : "Failed to load organizations";
+    error.value = e instanceof Error ? e.message : t('orgDashboard.loadOrgsFailed');
   }
 }
 
@@ -44,7 +46,7 @@ async function loadDashboard() {
     dashboard.value = res.data.data;
     batchResult.value = null;
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : "Failed to load dashboard";
+    error.value = e instanceof Error ? e.message : t('orgDashboard.loadDashboardFailed');
   } finally {
     loading.value = false;
   }
@@ -58,7 +60,7 @@ async function runBatchCompliance() {
     batchResult.value = res.data.data;
     await loadDashboard();
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : "Batch check failed";
+    error.value = e instanceof Error ? e.message : t('orgDashboard.batchCheckFailed');
   } finally {
     batchLoading.value = false;
   }
@@ -81,7 +83,7 @@ onMounted(loadOrgs);
 <template>
   <div class="org-dashboard">
     <div class="view-header">
-      <h1>Organization Dashboard</h1>
+      <h1>{{ t('orgDashboard.title') }}</h1>
       <div class="header-actions">
         <select
           v-if="orgs.length > 1"
@@ -94,57 +96,56 @@ onMounted(loadOrgs);
           </option>
         </select>
         <router-link to="/org-manage" class="btn btn-outline">
-          Manage Organization
+          {{ t('orgDashboard.manageOrganization') }}
         </router-link>
       </div>
     </div>
 
     <div v-if="!hasOrgs && !loading" class="empty-state">
-      <h3>No Organization Found</h3>
+      <h3>{{ t('orgDashboard.noOrgTitle') }}</h3>
       <p>
-        You are not part of any organization yet. Create one to manage multiple
-        companies from a single dashboard.
+        {{ t('orgDashboard.noOrgDesc') }}
       </p>
       <router-link to="/org-manage" class="btn btn-primary">
-        Create Organization
+        {{ t('orgDashboard.createOrganization') }}
       </router-link>
     </div>
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
-    <div v-if="loading" class="loading">Loading dashboard...</div>
+    <div v-if="loading" class="loading">{{ t('orgDashboard.loadingDashboard') }}</div>
 
     <template v-if="dashboard && !loading">
       <!-- Org Summary Cards -->
       <div class="summary-cards">
         <div class="summary-card">
-          <div class="card-label">Companies</div>
+          <div class="card-label">{{ t('orgDashboard.companies') }}</div>
           <div class="card-value">
             {{ dashboard.company_count }}
             <span class="card-limit">/ {{ dashboard.organization.max_companies }}</span>
           </div>
         </div>
         <div class="summary-card">
-          <div class="card-label">Team Members</div>
+          <div class="card-label">{{ t('orgDashboard.teamMembers') }}</div>
           <div class="card-value">
             {{ dashboard.member_count }}
             <span class="card-limit">/ {{ dashboard.organization.max_users }}</span>
           </div>
         </div>
         <div class="summary-card highlight">
-          <div class="card-label">Total Revenue (This Month)</div>
+          <div class="card-label">{{ t('orgDashboard.totalRevenueThisMonth') }}</div>
           <div class="card-value">{{ fmt(dashboard.total_finance.total_revenue) }}</div>
         </div>
         <div class="summary-card">
-          <div class="card-label">Total Net Income</div>
+          <div class="card-label">{{ t('orgDashboard.totalNetIncome') }}</div>
           <div class="card-value">{{ fmt(dashboard.total_finance.total_net_income) }}</div>
         </div>
         <div class="summary-card" :class="{ pass: dashboard.compliance_all_pass, fail: !dashboard.compliance_all_pass }">
-          <div class="card-label">CAS Compliance</div>
-          <div class="card-value">{{ dashboard.compliance_all_pass ? "ALL PASS" : "ISSUES" }}</div>
+          <div class="card-label">{{ t('orgDashboard.casCompliance') }}</div>
+          <div class="card-value">{{ dashboard.compliance_all_pass ? t('orgDashboard.allPass') : t('orgDashboard.issues') }}</div>
         </div>
         <div class="summary-card">
-          <div class="card-label">Plan</div>
+          <div class="card-label">{{ t('orgDashboard.plan') }}</div>
           <div class="card-value plan-badge">{{ dashboard.organization.plan }}</div>
         </div>
       </div>
@@ -152,21 +153,21 @@ onMounted(loadOrgs);
       <!-- Company Table -->
       <div class="section">
         <div class="section-header">
-          <h2>Companies</h2>
+          <h2>{{ t('orgDashboard.companiesSection') }}</h2>
           <button
             class="btn btn-primary"
             :disabled="batchLoading"
             @click="runBatchCompliance"
           >
-            {{ batchLoading ? "Running..." : "Batch CAS Check" }}
+            {{ batchLoading ? t('orgDashboard.running') : t('orgDashboard.batchCASCheck') }}
           </button>
         </div>
 
         <!-- Batch Results -->
         <div v-if="batchResult" class="batch-results">
           <div class="batch-header" :class="{ pass: batchResult.all_pass, fail: !batchResult.all_pass }">
-            Batch Compliance:
-            {{ batchResult.all_pass ? "ALL PASSED" : "SOME FAILED" }}
+            {{ t('orgDashboard.batchCompliance') }}
+            {{ batchResult.all_pass ? t('orgDashboard.allPassed') : t('orgDashboard.someFailed') }}
           </div>
           <div class="batch-items">
             <div
@@ -186,21 +187,21 @@ onMounted(loadOrgs);
           <table>
             <thead>
               <tr>
-                <th>Company</th>
-                <th>TIN</th>
-                <th>Jurisdiction</th>
-                <th>Reports</th>
-                <th>Drafts</th>
-                <th>Revenue</th>
-                <th>Net Income</th>
-                <th>CAS</th>
-                <th>Actions</th>
+                <th>{{ t('orgDashboard.thCompany') }}</th>
+                <th>{{ t('orgDashboard.thTIN') }}</th>
+                <th>{{ t('orgDashboard.thJurisdiction') }}</th>
+                <th>{{ t('orgDashboard.thReports') }}</th>
+                <th>{{ t('orgDashboard.thDrafts') }}</th>
+                <th>{{ t('orgDashboard.thRevenue') }}</th>
+                <th>{{ t('orgDashboard.thNetIncome') }}</th>
+                <th>{{ t('orgDashboard.thCAS') }}</th>
+                <th>{{ t('orgDashboard.thActions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="c in dashboard.companies" :key="c.id">
                 <td class="company-name-cell">{{ c.company_name }}</td>
-                <td>{{ c.tin_number || "—" }}</td>
+                <td>{{ c.tin_number || "\u2014" }}</td>
                 <td>
                   <span class="jurisdiction-tag">{{ c.jurisdiction }}</span>
                 </td>
@@ -220,7 +221,7 @@ onMounted(loadOrgs);
                 </td>
                 <td>
                   <button class="btn btn-sm" @click="switchToCompany(c.id)">
-                    Open
+                    {{ t('orgDashboard.open') }}
                   </button>
                 </td>
               </tr>

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { integrationApi, type IntegrationSource, type IntegrationEvent } from '../api/integration'
 import { useToastStore } from '@/stores/toast'
 
+const { t } = useI18n()
 const toast = useToastStore()
 
 const sources = ref<IntegrationSource[]>([])
@@ -25,10 +27,10 @@ const statusBadge = (status: string) => {
 
 const eventTypeLabel = (type: string) => {
   switch (type) {
-    case 'payroll.run.completed': return 'Payroll Completed'
-    case 'payroll.run.reversed': return 'Payroll Reversed'
-    case 'employee.upserted': return 'Employee Synced'
-    case 'employee.terminated': return 'Employee Terminated'
+    case 'payroll.run.completed': return t('integration.payrollCompleted')
+    case 'payroll.run.reversed': return t('integration.payrollReversed')
+    case 'employee.upserted': return t('integration.employeeSynced')
+    case 'employee.terminated': return t('integration.employeeTerminated')
     default: return type
   }
 }
@@ -48,7 +50,7 @@ async function fetchData() {
     sources.value = srcRes.data.data || []
     events.value = evtRes.data.data || []
   } catch (e) {
-    toast.error('Failed to load integration data')
+    toast.error(t('integration.loadFailed'))
   } finally {
     loading.value = false
   }
@@ -68,7 +70,7 @@ const stats = computed(() => {
 
 async function addSource() {
   if (!newSource.value.remote_company_id) {
-    toast.error('Remote Company ID is required')
+    toast.error(t('integration.remoteCompanyIdRequired'))
     return
   }
   addLoading.value = true
@@ -78,25 +80,25 @@ async function addSource() {
       remote_company_id: newSource.value.remote_company_id,
       webhook_secret: newSource.value.webhook_secret || undefined,
     })
-    toast.success('Integration source connected')
+    toast.success(t('integration.sourceConnected'))
     showAddSource.value = false
     newSource.value = { remote_company_id: '', webhook_secret: '' }
     fetchData()
   } catch {
-    toast.error('Failed to create integration source')
+    toast.error(t('integration.createSourceFailed'))
   } finally {
     addLoading.value = false
   }
 }
 
 async function removeSource(id: string) {
-  if (!confirm('Disconnect this integration source?')) return
+  if (!confirm(t('integration.disconnectConfirm'))) return
   try {
     await integrationApi.deleteSource(id)
-    toast.success('Integration source removed')
+    toast.success(t('integration.sourceRemoved'))
     fetchData()
   } catch {
-    toast.error('Failed to remove integration source')
+    toast.error(t('integration.removeSourceFailed'))
   }
 }
 
@@ -106,58 +108,58 @@ onMounted(fetchData)
 <template>
   <div class="page">
     <div class="page-header">
-      <h1>HR Integration</h1>
-      <button class="btn btn-secondary" @click="fetchData()" :disabled="loading">Refresh</button>
+      <h1>{{ t('integration.title') }}</h1>
+      <button class="btn btn-secondary" @click="fetchData()" :disabled="loading">{{ t('integration.refresh') }}</button>
     </div>
 
     <p class="description">
-      Integration with AIGoNHR for automated payroll journal entries and tax form generation.
+      {{ t('integration.desc') }}
     </p>
 
     <!-- Stats Cards -->
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-value">{{ stats.total }}</div>
-        <div class="stat-label">Total Events</div>
+        <div class="stat-label">{{ t('integration.totalEvents') }}</div>
       </div>
       <div class="stat-card stat-success">
         <div class="stat-value">{{ stats.processed }}</div>
-        <div class="stat-label">Processed</div>
+        <div class="stat-label">{{ t('integration.processed') }}</div>
       </div>
       <div class="stat-card stat-danger" v-if="stats.failed > 0">
         <div class="stat-value">{{ stats.failed }}</div>
-        <div class="stat-label">Failed</div>
+        <div class="stat-label">{{ t('integration.failed') }}</div>
       </div>
       <div class="stat-card stat-info" v-if="stats.pending > 0">
         <div class="stat-value">{{ stats.pending }}</div>
-        <div class="stat-label">Pending</div>
+        <div class="stat-label">{{ t('integration.pending') }}</div>
       </div>
     </div>
 
     <!-- Sources -->
     <section class="section">
       <div class="section-header">
-        <h2>Connected Sources</h2>
-        <button v-if="!showAddSource" class="btn btn-primary btn-sm" @click="showAddSource = true">Connect AIGoNHR</button>
+        <h2>{{ t('integration.connectedSources') }}</h2>
+        <button v-if="!showAddSource" class="btn btn-primary btn-sm" @click="showAddSource = true">{{ t('integration.connectAIGoNHR') }}</button>
       </div>
 
       <!-- Add source form -->
       <div v-if="showAddSource" class="add-source-form">
-        <h3>Connect AIGoNHR</h3>
-        <p class="form-hint">Enter the Remote Company ID from AIGoNHR and the webhook secret generated when you created the accounting link in AIGoNHR.</p>
+        <h3>{{ t('integration.connectFormTitle') }}</h3>
+        <p class="form-hint">{{ t('integration.connectFormHint') }}</p>
         <div class="form-row">
-          <label>Remote Company ID (AIGoNHR)</label>
-          <input v-model="newSource.remote_company_id" placeholder="e.g. 1" />
+          <label>{{ t('integration.remoteCompanyId') }}</label>
+          <input v-model="newSource.remote_company_id" :placeholder="t('integration.remoteCompanyIdPlaceholder')" />
         </div>
         <div class="form-row">
-          <label>Webhook Secret</label>
-          <input v-model="newSource.webhook_secret" type="password" placeholder="Paste the webhook secret from AIGoNHR" />
+          <label>{{ t('integration.webhookSecret') }}</label>
+          <input v-model="newSource.webhook_secret" type="password" :placeholder="t('integration.webhookSecretPlaceholder')" />
         </div>
         <div class="form-actions">
           <button class="btn btn-primary" :disabled="addLoading" @click="addSource">
-            {{ addLoading ? 'Connecting...' : 'Connect' }}
+            {{ addLoading ? t('integration.connecting') : t('integration.connect') }}
           </button>
-          <button class="btn btn-secondary" @click="showAddSource = false">Cancel</button>
+          <button class="btn btn-secondary" @click="showAddSource = false">{{ t('integration.cancel') }}</button>
         </div>
       </div>
 
@@ -167,35 +169,35 @@ onMounted(fetchData)
             <span class="source-system">{{ src.source_system.toUpperCase() }}</span>
             <span :class="['badge', src.status === 'active' ? 'badge-success' : 'badge-secondary']">{{ src.status }}</span>
           </div>
-          <div class="source-detail">Remote Company: {{ src.remote_company_id }}</div>
-          <div class="source-detail">Last Event: {{ formatDate(src.last_event_at) }}</div>
-          <div class="source-detail">Connected: {{ formatDate(src.created_at) }}</div>
+          <div class="source-detail">{{ t('integration.remoteCompany', { id: src.remote_company_id }) }}</div>
+          <div class="source-detail">{{ t('integration.lastEvent', { date: formatDate(src.last_event_at) }) }}</div>
+          <div class="source-detail">{{ t('integration.connected', { date: formatDate(src.created_at) }) }}</div>
           <div class="source-actions">
-            <button class="btn btn-sm btn-danger" @click="removeSource(src.id)">Disconnect</button>
+            <button class="btn btn-sm btn-danger" @click="removeSource(src.id)">{{ t('integration.disconnect') }}</button>
           </div>
         </div>
       </div>
       <div v-else-if="!showAddSource" class="empty">
-        <p>No integration sources connected. Click "Connect AIGoNHR" to get started.</p>
+        <p>{{ t('integration.emptyNoSources') }}</p>
       </div>
     </section>
 
     <!-- Events -->
     <section class="section">
-      <h2>Event History</h2>
-      <div v-if="loading" class="loading">Loading events...</div>
+      <h2>{{ t('integration.eventHistory') }}</h2>
+      <div v-if="loading" class="loading">{{ t('integration.loadingEvents') }}</div>
       <div v-else-if="events.length === 0" class="empty">
-        <p>No integration events received yet. Connect AIGoNHR and run a payroll to see events here.</p>
+        <p>{{ t('integration.emptyNoEvents') }}</p>
       </div>
       <table v-else class="table">
         <thead>
           <tr>
-            <th>Event Type</th>
-            <th>Event ID</th>
-            <th>Status</th>
-            <th>Received</th>
-            <th>Processed</th>
-            <th>Details</th>
+            <th>{{ t('integration.thEventType') }}</th>
+            <th>{{ t('integration.thEventId') }}</th>
+            <th>{{ t('integration.thStatus') }}</th>
+            <th>{{ t('integration.thReceived') }}</th>
+            <th>{{ t('integration.thProcessed') }}</th>
+            <th>{{ t('integration.thDetails') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -208,14 +210,14 @@ onMounted(fetchData)
               <td>{{ formatDate(evt.processed_at) }}</td>
               <td>
                 <button class="btn btn-sm btn-secondary" @click="togglePayload(evt.id)">
-                  {{ expandedEvent === evt.id ? 'Hide' : 'View' }}
+                  {{ expandedEvent === evt.id ? t('integration.hide') : t('integration.view') }}
                 </button>
               </td>
             </tr>
             <tr v-if="expandedEvent === evt.id">
               <td colspan="6">
                 <div class="payload-container">
-                  <div v-if="evt.error_message" class="error-msg">Error: {{ evt.error_message }}</div>
+                  <div v-if="evt.error_message" class="error-msg">{{ t('integration.error', { message: evt.error_message }) }}</div>
                   <pre class="payload">{{ JSON.stringify(evt.payload, null, 2) }}</pre>
                 </div>
               </td>
