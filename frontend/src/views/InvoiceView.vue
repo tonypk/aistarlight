@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { invoiceApi } from '../api/invoices'
 import type { Invoice, InvoiceWithItems, CreateInvoiceRequest } from '../api/invoices'
+
+const { t } = useI18n()
 
 // State
 const invoices = ref<Invoice[]>([])
@@ -59,7 +62,7 @@ async function fetchInvoices() {
     invoices.value = data.data || []
     total.value = data.meta?.total ?? 0
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Failed to load invoices'
+    error.value = e?.response?.data?.error ?? t('invoice.loadFailed')
   } finally {
     loading.value = false
   }
@@ -72,7 +75,7 @@ async function viewInvoice(id: string) {
     const { data } = await invoiceApi.get(id)
     selectedInvoice.value = data.data
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Failed to load invoice'
+    error.value = e?.response?.data?.error ?? t('invoice.loadDetailFailed')
     showDetail.value = false
   } finally {
     detailLoading.value = false
@@ -106,11 +109,11 @@ function removeItem(index: number) {
 
 async function submitInvoice() {
   if (!form.value.customer_name || !form.value.invoice_date) {
-    error.value = 'Customer name and invoice date are required'
+    error.value = t('invoice.customerRequired')
     return
   }
   if (form.value.items.length === 0 || !form.value.items[0].description) {
-    error.value = 'At least one line item is required'
+    error.value = t('invoice.itemRequired')
     return
   }
   loading.value = true
@@ -120,7 +123,7 @@ async function submitInvoice() {
     showForm.value = false
     await fetchInvoices()
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Failed to create invoice'
+    error.value = e?.response?.data?.error ?? t('invoice.createFailed')
   } finally {
     loading.value = false
   }
@@ -134,19 +137,19 @@ async function updateStatus(id: string, status: string) {
       await viewInvoice(id)
     }
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Failed to update status'
+    error.value = e?.response?.data?.error ?? t('invoice.statusUpdateFailed')
   }
 }
 
 async function deleteInvoice(id: string) {
-  if (!confirm('Delete this invoice? This cannot be undone.')) return
+  if (!confirm(t('invoice.deleteConfirm'))) return
   try {
     await invoiceApi.delete(id)
     showDetail.value = false
     selectedInvoice.value = null
     await fetchInvoices()
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Failed to delete invoice'
+    error.value = e?.response?.data?.error ?? t('invoice.deleteFailed')
   }
 }
 
@@ -161,7 +164,7 @@ async function exportEIS(id: string, invoiceNumber: string) {
     a.click()
     URL.revokeObjectURL(url)
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Failed to export EIS'
+    error.value = e?.response?.data?.error ?? t('invoice.exportFailed')
   }
 }
 
@@ -171,7 +174,7 @@ function formatMoney(v: any): string {
 }
 
 function statusLabel(s: string): string {
-  const map: Record<string, string> = { draft: 'Draft', sent: 'Sent', paid: 'Paid', cancelled: 'Cancelled', overdue: 'Overdue' }
+  const map: Record<string, string> = { draft: t('invoice.draft'), sent: t('invoice.sent'), paid: t('invoice.paid'), cancelled: t('invoice.cancelled'), overdue: t('invoice.overdue') }
   return map[s] || s
 }
 
@@ -180,9 +183,9 @@ function statusClass(s: string): string {
   return map[s] || 'badge-gray'
 }
 
-function typeLabel(t: string): string {
-  const map: Record<string, string> = { sales: 'Sales', purchase: 'Purchase', credit_note: 'Credit Note', debit_note: 'Debit Note' }
-  return map[t] || t
+function typeLabel(tp: string): string {
+  const map: Record<string, string> = { sales: t('invoice.sales'), purchase: t('invoice.purchase'), credit_note: t('invoice.creditNote'), debit_note: t('invoice.debitNote') }
+  return map[tp] || tp
 }
 
 function changePage(p: number) {
@@ -194,8 +197,8 @@ function changePage(p: number) {
 <template>
   <div class="invoice-view">
     <div class="view-header">
-      <h2>Invoices</h2>
-      <button class="btn primary" @click="openCreate">New Invoice</button>
+      <h2>{{ t('invoice.title') }}</h2>
+      <button class="btn primary" @click="openCreate">{{ t('invoice.newInvoice') }}</button>
     </div>
 
     <p v-if="error" class="error">{{ error }}</p>
@@ -203,35 +206,35 @@ function changePage(p: number) {
     <!-- Filters -->
     <div class="filters">
       <select v-model="filterStatus" @change="fetchInvoices()">
-        <option value="">All Statuses</option>
-        <option value="draft">Draft</option>
-        <option value="sent">Sent</option>
-        <option value="paid">Paid</option>
-        <option value="cancelled">Cancelled</option>
-        <option value="overdue">Overdue</option>
+        <option value="">{{ t('invoice.allStatuses') }}</option>
+        <option value="draft">{{ t('invoice.draft') }}</option>
+        <option value="sent">{{ t('invoice.sent') }}</option>
+        <option value="paid">{{ t('invoice.paid') }}</option>
+        <option value="cancelled">{{ t('invoice.cancelled') }}</option>
+        <option value="overdue">{{ t('invoice.overdue') }}</option>
       </select>
       <select v-model="filterType" @change="fetchInvoices()">
-        <option value="">All Types</option>
-        <option value="sales">Sales</option>
-        <option value="purchase">Purchase</option>
-        <option value="credit_note">Credit Note</option>
-        <option value="debit_note">Debit Note</option>
+        <option value="">{{ t('invoice.allTypes') }}</option>
+        <option value="sales">{{ t('invoice.sales') }}</option>
+        <option value="purchase">{{ t('invoice.purchase') }}</option>
+        <option value="credit_note">{{ t('invoice.creditNote') }}</option>
+        <option value="debit_note">{{ t('invoice.debitNote') }}</option>
       </select>
     </div>
 
     <!-- Invoice List -->
-    <div v-if="loading && invoices.length === 0" class="loading">Loading...</div>
+    <div v-if="loading && invoices.length === 0" class="loading">{{ t('invoice.loading') }}</div>
     <table v-else-if="invoices.length" class="data-table">
       <thead>
         <tr>
-          <th>Invoice #</th>
-          <th>Type</th>
-          <th>Customer</th>
-          <th>Date</th>
-          <th>Total</th>
-          <th>Status</th>
-          <th>EIS</th>
-          <th>Actions</th>
+          <th>{{ t('invoice.thInvoiceNum') }}</th>
+          <th>{{ t('invoice.thType') }}</th>
+          <th>{{ t('invoice.thCustomer') }}</th>
+          <th>{{ t('invoice.thDate') }}</th>
+          <th>{{ t('invoice.thTotal') }}</th>
+          <th>{{ t('invoice.thStatus') }}</th>
+          <th>{{ t('invoice.thEIS') }}</th>
+          <th>{{ t('invoice.thActions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -242,48 +245,48 @@ function changePage(p: number) {
           <td>{{ inv.invoice_date?.slice(0, 10) }}</td>
           <td class="money">PHP {{ formatMoney(inv.total_amount) }}</td>
           <td><span :class="['badge', statusClass(inv.status)]">{{ statusLabel(inv.status) }}</span></td>
-          <td><span :class="['badge', inv.eis_status === 'submitted' ? 'badge-green' : 'badge-gray']">{{ inv.eis_status || 'Not submitted' }}</span></td>
+          <td><span :class="['badge', inv.eis_status === 'submitted' ? 'badge-green' : 'badge-gray']">{{ inv.eis_status || t('invoice.notSubmitted') }}</span></td>
           <td class="actions" @click.stop>
-            <button class="btn-sm" @click="exportEIS(inv.id, inv.invoice_number)" title="Export EIS JSON">EIS</button>
-            <button v-if="inv.status === 'draft'" class="btn-sm" @click="updateStatus(inv.id, 'sent')">Send</button>
-            <button v-if="inv.status === 'sent'" class="btn-sm success" @click="updateStatus(inv.id, 'paid')">Paid</button>
+            <button class="btn-sm" @click="exportEIS(inv.id, inv.invoice_number)" :title="t('invoice.exportEIS')">{{ t('invoice.eis') }}</button>
+            <button v-if="inv.status === 'draft'" class="btn-sm" @click="updateStatus(inv.id, 'sent')">{{ t('invoice.send') }}</button>
+            <button v-if="inv.status === 'sent'" class="btn-sm success" @click="updateStatus(inv.id, 'paid')">{{ t('invoice.markPaid') }}</button>
           </td>
         </tr>
       </tbody>
     </table>
-    <div v-else class="empty">No invoices found. Create your first invoice to get started.</div>
+    <div v-else class="empty">{{ t('invoice.empty') }}</div>
 
     <!-- Pagination -->
     <div v-if="totalPages > 1" class="pagination">
-      <button :disabled="page <= 1" @click="changePage(page - 1)">Prev</button>
-      <span>Page {{ page }} of {{ totalPages }}</span>
-      <button :disabled="page >= totalPages" @click="changePage(page + 1)">Next</button>
+      <button :disabled="page <= 1" @click="changePage(page - 1)">{{ t('common.prev') }}</button>
+      <span>{{ t('common.page', { page, total: totalPages }) }}</span>
+      <button :disabled="page >= totalPages" @click="changePage(page + 1)">{{ t('common.next') }}</button>
     </div>
 
     <!-- Detail Modal -->
     <div v-if="showDetail" class="modal-overlay" @click.self="showDetail = false">
       <div class="modal wide">
         <div class="modal-header">
-          <h3>Invoice {{ selectedInvoice?.invoice?.invoice_number }}</h3>
+          <h3>{{ t('invoice.invoiceDetail', { number: selectedInvoice?.invoice?.invoice_number }) }}</h3>
           <button class="close-btn" @click="showDetail = false">x</button>
         </div>
-        <div v-if="detailLoading" class="loading">Loading...</div>
+        <div v-if="detailLoading" class="loading">{{ t('invoice.loading') }}</div>
         <div v-else-if="selectedInvoice" class="invoice-detail">
           <div class="detail-grid">
-            <div><strong>Type:</strong> {{ typeLabel(selectedInvoice.invoice.invoice_type) }}</div>
-            <div><strong>Status:</strong> <span :class="['badge', statusClass(selectedInvoice.invoice.status)]">{{ statusLabel(selectedInvoice.invoice.status) }}</span></div>
-            <div><strong>Date:</strong> {{ selectedInvoice.invoice.invoice_date?.slice(0, 10) }}</div>
-            <div><strong>Due:</strong> {{ selectedInvoice.invoice.due_date?.slice(0, 10) || '-' }}</div>
-            <div><strong>Customer:</strong> {{ selectedInvoice.invoice.customer_name }}</div>
-            <div><strong>TIN:</strong> {{ selectedInvoice.invoice.customer_tin || '-' }}</div>
-            <div class="full-width"><strong>Address:</strong> {{ selectedInvoice.invoice.customer_address || '-' }}</div>
-            <div v-if="selectedInvoice.invoice.reference_number" class="full-width"><strong>Ref:</strong> {{ selectedInvoice.invoice.reference_number }}</div>
+            <div><strong>{{ t('invoice.type') }}</strong> {{ typeLabel(selectedInvoice.invoice.invoice_type) }}</div>
+            <div><strong>{{ t('invoice.status') }}</strong> <span :class="['badge', statusClass(selectedInvoice.invoice.status)]">{{ statusLabel(selectedInvoice.invoice.status) }}</span></div>
+            <div><strong>{{ t('invoice.date') }}</strong> {{ selectedInvoice.invoice.invoice_date?.slice(0, 10) }}</div>
+            <div><strong>{{ t('invoice.due') }}</strong> {{ selectedInvoice.invoice.due_date?.slice(0, 10) || '-' }}</div>
+            <div><strong>{{ t('invoice.customer') }}</strong> {{ selectedInvoice.invoice.customer_name }}</div>
+            <div><strong>{{ t('invoice.tin') }}</strong> {{ selectedInvoice.invoice.customer_tin || '-' }}</div>
+            <div class="full-width"><strong>{{ t('invoice.address') }}</strong> {{ selectedInvoice.invoice.customer_address || '-' }}</div>
+            <div v-if="selectedInvoice.invoice.reference_number" class="full-width"><strong>{{ t('invoice.ref') }}</strong> {{ selectedInvoice.invoice.reference_number }}</div>
           </div>
 
-          <h4>Line Items</h4>
+          <h4>{{ t('invoice.lineItems') }}</h4>
           <table class="data-table compact">
             <thead>
-              <tr><th>#</th><th>Description</th><th>Qty</th><th>Unit Price</th><th>Amount</th><th>VAT Type</th><th>VAT</th></tr>
+              <tr><th>{{ t('invoice.thLineNum') }}</th><th>{{ t('invoice.thDescription') }}</th><th>{{ t('invoice.thQty') }}</th><th>{{ t('invoice.thUnitPrice') }}</th><th>{{ t('invoice.thAmount') }}</th><th>{{ t('invoice.thVatType') }}</th><th>{{ t('invoice.thVat') }}</th></tr>
             </thead>
             <tbody>
               <tr v-for="item in selectedInvoice.items" :key="item.line_number">
@@ -299,27 +302,27 @@ function changePage(p: number) {
           </table>
 
           <div class="totals-grid">
-            <div><strong>Subtotal:</strong> PHP {{ formatMoney(selectedInvoice.invoice.subtotal) }}</div>
-            <div><strong>VAT:</strong> PHP {{ formatMoney(selectedInvoice.invoice.vat_amount) }}</div>
-            <div><strong>Discount:</strong> PHP {{ formatMoney(selectedInvoice.invoice.discount_amount) }}</div>
-            <div class="total-row"><strong>Total:</strong> PHP {{ formatMoney(selectedInvoice.invoice.total_amount) }}</div>
+            <div><strong>{{ t('invoice.subtotal') }}</strong> PHP {{ formatMoney(selectedInvoice.invoice.subtotal) }}</div>
+            <div><strong>{{ t('invoice.vat') }}</strong> PHP {{ formatMoney(selectedInvoice.invoice.vat_amount) }}</div>
+            <div><strong>{{ t('invoice.discount') }}</strong> PHP {{ formatMoney(selectedInvoice.invoice.discount_amount) }}</div>
+            <div class="total-row"><strong>{{ t('invoice.total') }}</strong> PHP {{ formatMoney(selectedInvoice.invoice.total_amount) }}</div>
           </div>
 
           <div class="vat-breakdown">
-            <span>Vatable: PHP {{ formatMoney(selectedInvoice.invoice.vatable_sales) }}</span>
-            <span>VAT Exempt: PHP {{ formatMoney(selectedInvoice.invoice.vat_exempt_sales) }}</span>
-            <span>Zero-Rated: PHP {{ formatMoney(selectedInvoice.invoice.zero_rated_sales) }}</span>
+            <span>{{ t('invoice.vatableSales') }} PHP {{ formatMoney(selectedInvoice.invoice.vatable_sales) }}</span>
+            <span>{{ t('invoice.vatExemptSales') }} PHP {{ formatMoney(selectedInvoice.invoice.vat_exempt_sales) }}</span>
+            <span>{{ t('invoice.zeroRatedSales') }} PHP {{ formatMoney(selectedInvoice.invoice.zero_rated_sales) }}</span>
           </div>
 
           <div v-if="selectedInvoice.invoice.notes" class="notes">
-            <strong>Notes:</strong> {{ selectedInvoice.invoice.notes }}
+            <strong>{{ t('invoice.notes') }}</strong> {{ selectedInvoice.invoice.notes }}
           </div>
 
           <div class="detail-actions">
-            <button class="btn" @click="exportEIS(selectedInvoice.invoice.id, selectedInvoice.invoice.invoice_number)">Export EIS JSON</button>
-            <button v-if="selectedInvoice.invoice.status === 'draft'" class="btn primary" @click="updateStatus(selectedInvoice.invoice.id, 'sent')">Mark as Sent</button>
-            <button v-if="selectedInvoice.invoice.status === 'sent'" class="btn success" @click="updateStatus(selectedInvoice.invoice.id, 'paid')">Mark as Paid</button>
-            <button v-if="selectedInvoice.invoice.status === 'draft'" class="btn danger" @click="deleteInvoice(selectedInvoice.invoice.id)">Delete</button>
+            <button class="btn" @click="exportEIS(selectedInvoice.invoice.id, selectedInvoice.invoice.invoice_number)">{{ t('invoice.exportEIS') }}</button>
+            <button v-if="selectedInvoice.invoice.status === 'draft'" class="btn primary" @click="updateStatus(selectedInvoice.invoice.id, 'sent')">{{ t('invoice.markAsSent') }}</button>
+            <button v-if="selectedInvoice.invoice.status === 'sent'" class="btn success" @click="updateStatus(selectedInvoice.invoice.id, 'paid')">{{ t('invoice.markAsPaid') }}</button>
+            <button v-if="selectedInvoice.invoice.status === 'draft'" class="btn danger" @click="deleteInvoice(selectedInvoice.invoice.id)">{{ t('invoice.deleteInvoice') }}</button>
           </div>
         </div>
       </div>
@@ -329,73 +332,73 @@ function changePage(p: number) {
     <div v-if="showForm" class="modal-overlay" @click.self="showForm = false">
       <div class="modal wide">
         <div class="modal-header">
-          <h3>New Invoice</h3>
+          <h3>{{ t('invoice.newInvoiceForm') }}</h3>
           <button class="close-btn" @click="showForm = false">x</button>
         </div>
 
         <form @submit.prevent="submitInvoice" class="invoice-form">
           <div class="form-grid">
             <div class="form-group">
-              <label>Invoice Type</label>
+              <label>{{ t('invoice.invoiceType') }}</label>
               <select v-model="form.invoice_type">
-                <option value="sales">Sales Invoice</option>
-                <option value="purchase">Purchase Invoice</option>
-                <option value="credit_note">Credit Note</option>
-                <option value="debit_note">Debit Note</option>
+                <option value="sales">{{ t('invoice.salesInvoice') }}</option>
+                <option value="purchase">{{ t('invoice.purchaseInvoice') }}</option>
+                <option value="credit_note">{{ t('invoice.creditNote') }}</option>
+                <option value="debit_note">{{ t('invoice.debitNote') }}</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Invoice Date *</label>
+              <label>{{ t('invoice.invoiceDate') }}</label>
               <input type="date" v-model="form.invoice_date" required />
             </div>
             <div class="form-group">
-              <label>Due Date</label>
+              <label>{{ t('invoice.dueDate') }}</label>
               <input type="date" v-model="form.due_date" />
             </div>
             <div class="form-group">
-              <label>Reference #</label>
-              <input v-model="form.reference_number" placeholder="Optional" />
+              <label>{{ t('invoice.referenceNum') }}</label>
+              <input v-model="form.reference_number" :placeholder="t('invoice.optional')" />
             </div>
           </div>
 
           <div class="form-grid">
             <div class="form-group">
-              <label>Customer Name *</label>
-              <input v-model="form.customer_name" required placeholder="Company or individual name" />
+              <label>{{ t('invoice.customerName') }}</label>
+              <input v-model="form.customer_name" required :placeholder="t('invoice.customerNamePlaceholder')" />
             </div>
             <div class="form-group">
-              <label>Customer TIN</label>
-              <input v-model="form.customer_tin" placeholder="000-000-000-000" />
+              <label>{{ t('invoice.customerTIN') }}</label>
+              <input v-model="form.customer_tin" :placeholder="t('invoice.tinPlaceholder')" />
             </div>
             <div class="form-group full-width">
-              <label>Customer Address</label>
-              <input v-model="form.customer_address" placeholder="Full address" />
+              <label>{{ t('invoice.customerAddress') }}</label>
+              <input v-model="form.customer_address" :placeholder="t('invoice.addressPlaceholder')" />
             </div>
           </div>
 
-          <h4>Line Items</h4>
+          <h4>{{ t('invoice.lineItems') }}</h4>
           <table class="data-table compact items-table">
             <thead>
               <tr>
-                <th>Description</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>VAT Type</th>
-                <th>VAT %</th>
-                <th>Discount</th>
+                <th>{{ t('invoice.thDescription') }}</th>
+                <th>{{ t('invoice.thQty') }}</th>
+                <th>{{ t('invoice.thUnitPrice') }}</th>
+                <th>{{ t('invoice.thVatType') }}</th>
+                <th>{{ t('invoice.vatPercent') }}</th>
+                <th>{{ t('invoice.discountLabel') }}</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(item, i) in form.items" :key="i">
-                <td><input v-model="item.description" placeholder="Item description" required /></td>
+                <td><input v-model="item.description" :placeholder="t('invoice.itemDescPlaceholder')" required /></td>
                 <td><input type="number" v-model.number="item.quantity" min="0.01" step="0.01" style="width:70px" /></td>
                 <td><input type="number" v-model.number="item.unit_price" min="0" step="0.01" style="width:100px" /></td>
                 <td>
                   <select v-model="item.vat_type" style="width:110px">
-                    <option value="vatable">Vatable</option>
-                    <option value="vat_exempt">VAT Exempt</option>
-                    <option value="zero_rated">Zero Rated</option>
+                    <option value="vatable">{{ t('invoice.vatableOption') }}</option>
+                    <option value="vat_exempt">{{ t('invoice.vatExemptOption') }}</option>
+                    <option value="zero_rated">{{ t('invoice.zeroRatedOption') }}</option>
                   </select>
                 </td>
                 <td><input type="number" v-model.number="item.vat_rate" min="0" step="0.01" style="width:60px" :disabled="item.vat_type !== 'vatable'" /></td>
@@ -404,23 +407,23 @@ function changePage(p: number) {
               </tr>
             </tbody>
           </table>
-          <button type="button" class="btn-sm" @click="addItem">+ Add Item</button>
+          <button type="button" class="btn-sm" @click="addItem">{{ t('invoice.addItem') }}</button>
 
           <div class="totals-grid form-totals">
-            <div>Subtotal: PHP {{ formatMoney(formTotals.subtotal) }}</div>
-            <div>VAT: PHP {{ formatMoney(formTotals.vatAmount) }}</div>
-            <div>Discount: PHP {{ formatMoney(formTotals.discountTotal) }}</div>
-            <div class="total-row">Total: PHP {{ formatMoney(formTotals.total) }}</div>
+            <div>{{ t('invoice.subtotal') }} PHP {{ formatMoney(formTotals.subtotal) }}</div>
+            <div>{{ t('invoice.vat') }} PHP {{ formatMoney(formTotals.vatAmount) }}</div>
+            <div>{{ t('invoice.discount') }} PHP {{ formatMoney(formTotals.discountTotal) }}</div>
+            <div class="total-row">{{ t('invoice.total') }} PHP {{ formatMoney(formTotals.total) }}</div>
           </div>
 
           <div class="form-group full-width">
-            <label>Notes</label>
-            <textarea v-model="form.notes" rows="2" placeholder="Optional notes"></textarea>
+            <label>{{ t('invoice.notesLabel') }}</label>
+            <textarea v-model="form.notes" rows="2" :placeholder="t('invoice.notesPlaceholder')"></textarea>
           </div>
 
           <div class="form-actions">
-            <button type="button" class="btn" @click="showForm = false">Cancel</button>
-            <button type="submit" class="btn primary" :disabled="loading">{{ loading ? 'Creating...' : 'Create Invoice' }}</button>
+            <button type="button" class="btn" @click="showForm = false">{{ t('invoice.cancel') }}</button>
+            <button type="submit" class="btn primary" :disabled="loading">{{ loading ? t('invoice.creating') : t('invoice.createInvoice') }}</button>
           </div>
         </form>
       </div>

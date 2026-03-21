@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { spendingApi, type SpendingDashboard } from '../api/spending'
 
+const { t } = useI18n()
 const loading = ref(true)
 const data = ref<SpendingDashboard | null>(null)
 
@@ -70,15 +72,15 @@ onMounted(fetchData)
 <template>
   <div class="spending-dashboard">
     <div class="page-header">
-      <h2>Spending Dashboard</h2>
+      <h2>{{ t('spending.title') }}</h2>
       <div class="date-filters">
         <input type="date" v-model="fromDate" @change="fetchData" />
-        <span class="date-sep">to</span>
+        <span class="date-sep">{{ t('spending.to') }}</span>
         <input type="date" v-model="toDate" @change="fetchData" />
       </div>
     </div>
 
-    <div v-if="loading" class="loading">Loading spending data...</div>
+    <div v-if="loading" class="loading">{{ t('spending.loading') }}</div>
 
     <template v-else-if="data">
       <!-- Summary Cards -->
@@ -87,28 +89,28 @@ onMounted(fetchData)
           <div class="summary-icon">📈</div>
           <div class="summary-info">
             <div class="summary-value">{{ formatAmount(totalIncome) }}</div>
-            <div class="summary-label">Total Income</div>
+            <div class="summary-label">{{ t('spending.totalIncome') }}</div>
           </div>
         </div>
         <div class="summary-card expense">
           <div class="summary-icon">📉</div>
           <div class="summary-info">
             <div class="summary-value">{{ formatAmount(totalExpense) }}</div>
-            <div class="summary-label">Total Expenses</div>
+            <div class="summary-label">{{ t('spending.totalExpenses') }}</div>
           </div>
         </div>
         <div class="summary-card" :class="netAmount >= 0 ? 'positive' : 'negative'">
           <div class="summary-icon">{{ netAmount >= 0 ? '✅' : '⚠️' }}</div>
           <div class="summary-info">
             <div class="summary-value">{{ formatAmount(Math.abs(netAmount)) }}</div>
-            <div class="summary-label">{{ netAmount >= 0 ? 'Net Surplus' : 'Net Deficit' }}</div>
+            <div class="summary-label">{{ netAmount >= 0 ? t('spending.netSurplus') : t('spending.netDeficit') }}</div>
           </div>
         </div>
         <div class="summary-card">
           <div class="summary-icon">🧾</div>
           <div class="summary-info">
             <div class="summary-value">{{ data.income_expense.reduce((s, i) => s + i.count, 0) }}</div>
-            <div class="summary-label">Total Transactions</div>
+            <div class="summary-label">{{ t('spending.totalTransactions') }}</div>
           </div>
         </div>
       </div>
@@ -117,10 +119,10 @@ onMounted(fetchData)
       <div class="charts-grid">
         <!-- By Category -->
         <div class="chart-card">
-          <h3>Spending by Category</h3>
+          <h3>{{ t('spending.spendingByCategory') }}</h3>
           <div v-if="data.by_category.length" class="bar-chart">
             <div v-for="(cat, i) in data.by_category" :key="cat.category" class="bar-row">
-              <div class="bar-label">{{ cat.category || 'Uncategorized' }}</div>
+              <div class="bar-label">{{ cat.category || t('spending.uncategorized') }}</div>
               <div class="bar-track">
                 <div
                   class="bar-fill"
@@ -131,12 +133,12 @@ onMounted(fetchData)
               <div class="bar-count">{{ cat.count }}x</div>
             </div>
           </div>
-          <div v-else class="empty-state">No category data for this period</div>
+          <div v-else class="empty-state">{{ t('spending.noCategoryData') }}</div>
         </div>
 
         <!-- By Vendor -->
         <div class="chart-card">
-          <h3>Top Vendors by Amount</h3>
+          <h3>{{ t('spending.topVendors') }}</h3>
           <div v-if="data.by_vendor.length" class="bar-chart">
             <div v-for="(v, i) in data.by_vendor.slice(0, 10)" :key="v.vendor" class="bar-row">
               <div class="bar-label" :title="v.vendor">{{ v.vendor.length > 25 ? v.vendor.slice(0, 22) + '...' : v.vendor }}</div>
@@ -150,12 +152,12 @@ onMounted(fetchData)
               <div class="bar-count">{{ v.count }}x</div>
             </div>
           </div>
-          <div v-else class="empty-state">No vendor data for this period</div>
+          <div v-else class="empty-state">{{ t('spending.noVendorData') }}</div>
         </div>
 
         <!-- By Month -->
         <div class="chart-card full-width">
-          <h3>Monthly Trend</h3>
+          <h3>{{ t('spending.monthlyTrend') }}</h3>
           <div v-if="data.by_month.length" class="month-chart">
             <div v-for="m in data.by_month" :key="m.month" class="month-bar-col">
               <div class="month-amount">{{ formatAmount(m.total) }}</div>
@@ -166,15 +168,15 @@ onMounted(fetchData)
                 ></div>
               </div>
               <div class="month-label">{{ m.month }}</div>
-              <div class="month-count">{{ m.count }} txns</div>
+              <div class="month-count">{{ t('spending.txns', { count: m.count }) }}</div>
             </div>
           </div>
-          <div v-else class="empty-state">No monthly data for this period</div>
+          <div v-else class="empty-state">{{ t('spending.noMonthlyData') }}</div>
         </div>
       </div>
     </template>
 
-    <div v-else class="empty-state">No spending data available</div>
+    <div v-else class="empty-state">{{ t('spending.noData') }}</div>
   </div>
 </template>
 

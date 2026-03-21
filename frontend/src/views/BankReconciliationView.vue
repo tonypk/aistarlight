@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   bankReconApi,
   type BankReconBatch,
@@ -10,8 +11,10 @@ import { reconciliationApi } from '@/api/transactions'
 import { currencySymbol, formatCurrency } from '@/utils/currency'
 import InlineAIHint from '../components/ai/InlineAIHint.vue'
 
+const { t } = useI18n()
+
 // Wizard steps
-const STEPS = ['Upload', 'Parsing', 'Matching', 'AI Analysis', 'Summary']
+const STEPS = computed(() => [t('bankRecon.stepUpload'), t('bankRecon.stepParsing'), t('bankRecon.stepMatching'), t('bankRecon.stepAIAnalysis'), t('bankRecon.stepSummary')])
 const currentStep = ref(0)
 
 // Upload state
@@ -285,10 +288,10 @@ function scoreClass(score: number | undefined | null): string {
 
 function formatMatchType(type: string): string {
   const labels: Record<string, string> = {
-    exact: 'Exact',
-    fuzzy: 'Fuzzy',
-    net_of_tax: 'Net of Tax',
-    split: 'Split',
+    exact: t('bankRecon.matchTypeExact'),
+    fuzzy: t('bankRecon.matchTypeFuzzy'),
+    net_of_tax: t('bankRecon.matchTypeNetOfTax'),
+    split: t('bankRecon.matchTypeSplit'),
   }
   return labels[type] || type
 }
@@ -325,13 +328,13 @@ function exportCSV() {
 <template>
   <div class="bank-recon">
     <div class="header">
-      <h1>Bank & Billing Reconciliation</h1>
-      <InlineAIHint agent="recon" message="AI can help match bank transactions automatically" action-label="Ask Recon Agent" />
+      <h1>{{ t('bankRecon.title') }}</h1>
+      <InlineAIHint agent="recon" :message="t('bankRecon.aiHint')" :action-label="t('bankRecon.askReconAgent')" />
       <div class="header-actions">
         <button class="btn btn-outline" @click="showHistory = !showHistory; if (showHistory) loadHistory()">
-          {{ showHistory ? 'Hide' : 'Show' }} History
+          {{ showHistory ? t('bankRecon.hideHistory') : t('bankRecon.showHistory') }}
         </button>
-        <button v-if="batch" class="btn btn-outline" @click="reset">New Reconciliation</button>
+        <button v-if="batch" class="btn btn-outline" @click="reset">{{ t('bankRecon.newReconciliation') }}</button>
       </div>
     </div>
 
@@ -356,17 +359,17 @@ function exportCSV() {
 
     <!-- History panel -->
     <div v-if="showHistory" class="history-panel">
-      <h3>Batch History</h3>
-      <div v-if="historyLoading" class="loading">Loading...</div>
-      <div v-else-if="batches.length === 0" class="empty">No batches yet.</div>
+      <h3>{{ t('bankRecon.batchHistory') }}</h3>
+      <div v-if="historyLoading" class="loading">{{ t('bankRecon.loading') }}</div>
+      <div v-else-if="batches.length === 0" class="empty">{{ t('bankRecon.noBatches') }}</div>
       <table v-else class="data-table">
         <thead>
           <tr>
-            <th>Period</th>
-            <th>Status</th>
-            <th>Entries</th>
-            <th>Match Rate</th>
-            <th>Created</th>
+            <th>{{ t('bankRecon.thPeriod') }}</th>
+            <th>{{ t('bankRecon.thStatus') }}</th>
+            <th>{{ t('bankRecon.thEntries') }}</th>
+            <th>{{ t('bankRecon.thMatchRate') }}</th>
+            <th>{{ t('bankRecon.thCreated') }}</th>
             <th></th>
           </tr>
         </thead>
@@ -377,7 +380,7 @@ function exportCSV() {
             <td>{{ b.total_entries }}</td>
             <td>{{ b.match_rate != null ? (b.match_rate * 100).toFixed(1) + '%' : '—' }}</td>
             <td>{{ new Date(b.created_at).toLocaleString() }}</td>
-            <td><button class="btn btn-sm" @click="loadBatch(b.id)">View</button></td>
+            <td><button class="btn btn-sm" @click="loadBatch(b.id)">{{ t('bankRecon.view') }}</button></td>
           </tr>
         </tbody>
       </table>
@@ -402,8 +405,8 @@ function exportCSV() {
           @change="handleFileInput"
         />
         <div class="drop-icon">📂</div>
-        <p>Drop bank statements, billing exports, or POS files here</p>
-        <p class="hint">Supports CSV, Excel, PDF, Images (JPG/PNG)</p>
+        <p>{{ t('bankRecon.dropHint') }}</p>
+        <p class="hint">{{ t('bankRecon.dropFormats') }}</p>
       </div>
 
       <div v-if="files.length" class="file-list">
@@ -417,15 +420,15 @@ function exportCSV() {
 
       <div class="form-row">
         <div class="form-group">
-          <label>Period</label>
+          <label>{{ t('bankRecon.period') }}</label>
           <input v-model="period" type="month" />
         </div>
         <div class="form-group">
-          <label>Link to Recon Session (optional)</label>
+          <label>{{ t('bankRecon.linkSession') }}</label>
           <select v-model="sessionId">
-            <option value="">— None —</option>
+            <option value="">{{ t('bankRecon.none') }}</option>
             <option v-for="s in reconSessions" :key="s.id" :value="s.id">
-              {{ s.period || 'No period' }} — {{ s.status }} ({{ s.id.substring(0, 8) }}...)
+              {{ s.period || t('bankRecon.noPeriod') }} — {{ s.status }} ({{ s.id.substring(0, 8) }}...)
             </option>
           </select>
         </div>
@@ -433,34 +436,34 @@ function exportCSV() {
 
       <div class="form-row">
         <div class="form-group">
-          <label>Opening Balance ({{ currencySymbol() }})</label>
+          <label>{{ t('bankRecon.openingBalance', { symbol: currencySymbol() }) }}</label>
           <input v-model="openingBalance" type="number" step="0.01" placeholder="e.g. 100000.00" />
         </div>
         <div class="form-group">
-          <label>Bank Closing Balance ({{ currencySymbol() }})</label>
-          <input v-model="bankClosingBalance" type="number" step="0.01" placeholder="From bank statement" />
+          <label>{{ t('bankRecon.bankClosingBalance', { symbol: currencySymbol() }) }}</label>
+          <input v-model="bankClosingBalance" type="number" step="0.01" :placeholder="t('bankRecon.fromBankStatement')" />
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label>Amount Tolerance ({{ currencySymbol() }})</label>
+          <label>{{ t('bankRecon.amountTolerance', { symbol: currencySymbol() }) }}</label>
           <input v-model.number="amountTolerance" type="number" step="0.01" min="0" />
         </div>
         <div class="form-group">
-          <label>Date Tolerance (days)</label>
+          <label>{{ t('bankRecon.dateTolerance') }}</label>
           <input v-model.number="dateTolerance" type="number" min="0" max="30" />
         </div>
         <div class="form-group checkbox-group">
           <label>
             <input v-model="runAI" type="checkbox" />
-            Run AI Analysis
+            {{ t('bankRecon.runAIAnalysis') }}
           </label>
         </div>
       </div>
 
       <button class="btn btn-primary" :disabled="!canProcess" @click="startProcess">
-        Start Reconciliation
+        {{ t('bankRecon.startReconciliation') }}
       </button>
     </div>
 
@@ -468,13 +471,13 @@ function exportCSV() {
     <div v-if="currentStep === 1" class="step-content">
       <div class="loading-state">
         <div class="spinner"></div>
-        <p>Parsing {{ files.length }} file(s)... This may take a moment for PDF/image files.</p>
+        <p>{{ t('bankRecon.parsingFiles', { count: files.length }) }}</p>
       </div>
     </div>
 
     <!-- Step 2: Matching Results -->
     <div v-if="currentStep === 2 && batch" class="step-content">
-      <h2>Matching Results</h2>
+      <h2>{{ t('bankRecon.matchingResults') }}</h2>
 
       <!-- Parse summary -->
       <div class="cards-row">
@@ -486,7 +489,7 @@ function exportCSV() {
             </span>
           </div>
           <div class="card-body">
-            <span>{{ sf.row_count }} entries</span>
+            <span>{{ t('bankRecon.entries', { count: sf.row_count }) }}</span>
             <span class="muted">{{ sf.file_type.toUpperCase() }}</span>
           </div>
         </div>
@@ -496,28 +499,28 @@ function exportCSV() {
       <div class="stats-grid">
         <div class="stat-card matched">
           <div class="stat-value">{{ matchedCount }}</div>
-          <div class="stat-label">Matched Pairs</div>
+          <div class="stat-label">{{ t('bankRecon.matchedPairs') }}</div>
         </div>
         <div class="stat-card unmatched">
           <div class="stat-value">{{ unmatchedBankCount }}</div>
-          <div class="stat-label">Unmatched Bank</div>
+          <div class="stat-label">{{ t('bankRecon.unmatchedBank') }}</div>
         </div>
         <div class="stat-card unmatched">
           <div class="stat-value">{{ unmatchedRecordCount }}</div>
-          <div class="stat-label">Unmatched Records</div>
+          <div class="stat-label">{{ t('bankRecon.unmatchedRecords') }}</div>
         </div>
         <div class="stat-card rate">
           <div class="stat-value">{{ matchRate }}%</div>
-          <div class="stat-label">Match Rate</div>
+          <div class="stat-label">{{ t('bankRecon.matchRate') }}</div>
         </div>
       </div>
 
       <!-- Split matches -->
       <div v-if="batch.match_result?.split_matches?.length" class="section">
-        <h3>Split Matches (N:1)</h3>
+        <h3>{{ t('bankRecon.splitMatches') }}</h3>
         <table class="data-table">
           <thead>
-            <tr><th>Bank Entry</th><th>Records</th><th>Record Total</th><th>Bank Amt</th><th>Difference</th></tr>
+            <tr><th>{{ t('bankRecon.thBankEntry') }}</th><th>{{ t('bankRecon.thRecords') }}</th><th>{{ t('bankRecon.thRecordTotal') }}</th><th>{{ t('bankRecon.thBankAmt') }}</th><th>{{ t('bankRecon.thDifference') }}</th></tr>
           </thead>
           <tbody>
             <tr v-for="sm in batch.match_result!.split_matches" :key="sm.match_group_id">
@@ -533,10 +536,10 @@ function exportCSV() {
 
       <!-- Matched pairs table -->
       <div v-if="matchedCount > 0" class="section">
-        <h3>Matched Pairs</h3>
+        <h3>{{ t('bankRecon.matchedPairs') }}</h3>
         <table class="data-table">
           <thead>
-            <tr><th>Record</th><th>Bank Entry</th><th>Record Amt</th><th>Bank Amt</th><th>Date Diff</th><th>Score</th><th>Type</th></tr>
+            <tr><th>{{ t('bankRecon.thRecord') }}</th><th>{{ t('bankRecon.thBankEntryCol') }}</th><th>{{ t('bankRecon.thRecordAmt') }}</th><th>{{ t('bankRecon.thBankAmtCol') }}</th><th>{{ t('bankRecon.thDateDiff') }}</th><th>{{ t('bankRecon.thScore') }}</th><th>{{ t('bankRecon.thType') }}</th></tr>
           </thead>
           <tbody>
             <tr v-for="p in batch.match_result!.matched_pairs.slice(0, 50)" :key="p.match_group_id">

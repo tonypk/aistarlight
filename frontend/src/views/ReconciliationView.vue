@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useTransactionStore } from '../stores/transaction'
 import { useReportStore } from '../stores/report'
 import { useAccountingStore } from '../stores/accounting'
@@ -11,6 +12,8 @@ import VATSummarySheet from '../components/reconciliation/VATSummarySheet.vue'
 import ReconciliationSummary from '../components/reconciliation/ReconciliationSummary.vue'
 import AnomalyList from '../components/reconciliation/AnomalyList.vue'
 import InlineAIHint from '../components/ai/InlineAIHint.vue'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const route = useRoute()
@@ -88,7 +91,7 @@ async function bulkUpdate() {
     bulkVatType.value = ''
     bulkCategory.value = ''
   } catch (e: any) {
-    reconError.value = e?.response?.data?.error ?? 'Bulk update failed'
+    reconError.value = e?.response?.data?.error ?? t('recon.bulkUpdateFailed')
   } finally {
     bulkUpdating.value = false
   }
@@ -157,7 +160,7 @@ onMounted(async () => {
     try {
       await loadSessionData(sessionId.value)
     } catch (e: any) {
-      reconError.value = e?.response?.data?.error ?? 'Failed to load session data'
+      reconError.value = e?.response?.data?.error ?? t('recon.loadSessionFailed')
     }
   }
 })
@@ -168,7 +171,7 @@ async function runDetectAnomalies() {
   try {
     await store.detectAnomalies(sessionId.value)
   } catch (e: any) {
-    reconError.value = e?.response?.data?.error ?? 'Anomaly detection failed'
+    reconError.value = e?.response?.data?.error ?? t('recon.anomalyDetectionFailed')
   }
 }
 
@@ -182,7 +185,7 @@ async function runReconciliation() {
       selectedReportId.value || undefined
     )
   } catch (e: any) {
-    reconError.value = e?.response?.data?.error ?? 'Reconciliation failed'
+    reconError.value = e?.response?.data?.error ?? t('recon.reconciliationFailed')
   } finally {
     reconRunning.value = false
   }
@@ -207,7 +210,7 @@ async function generateReportFromSession() {
       router.push(`/reports/${report.id}/edit`)
     }
   } catch (e: any) {
-    reconError.value = e?.response?.data?.error ?? 'Report generation failed'
+    reconError.value = e?.response?.data?.error ?? t('recon.reportGenerationFailed')
   } finally {
     generatingReport.value = false
   }
@@ -227,7 +230,7 @@ async function exportPdf() {
     link.remove()
     window.URL.revokeObjectURL(url)
   } catch (e: any) {
-    reconError.value = e?.response?.data?.error ?? 'PDF export failed'
+    reconError.value = e?.response?.data?.error ?? t('recon.pdfExportFailed')
   } finally {
     exportingPdf.value = false
   }
@@ -252,7 +255,7 @@ async function generateJournalEntries() {
     await accounting.generateJournalsFromSession(sessionId.value)
     router.push('/journal-entries')
   } catch (e: any) {
-    reconError.value = e?.response?.data?.error ?? 'Journal entry generation failed'
+    reconError.value = e?.response?.data?.error ?? t('recon.journalGenerationFailed')
   } finally {
     generatingJournals.value = false
   }
@@ -298,17 +301,17 @@ const statusTextColors: Record<string, string> = {
     <!-- Session List Mode -->
     <template v-if="listMode">
       <div class="view-header">
-        <h2>{{ isSG ? 'GST Reconciliation' : 'VAT Reconciliation' }}</h2>
-        <InlineAIHint agent="recon" message="AI can explain discrepancies and match transactions" action-label="Ask Recon Agent" />
-        <button class="btn primary" @click="goToClassification">Go to Classification</button>
+        <h2>{{ isSG ? t('recon.titleGST') : t('recon.titleVAT') }}</h2>
+        <InlineAIHint agent="recon" :message="t('recon.aiHint')" :action-label="t('recon.askReconAgent')" />
+        <button class="btn primary" @click="goToClassification">{{ t('recon.goToClassification') }}</button>
       </div>
 
-      <div v-if="store.loading" class="loading-msg">Loading sessions...</div>
+      <div v-if="store.loading" class="loading-msg">{{ t('recon.loadingSessions') }}</div>
 
       <div v-else-if="store.sessions.length === 0" class="empty-state">
-        <p>No reconciliation sessions yet.</p>
-        <p class="hint">Upload and classify transactions first, then run reconciliation.</p>
-        <button class="btn primary" @click="goToClassification">Start Classification</button>
+        <p>{{ t('recon.noSessions') }}</p>
+        <p class="hint">{{ t('recon.noSessionsHint') }}</p>
+        <button class="btn primary" @click="goToClassification">{{ t('recon.startClassification') }}</button>
       </div>
 
       <div v-else class="session-list">
@@ -331,9 +334,9 @@ const statusTextColors: Record<string, string> = {
             </span>
           </div>
           <div class="session-meta">
-            <span>{{ s.source_files?.length ?? 0 }} files</span>
-            <span v-if="s.completed_at">Completed {{ new Date(s.completed_at).toLocaleDateString() }}</span>
-            <span v-else>Created {{ new Date(s.created_at).toLocaleDateString() }}</span>
+            <span>{{ t('recon.files', { count: s.source_files?.length ?? 0 }) }}</span>
+            <span v-if="s.completed_at">{{ t('recon.completed', { date: new Date(s.completed_at).toLocaleDateString() }) }}</span>
+            <span v-else>{{ t('recon.created', { date: new Date(s.created_at).toLocaleDateString() }) }}</span>
           </div>
         </div>
       </div>
@@ -343,25 +346,25 @@ const statusTextColors: Record<string, string> = {
     <template v-else>
       <div class="view-header">
         <div>
-          <h2>{{ isSG ? 'GST Reconciliation' : 'VAT Reconciliation' }}</h2>
+          <h2>{{ isSG ? t('recon.titleGST') : t('recon.titleVAT') }}</h2>
           <p class="desc" v-if="store.currentSession" data-testid="recon-status">
-            Period: {{ store.currentSession.period }}
-            | Status: {{ store.currentSession.status }}
+            {{ t('recon.period', { period: store.currentSession.period }) }}
+            | {{ t('recon.status', { status: store.currentSession.status }) }}
           </p>
         </div>
         <div class="header-actions">
-          <button class="btn ghost" @click="listMode = true; store.reset()">All Sessions</button>
-          <button class="btn ghost" @click="goBack">Back to Classification</button>
-          <button class="btn ghost" @click="exportCsv">Export CSV</button>
-          <button class="btn ghost" @click="exportExcel">Export Excel</button>
+          <button class="btn ghost" @click="listMode = true; store.reset()">{{ t('recon.allSessions') }}</button>
+          <button class="btn ghost" @click="goBack">{{ t('recon.backToClassification') }}</button>
+          <button class="btn ghost" @click="exportCsv">{{ t('recon.exportCsv') }}</button>
+          <button class="btn ghost" @click="exportExcel">{{ t('recon.exportExcel') }}</button>
           <button
             class="btn secondary"
             @click="exportPdf"
             :disabled="exportingPdf || !store.summary"
           >
-            {{ exportingPdf ? 'Exporting...' : 'Export PDF' }}
+            {{ exportingPdf ? t('recon.exporting') : t('recon.exportPdf') }}
           </button>
-          <button class="btn" @click="goToReports">View Reports</button>
+          <button class="btn" @click="goToReports">{{ t('recon.viewReports') }}</button>
         </div>
       </div>
 
@@ -370,9 +373,9 @@ const statusTextColors: Record<string, string> = {
       <!-- Control Panel -->
       <div class="control-panel">
         <div class="control-row">
-          <label>Compare with Report:</label>
+          <label>{{ t('recon.compareWithReport') }}</label>
           <select v-model="selectedReportId">
-            <option value="">-- No comparison --</option>
+            <option value="">{{ t('recon.noComparison') }}</option>
             <option
               v-for="r in reportStore.reports"
               :key="r.id"
@@ -384,25 +387,25 @@ const statusTextColors: Record<string, string> = {
         </div>
         <div class="control-actions">
           <button class="btn secondary" @click="fetchSummary" :disabled="store.loading" data-testid="recon-summary-btn">
-            Generate Summary
+            {{ t('recon.generateSummary') }}
           </button>
           <button class="btn secondary" @click="runDetectAnomalies" :disabled="store.loading" data-testid="recon-detect-btn">
-            Detect Anomalies
+            {{ t('recon.detectAnomalies') }}
           </button>
           <button class="btn primary" @click="runReconciliation" :disabled="reconRunning" data-testid="recon-run-btn">
-            {{ reconRunning ? 'Running...' : 'Run Reconciliation' }}
+            {{ reconRunning ? t('recon.running') : t('recon.runReconciliation') }}
           </button>
         </div>
         <div class="control-row" v-if="store.currentSession?.status === 'completed'">
-          <label>{{ isSG ? 'Generate IRAS Report:' : 'Generate BIR Report:' }}</label>
+          <label>{{ isSG ? t('recon.generateIRASReport') : t('recon.generateBIRReport') }}</label>
           <select v-model="generateReportType">
             <template v-if="isSG">
-              <option value="IRAS_GST_F5">GST F5 (Quarterly)</option>
-              <option value="IRAS_FORM_C">Form C (Annual)</option>
+              <option value="IRAS_GST_F5">{{ t('recon.gstF5Quarterly') }}</option>
+              <option value="IRAS_FORM_C">{{ t('recon.formCAnnual') }}</option>
             </template>
             <template v-else>
-              <option value="BIR_2550M">BIR 2550M (Monthly)</option>
-              <option value="BIR_2550Q">BIR 2550Q (Quarterly)</option>
+              <option value="BIR_2550M">{{ t('recon.bir2550mMonthly') }}</option>
+              <option value="BIR_2550Q">{{ t('recon.bir2550qQuarterly') }}</option>
             </template>
           </select>
           <button
@@ -411,17 +414,17 @@ const statusTextColors: Record<string, string> = {
             :disabled="generatingReport"
             data-testid="recon-generate-btn"
           >
-            {{ generatingReport ? 'Generating...' : 'Generate Report' }}
+            {{ generatingReport ? t('recon.generating') : t('recon.generateReport') }}
           </button>
         </div>
         <div class="control-row" v-if="store.currentSession?.status === 'completed'">
-          <label>Accounting Pipeline:</label>
+          <label>{{ t('recon.accountingPipeline') }}</label>
           <button
             class="btn bridge"
             @click="generateJournalEntries"
             :disabled="generatingJournals"
           >
-            {{ generatingJournals ? 'Generating...' : 'Generate Journal Entries' }}
+            {{ generatingJournals ? t('recon.generating') : t('recon.generateJournalEntries') }}
           </button>
         </div>
       </div>
@@ -438,23 +441,23 @@ const statusTextColors: Record<string, string> = {
 
       <!-- Match Stats (when no comparison) -->
       <div v-else-if="store.reconciliationResult?.match_stats" class="match-only">
-        <h3>Transaction Matching</h3>
+        <h3>{{ t('recon.transactionMatching') }}</h3>
         <div class="match-grid">
           <div class="match-stat">
             <div class="val">{{ store.reconciliationResult.match_stats.matched_pairs ?? 0 }}</div>
-            <div class="lbl">Matched</div>
+            <div class="lbl">{{ t('recon.matched') }}</div>
           </div>
           <div class="match-stat">
             <div class="val">{{ store.reconciliationResult.match_stats.unmatched_records ?? 0 }}</div>
-            <div class="lbl">Unmatched Records</div>
+            <div class="lbl">{{ t('recon.unmatchedRecords') }}</div>
           </div>
           <div class="match-stat">
             <div class="val">{{ store.reconciliationResult.match_stats.unmatched_bank ?? 0 }}</div>
-            <div class="lbl">Unmatched Bank</div>
+            <div class="lbl">{{ t('recon.unmatchedBank') }}</div>
           </div>
           <div class="match-stat">
             <div class="val">{{ ((store.reconciliationResult.match_stats.match_rate ?? 0) * 100).toFixed(1) }}%</div>
-            <div class="lbl">Match Rate</div>
+            <div class="lbl">{{ t('recon.matchRate') }}</div>
           </div>
         </div>
       </div>
@@ -462,41 +465,41 @@ const statusTextColors: Record<string, string> = {
       <!-- Transaction Table (F2: Needs Review filter, F3: Bulk Update) -->
       <div class="txn-section" v-if="store.transactions.length > 0 || needsReviewOnly">
         <div class="txn-header">
-          <h3>Transactions <span class="txn-count">({{ store.transactionTotal }})</span></h3>
+          <h3>{{ t('recon.transactions') }} <span class="txn-count">({{ store.transactionTotal }})</span></h3>
           <div class="txn-controls">
             <label class="review-toggle">
               <input type="checkbox" v-model="needsReviewOnly" />
-              Needs Review Only
+              {{ t('recon.needsReviewOnly') }}
             </label>
           </div>
         </div>
 
         <!-- F3: Bulk action bar -->
         <div v-if="selectedTxnIds.size > 0" class="bulk-bar">
-          <span class="bulk-count">{{ selectedTxnIds.size }} selected</span>
+          <span class="bulk-count">{{ t('recon.selected', { count: selectedTxnIds.size }) }}</span>
           <select v-model="bulkVatType" class="bulk-select">
-            <option value="">Set VAT Type...</option>
-            <option value="vatable">Vatable</option>
-            <option value="exempt">Exempt</option>
-            <option value="zero_rated">Zero Rated</option>
-            <option value="government">Government</option>
+            <option value="">{{ t('recon.setVatType') }}</option>
+            <option value="vatable">{{ t('recon.vatable') }}</option>
+            <option value="exempt">{{ t('recon.exempt') }}</option>
+            <option value="zero_rated">{{ t('recon.zeroRated') }}</option>
+            <option value="government">{{ t('recon.government') }}</option>
           </select>
           <select v-model="bulkCategory" class="bulk-select">
-            <option value="">Set Category...</option>
-            <option value="goods">Goods</option>
-            <option value="services">Services</option>
-            <option value="capital">Capital</option>
-            <option value="imports">Imports</option>
-            <option value="sale">Sale</option>
+            <option value="">{{ t('recon.setCategory') }}</option>
+            <option value="goods">{{ t('recon.goods') }}</option>
+            <option value="services">{{ t('recon.services') }}</option>
+            <option value="capital">{{ t('recon.capital') }}</option>
+            <option value="imports">{{ t('recon.imports') }}</option>
+            <option value="sale">{{ t('recon.sale') }}</option>
           </select>
           <button
             class="btn primary btn-sm"
             @click="bulkUpdate"
             :disabled="bulkUpdating || (!bulkVatType && !bulkCategory)"
           >
-            {{ bulkUpdating ? 'Updating...' : 'Apply' }}
+            {{ bulkUpdating ? t('recon.updating') : t('recon.apply') }}
           </button>
-          <button class="btn ghost btn-sm" @click="selectedTxnIds = new Set()">Clear</button>
+          <button class="btn ghost btn-sm" @click="selectedTxnIds = new Set()">{{ t('common.clear') }}</button>
         </div>
 
         <div class="txn-table-wrap">
@@ -504,35 +507,35 @@ const statusTextColors: Record<string, string> = {
             <thead>
               <tr>
                 <th class="col-check"><input type="checkbox" :checked="allSelected" @change="toggleSelectAll" /></th>
-                <th class="col-date">Date</th>
-                <th class="col-desc">Description</th>
-                <th class="col-amount">Amount</th>
-                <th class="col-vat">VAT Type</th>
-                <th class="col-cat">Category</th>
-                <th class="col-conf">Confidence</th>
-                <th class="col-src">Source</th>
+                <th class="col-date">{{ t('recon.thDate') }}</th>
+                <th class="col-desc">{{ t('recon.thDescription') }}</th>
+                <th class="col-amount">{{ t('recon.thAmount') }}</th>
+                <th class="col-vat">{{ t('recon.thVatType') }}</th>
+                <th class="col-cat">{{ t('recon.thCategory') }}</th>
+                <th class="col-conf">{{ t('recon.thConfidence') }}</th>
+                <th class="col-src">{{ t('recon.thSource') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr
-                v-for="t in displayedTransactions"
-                :key="t.id"
-                :class="{ 'low-conf': t.confidence < 0.5, 'selected-row': selectedTxnIds.has(t.id) }"
+                v-for="txn in displayedTransactions"
+                :key="txn.id"
+                :class="{ 'low-conf': txn.confidence < 0.5, 'selected-row': selectedTxnIds.has(txn.id) }"
               >
-                <td><input type="checkbox" :checked="selectedTxnIds.has(t.id)" @change="toggleSelect(t.id)" /></td>
-                <td>{{ t.date ? new Date(t.date).toLocaleDateString() : '-' }}</td>
-                <td class="desc-cell">{{ t.description || '-' }}</td>
-                <td class="amount-cell">{{ t.amount.toLocaleString(currencyLocale(), { minimumFractionDigits: 2 }) }}</td>
-                <td><span class="tag">{{ t.vat_type }}</span></td>
-                <td><span class="tag">{{ t.category }}</span></td>
+                <td><input type="checkbox" :checked="selectedTxnIds.has(txn.id)" @change="toggleSelect(txn.id)" /></td>
+                <td>{{ txn.date ? new Date(txn.date).toLocaleDateString() : '-' }}</td>
+                <td class="desc-cell">{{ txn.description || '-' }}</td>
+                <td class="amount-cell">{{ txn.amount.toLocaleString(currencyLocale(), { minimumFractionDigits: 2 }) }}</td>
+                <td><span class="tag">{{ txn.vat_type }}</span></td>
+                <td><span class="tag">{{ txn.category }}</span></td>
                 <td>
-                  <span class="conf-badge" :class="confidenceClass(t.confidence)">
-                    {{ (t.confidence * 100).toFixed(0) }}%
+                  <span class="conf-badge" :class="confidenceClass(txn.confidence)">
+                    {{ (txn.confidence * 100).toFixed(0) }}%
                   </span>
                 </td>
                 <td>
-                  <span class="src-badge" :class="{ 'auto-confirmed': t.classification_source === 'auto_confirmed' }">
-                    {{ t.classification_source === 'auto_confirmed' ? 'Auto' : t.classification_source }}
+                  <span class="src-badge" :class="{ 'auto-confirmed': txn.classification_source === 'auto_confirmed' }">
+                    {{ txn.classification_source === 'auto_confirmed' ? t('recon.auto') : txn.classification_source }}
                   </span>
                 </td>
               </tr>
@@ -542,9 +545,9 @@ const statusTextColors: Record<string, string> = {
 
         <!-- Pagination -->
         <div class="txn-pagination" v-if="store.transactionTotal > txnPageSize">
-          <button class="btn ghost btn-sm" :disabled="txnPage <= 1" @click="txnPage--; loadTransactions()">Prev</button>
-          <span class="page-info">Page {{ txnPage }} of {{ Math.ceil(store.transactionTotal / txnPageSize) }}</span>
-          <button class="btn ghost btn-sm" :disabled="txnPage >= Math.ceil(store.transactionTotal / txnPageSize)" @click="txnPage++; loadTransactions()">Next</button>
+          <button class="btn ghost btn-sm" :disabled="txnPage <= 1" @click="txnPage--; loadTransactions()">{{ t('common.prev') }}</button>
+          <span class="page-info">{{ t('common.page', { page: txnPage, total: Math.ceil(store.transactionTotal / txnPageSize) }) }}</span>
+          <button class="btn ghost btn-sm" :disabled="txnPage >= Math.ceil(store.transactionTotal / txnPageSize)" @click="txnPage++; loadTransactions()">{{ t('common.next') }}</button>
         </div>
       </div>
 
