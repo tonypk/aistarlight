@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { client } from '../api/client'
 import { reportsApi } from '../api/reports'
 import { healthApi, type AIHealthStatus } from '../api/health'
 import { dashboardApi, type MonthlyTrend, type ActivityItem, type FinancialSummary } from '../api/dashboard'
 import { useAuthStore } from '../stores/auth'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 
 interface ReportSummary {
@@ -162,33 +164,33 @@ const quickActions = computed(() => {
   const s = stats.value
   const actions = [
     {
-      to: '/upload', icon: '📤', title: 'Upload Data',
-      desc: 'Upload sales & purchase records',
+      to: '/upload', icon: '📤', title: t('dashboard.uploadData'),
+      desc: t('dashboard.uploadDataDesc'),
       badge: 0,
     },
     {
-      to: '/classification', icon: '🏷️', title: 'Classify Transactions',
-      desc: 'Review low-confidence items',
+      to: '/classification', icon: '🏷️', title: t('dashboard.classifyTransactions'),
+      desc: t('dashboard.classifyDesc'),
       badge: s?.low_confidence_count || 0,
     },
     {
-      to: '/reports', icon: '📋', title: 'Generate Report',
-      desc: auth.jurisdiction === 'SG' ? 'Create GST F5 and more' : auth.jurisdiction === 'LK' ? 'Create VAT Return and more' : 'Create BIR 2550M and more',
+      to: '/reports', icon: '📋', title: t('dashboard.generateReport'),
+      desc: auth.jurisdiction === 'SG' ? t('dashboard.generateReportDescSG') : auth.jurisdiction === 'LK' ? t('dashboard.generateReportDescLK') : t('dashboard.generateReportDescPH'),
       badge: s?.draft_reports || 0,
     },
     {
-      to: '/bank-reconciliation', icon: '🏦', title: 'Bank Recon',
-      desc: 'Auto-reconcile bank & billing',
+      to: '/bank-reconciliation', icon: '🏦', title: t('dashboard.bankReconAction'),
+      desc: t('dashboard.bankReconDesc'),
       badge: s?.unmatched_transactions || 0,
     },
     {
-      to: '/approvals', icon: '✅', title: 'Approvals',
-      desc: 'Review pending items',
+      to: '/approvals', icon: '✅', title: t('dashboard.approvals'),
+      desc: t('dashboard.approvalsDesc'),
       badge: s?.pending_approvals || 0,
     },
     {
-      to: '/chat', icon: '💬', title: 'AI Assistant',
-      desc: 'Ask tax questions',
+      to: '/chat', icon: '💬', title: t('dashboard.aiAssistant'),
+      desc: t('dashboard.aiAssistantDesc'),
       badge: 0,
     },
   ]
@@ -223,11 +225,9 @@ onMounted(async () => {
 })
 
 function statusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    draft: 'Draft', review: 'In Review', approved: 'Approved',
-    filed: 'Filed', archived: 'Archived', confirmed: 'Confirmed',
-  }
-  return labels[status] || status
+  const key = `dashboard.status${status.charAt(0).toUpperCase() + status.slice(1)}` as string
+  const translated = t(key)
+  return translated !== key ? translated : status
 }
 
 function formatDeadline(dateStr: string): string {
@@ -249,47 +249,47 @@ function timeAgo(dateStr: string): string {
   <div class="dashboard">
     <div class="welcome-section" data-testid="dashboard-welcome">
       <div>
-        <h2>Welcome, {{ auth.user?.full_name || 'User' }}</h2>
+        <h2>{{ t('dashboard.welcome', { name: auth.user?.full_name || 'User' }) }}</h2>
         <p class="company">{{ auth.user?.company_name }}</p>
       </div>
     </div>
 
     <!-- Financial Health Overview -->
     <div v-if="financials" class="financial-overview" data-testid="financial-overview">
-      <h3 class="section-title">Financial Health</h3>
+      <h3 class="section-title">{{ t('dashboard.financialHealth') }}</h3>
       <div class="finance-cards">
         <div class="finance-card">
-          <div class="finance-label">Revenue (This Month)</div>
+          <div class="finance-label">{{ t('dashboard.revenueThisMonth') }}</div>
           <div class="finance-value" :class="{ positive: isPositive(financials.revenue) }">
             &#8369;{{ fmtCompact(financials.revenue) }}
           </div>
         </div>
         <div class="finance-card">
-          <div class="finance-label">Expenses</div>
+          <div class="finance-label">{{ t('dashboard.expenses') }}</div>
           <div class="finance-value expense">
             &#8369;{{ fmtCompact(financials.expenses) }}
           </div>
         </div>
         <div class="finance-card">
-          <div class="finance-label">Net Income</div>
+          <div class="finance-label">{{ t('dashboard.netIncome') }}</div>
           <div class="finance-value" :class="{ positive: isPositive(financials.net_income), negative: isNegative(financials.net_income) }">
             &#8369;{{ fmtCompact(financials.net_income) }}
           </div>
         </div>
         <div class="finance-card">
-          <div class="finance-label">Cash Balance</div>
+          <div class="finance-label">{{ t('dashboard.cashBalance') }}</div>
           <div class="finance-value">
             &#8369;{{ fmtCompact(financials.cash_balance) }}
           </div>
         </div>
         <div class="finance-card">
-          <div class="finance-label">Receivables (AR)</div>
+          <div class="finance-label">{{ t('dashboard.receivables') }}</div>
           <div class="finance-value">
             &#8369;{{ fmtCompact(financials.accounts_receivable) }}
           </div>
         </div>
         <div class="finance-card">
-          <div class="finance-label">Payables (AP)</div>
+          <div class="finance-label">{{ t('dashboard.payables') }}</div>
           <div class="finance-value">
             &#8369;{{ fmtCompact(financials.accounts_payable) }}
           </div>
@@ -298,7 +298,7 @@ function timeAgo(dateStr: string): string {
 
       <!-- P&L Trend Chart -->
       <div v-if="financials.monthly_pl?.length" class="pl-chart-card">
-        <h4 class="chart-subtitle">6-Month P&L Trend</h4>
+        <h4 class="chart-subtitle">{{ t('dashboard.plTrend') }}</h4>
         <div class="pl-chart">
           <svg viewBox="0 0 400 140" class="pl-svg">
             <!-- Revenue line -->
@@ -312,9 +312,9 @@ function timeAgo(dateStr: string): string {
             <span v-for="p in financials.monthly_pl" :key="p.month" class="trend-label">{{ p.month.slice(5) }}</span>
           </div>
           <div class="pl-legend">
-            <span class="legend-item"><span class="legend-line revenue"></span> Revenue</span>
-            <span class="legend-item"><span class="legend-line expenses"></span> Expenses</span>
-            <span class="legend-item"><span class="legend-line net"></span> Net Income</span>
+            <span class="legend-item"><span class="legend-line revenue"></span> {{ t('dashboard.revenue') }}</span>
+            <span class="legend-item"><span class="legend-line expenses"></span> {{ t('dashboard.expensesLegend') }}</span>
+            <span class="legend-item"><span class="legend-line net"></span> {{ t('dashboard.netIncomeLegend') }}</span>
           </div>
         </div>
       </div>
@@ -326,42 +326,42 @@ function timeAgo(dateStr: string): string {
         <div class="stat-icon">📋</div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.total_reports }}</div>
-          <div class="stat-label">Total Reports</div>
+          <div class="stat-label">{{ t('dashboard.totalReports') }}</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">✅</div>
         <div class="stat-info">
           <div class="stat-value">{{ (stats.reports_by_status['filed'] || 0) + (stats.reports_by_status['approved'] || 0) }}</div>
-          <div class="stat-label">Filed / Approved</div>
+          <div class="stat-label">{{ t('dashboard.filedApproved') }}</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">📝</div>
         <div class="stat-info">
           <div class="stat-value">{{ (stats.reports_by_status['draft'] || 0) + (stats.reports_by_status['review'] || 0) }}</div>
-          <div class="stat-label">Pending Review</div>
+          <div class="stat-label">{{ t('dashboard.pendingReview') }}</div>
         </div>
       </div>
       <div class="stat-card" :class="{ highlight: stats.compliance_score && stats.compliance_score >= 80 }">
         <div class="stat-icon">🛡️</div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.compliance_score != null ? stats.compliance_score.toFixed(0) + '%' : '—' }}</div>
-          <div class="stat-label">Compliance Score</div>
+          <div class="stat-label">{{ t('dashboard.complianceScore') }}</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">🔍</div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.session_count }}</div>
-          <div class="stat-label">Recon Sessions</div>
+          <div class="stat-label">{{ t('dashboard.reconSessions') }}</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">🏦</div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.bank_recon_count }}</div>
-          <div class="stat-label">Bank Recon</div>
+          <div class="stat-label">{{ t('dashboard.bankRecon') }}</div>
         </div>
       </div>
     </div>
@@ -370,12 +370,12 @@ function timeAgo(dateStr: string): string {
     <div v-if="stats" class="charts-row">
       <!-- Filing Status Donut -->
       <div class="chart-card">
-        <h3 class="section-title">Filing Status</h3>
+        <h3 class="section-title">{{ t('dashboard.filingStatus') }}</h3>
         <div class="donut-container">
           <div class="donut" :style="{ background: donutGradient }">
             <div class="donut-hole">
               <div class="donut-total">{{ stats.total_reports }}</div>
-              <div class="donut-total-label">Total</div>
+              <div class="donut-total-label">{{ t('dashboard.total') }}</div>
             </div>
           </div>
           <div class="donut-legend">
@@ -390,7 +390,7 @@ function timeAgo(dateStr: string): string {
 
       <!-- Monthly Trend Chart -->
       <div class="chart-card chart-card-wide">
-        <h3 class="section-title">Monthly Reports</h3>
+        <h3 class="section-title">{{ t('dashboard.monthlyReports') }}</h3>
         <div v-if="trends.length" class="trend-chart">
           <svg viewBox="0 0 400 120" class="trend-svg">
             <path :d="trendFillPath" fill="var(--brand-primary)" opacity="0.1" />
@@ -408,7 +408,7 @@ function timeAgo(dateStr: string): string {
             <span v-for="t in trends" :key="t.month" class="trend-label">{{ t.month.slice(5) }}</span>
           </div>
         </div>
-        <div v-else class="chart-empty">No trend data yet</div>
+        <div v-else class="chart-empty">{{ t('dashboard.noTrendData') }}</div>
       </div>
     </div>
 
@@ -416,9 +416,9 @@ function timeAgo(dateStr: string): string {
     <div v-if="aiHealth" class="ai-status-card" :class="{ enabled: aiHealth.ai_enabled, disabled: !aiHealth.ai_enabled }">
       <div class="ai-status-indicator" :class="aiHealth.ai_enabled ? 'green' : 'red'"></div>
       <div class="ai-status-info">
-        <strong>AI Features: {{ aiHealth.ai_enabled ? 'Online' : 'Offline' }}</strong>
+        <strong>{{ aiHealth.ai_enabled ? t('dashboard.aiOnline') : t('dashboard.aiOffline') }}</strong>
         <span v-if="aiHealth.ai_enabled" class="ai-provider">{{ aiHealth.provider }} / {{ aiHealth.model }}</span>
-        <span v-else class="ai-warning">OPENAI_API_KEY not configured</span>
+        <span v-else class="ai-warning">{{ t('dashboard.aiKeyMissing') }}</span>
       </div>
       <div v-if="aiHealth.ai_enabled" class="ai-features">
         <span v-for="(on, name) in aiHealth.features" :key="name" class="feature-tag" :class="{ on, off: !on }">
@@ -429,7 +429,7 @@ function timeAgo(dateStr: string): string {
 
     <!-- Deadline Alerts -->
     <div v-if="urgentDeadlines.length" class="deadline-alerts">
-      <h3 class="section-title">Upcoming Deadlines</h3>
+      <h3 class="section-title">{{ t('dashboard.upcomingDeadlines') }}</h3>
       <div class="deadline-list">
         <div
           v-for="d in urgentDeadlines"
@@ -438,7 +438,7 @@ function timeAgo(dateStr: string): string {
           :class="d.status"
         >
           <div class="deadline-badge" :class="d.status">
-            {{ d.status === 'overdue' ? 'OVERDUE' : d.days_remaining + 'd' }}
+            {{ d.status === 'overdue' ? t('dashboard.overdue') : d.days_remaining + 'd' }}
           </div>
           <div class="deadline-info">
             <strong>{{ d.form }}</strong>
@@ -455,7 +455,7 @@ function timeAgo(dateStr: string): string {
     <!-- Two-column layout: Quick Actions + Activity/Deadlines -->
     <div class="two-col">
       <div class="col-main">
-        <h3 class="section-title">Quick Actions</h3>
+        <h3 class="section-title">{{ t('dashboard.quickActions') }}</h3>
         <div class="cards">
           <router-link
             v-for="action in quickActions"
@@ -477,7 +477,7 @@ function timeAgo(dateStr: string): string {
       <!-- Sidebar: scheduled deadlines + activity feed -->
       <div class="col-side">
         <div v-if="nextDeadlines.length" class="sidebar-section">
-          <h3 class="section-title">Scheduled</h3>
+          <h3 class="section-title">{{ t('dashboard.scheduled') }}</h3>
           <div class="mini-deadlines">
             <div v-for="d in nextDeadlines" :key="d.form + d.deadline" class="mini-deadline">
               <div class="mini-days">{{ d.days_remaining }}d</div>
@@ -487,12 +487,12 @@ function timeAgo(dateStr: string): string {
               </div>
             </div>
           </div>
-          <router-link to="/calendar" class="view-all">View full calendar →</router-link>
+          <router-link to="/calendar" class="view-all">{{ t('dashboard.viewFullCalendar') }} →</router-link>
         </div>
 
         <!-- Activity Feed -->
         <div v-if="activities.length" class="sidebar-section activity-section">
-          <h3 class="section-title">Recent Activity</h3>
+          <h3 class="section-title">{{ t('dashboard.recentActivity') }}</h3>
           <div class="activity-feed">
             <div v-for="a in activities" :key="a.id" class="activity-item">
               <span class="activity-dot" :class="a.type"></span>
@@ -508,15 +508,15 @@ function timeAgo(dateStr: string): string {
 
     <!-- Recent reports -->
     <div class="recent" v-if="recentReports.length">
-      <h3 class="section-title">Recent Reports</h3>
+      <h3 class="section-title">{{ t('dashboard.recentReports') }}</h3>
       <table>
         <thead>
           <tr>
-            <th>Type</th>
-            <th>Period</th>
-            <th>Status</th>
-            <th>Compliance</th>
-            <th>Created</th>
+            <th>{{ t('dashboard.thType') }}</th>
+            <th>{{ t('dashboard.thPeriod') }}</th>
+            <th>{{ t('dashboard.thStatus') }}</th>
+            <th>{{ t('dashboard.thCompliance') }}</th>
+            <th>{{ t('dashboard.thCreated') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -537,7 +537,7 @@ function timeAgo(dateStr: string): string {
       </table>
     </div>
 
-    <div v-if="loading" class="loading-state">Loading dashboard...</div>
+    <div v-if="loading" class="loading-state">{{ t('dashboard.loadingDashboard') }}</div>
   </div>
 </template>
 

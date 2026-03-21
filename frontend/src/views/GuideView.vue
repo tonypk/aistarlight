@@ -1,33 +1,35 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const isSG = computed(() => auth.jurisdiction === 'SG')
 
 const activeSection = ref('overview')
 
-const sections = [
-  { id: 'overview', title: 'Overview' },
-  { id: 'quickstart', title: 'Quick Start' },
-  { id: 'receipts', title: 'Receipt Scanner' },
-  { id: 'upload', title: 'Upload Data' },
-  { id: 'mapping', title: 'Column Mapping' },
-  { id: 'classification', title: 'Classification' },
-  { id: 'reconciliation', title: 'VAT Reconciliation' },
-  { id: 'bank-recon', title: 'Bank Reconciliation' },
-  { id: 'reports', title: 'Report Generation' },
-  { id: 'edit-report', title: 'Edit Reports' },
-  { id: 'calendar', title: 'Filing Calendar' },
-  { id: 'compare', title: 'Period Comparison' },
-  { id: 'corrections', title: 'Corrections & Learning' },
-  { id: 'vendors', title: 'Vendors' },
-  { id: 'withholding', title: 'Withholding Tax' },
-  { id: 'team', title: 'Team & Roles' },
-  { id: 'chat', title: 'AI Tax Assistant' },
-  { id: 'knowledge', title: 'Knowledge Base' },
-  { id: 'faq', title: 'FAQ' },
-]
+const sections = computed(() => [
+  { id: 'overview', title: t('guide.sectionOverview') },
+  { id: 'quickstart', title: t('guide.sectionQuickStart') },
+  { id: 'receipts', title: t('guide.sectionReceipts') },
+  { id: 'upload', title: t('guide.sectionUpload') },
+  { id: 'mapping', title: t('guide.sectionMapping') },
+  { id: 'classification', title: t('guide.sectionClassification') },
+  { id: 'reconciliation', title: t('guide.sectionReconciliation') },
+  { id: 'bank-recon', title: t('guide.sectionBankRecon') },
+  { id: 'reports', title: t('guide.sectionReports') },
+  { id: 'edit-report', title: t('guide.sectionEditReport') },
+  { id: 'calendar', title: t('guide.sectionCalendar') },
+  { id: 'compare', title: t('guide.sectionCompare') },
+  { id: 'corrections', title: t('guide.sectionCorrections') },
+  { id: 'vendors', title: t('guide.sectionVendors') },
+  { id: 'withholding', title: t('guide.sectionWithholding') },
+  { id: 'team', title: t('guide.sectionTeam') },
+  { id: 'chat', title: t('guide.sectionChat') },
+  { id: 'knowledge', title: t('guide.sectionKnowledge') },
+  { id: 'faq', title: t('guide.sectionFAQ') },
+])
 
 function scrollTo(id: string) {
   activeSection.value = id
@@ -38,14 +40,14 @@ function scrollTo(id: string) {
 <template>
   <div class="guide-view">
     <div class="guide-header">
-      <h2>User Guide</h2>
-      <p class="subtitle">AIStarlight {{ isSG ? 'Singapore' : 'Philippine' }} Tax Filing Assistant &mdash; Complete User Manual</p>
+      <h2>{{ t('guide.title') }}</h2>
+      <p class="subtitle">{{ t('guide.subtitle', { jurisdiction: isSG ? 'Singapore' : 'Philippine' }) }}</p>
     </div>
 
     <div class="guide-layout">
       <!-- Table of Contents -->
       <nav class="toc">
-        <h4>Contents</h4>
+        <h4>{{ t('guide.contents') }}</h4>
         <a
           v-for="s in sections"
           :key="s.id"
@@ -60,62 +62,62 @@ function scrollTo(id: string) {
 
         <!-- 1. Overview -->
         <section id="overview">
-          <h3>1. System Overview</h3>
-          <p>AIStarlight is an AI-powered {{ isSG ? 'Singapore' : 'Philippine' }} tax filing assistant that helps you with the following:</p>
+          <h3>{{ t('guide.systemOverview') }}</h3>
+          <p>{{ t('guide.systemOverviewDesc', { jurisdiction: isSG ? 'Singapore' : 'Philippine' }) }}</p>
           <div class="feature-grid">
             <div class="feature-item">
               <span class="fi">📤</span>
               <div>
-                <strong>Data Upload</strong>
-                <p>Upload sales and purchase records in Excel or CSV format</p>
+                <strong>{{ t('guide.featureUpload') }}</strong>
+                <p>{{ t('guide.featureUploadDesc') }}</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">🤖</span>
               <div>
-                <strong>AI Column Mapping</strong>
-                <p>Automatically recognize column names and map them to {{ isSG ? 'IRAS' : 'BIR' }} form fields</p>
+                <strong>{{ t('guide.featureMapping') }}</strong>
+                <p>{{ t('guide.featureMappingDesc', { authority: isSG ? 'IRAS' : 'BIR' }) }}</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">🏷️</span>
               <div>
-                <strong>Transaction Classification</strong>
-                <p>AI-powered {{ isSG ? 'GST' : 'VAT' }} type classification ({{ isSG ? 'Standard-Rated / Zero-Rated / Exempt' : 'Vatable / Exempt / Zero-rated' }})</p>
+                <strong>{{ t('guide.featureClassification') }}</strong>
+                <p>{{ t('guide.featureClassificationDesc', { taxType: isSG ? 'GST' : 'VAT', taxCategories: isSG ? 'Standard-Rated / Zero-Rated / Exempt' : 'Vatable / Exempt / Zero-rated' }) }}</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">🔍</span>
               <div>
-                <strong>{{ isSG ? 'GST' : 'VAT' }} Reconciliation</strong>
-                <p>Cross-check sales and purchase records, detect anomalies</p>
+                <strong>{{ t('guide.featureRecon', { taxType: isSG ? 'GST' : 'VAT' }) }}</strong>
+                <p>{{ t('guide.featureReconDesc') }}</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">📋</span>
               <div>
-                <strong>{{ isSG ? 'IRAS Reports' : 'BIR Reports' }}</strong>
-                <p>{{ isSG ? 'Auto-calculate and generate GST F5 / Form C / Form C-S / Form B / ECI reports' : 'Auto-calculate and generate BIR 2550M / 2550Q / 1601C / 0619E / 1701 / 1702 PDFs' }}</p>
+                <strong>{{ t('guide.featureReports', { authority: isSG ? 'IRAS' : 'BIR' }) }}</strong>
+                <p>{{ t('guide.featureReportsDesc', { formList: isSG ? 'GST F5 / Form C / Form C-S / Form B / ECI reports' : 'BIR 2550M / 2550Q / 1601C / 0619E / 1701 / 1702 PDFs' }) }}</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">📑</span>
               <div>
-                <strong>Withholding Tax</strong>
-                <p>{{ isSG ? 'WHT classification, S45 certificate generation, WHT summary' : 'EWT classification, BIR 2307 certificate generation, SAWT summary' }}</p>
+                <strong>{{ t('guide.featureWithholding') }}</strong>
+                <p>{{ t('guide.featureWithholdingDesc', { whtDesc: isSG ? 'WHT classification, S45 certificate generation, WHT summary' : 'EWT classification, BIR 2307 certificate generation, SAWT summary' }) }}</p>
               </div>
             </div>
             <div class="feature-item">
               <span class="fi">🏦</span>
               <div>
-                <strong>Bank Reconciliation</strong>
-                <p>Auto-match bank statements, PayPal/Stripe/GCash exports with AI analysis</p>
+                <strong>{{ t('guide.featureBankRecon') }}</strong>
+                <p>{{ t('guide.featureBankReconDesc') }}</p>
               </div>
             </div>
           </div>
 
           <div class="info-box" v-if="isSG">
-            <strong>Supported IRAS Forms:</strong>
+            <strong>{{ t('guide.supportedForms', { authority: 'IRAS' }) }}</strong>
             <ul>
               <li><strong>GST F5</strong> &mdash; GST Return (Quarterly)</li>
               <li><strong>Form C</strong> &mdash; Corporate Income Tax Return</li>
@@ -126,7 +128,7 @@ function scrollTo(id: string) {
             </ul>
           </div>
           <div class="info-box" v-else>
-            <strong>Supported BIR Forms:</strong>
+            <strong>{{ t('guide.supportedForms', { authority: 'BIR' }) }}</strong>
             <ul>
               <li><strong>BIR 2550M</strong> &mdash; Monthly Value-Added Tax Declaration</li>
               <li><strong>BIR 2550Q</strong> &mdash; Quarterly Value-Added Tax Return</li>
@@ -142,42 +144,42 @@ function scrollTo(id: string) {
 
         <!-- 2. Quick Start -->
         <section id="quickstart">
-          <h3>2. Quick Start</h3>
-          <p>First time using the system? Follow these steps:</p>
+          <h3>{{ t('guide.quickStart') }}</h3>
+          <p>{{ t('guide.quickStartDesc') }}</p>
           <div class="steps">
             <div class="step">
               <span class="step-num">1</span>
               <div>
-                <strong>Set Up Company Info</strong>
-                <p>Go to <router-link to="/settings">Settings</router-link> and fill in your company name, {{ isSG ? 'UEN' : 'TIN number, and RDO code' }}. This information will appear on your PDF reports.</p>
+                <strong>{{ t('guide.stepSetup') }}</strong>
+                <p>{{ t('guide.stepSetupDesc', { fields: isSG ? 'UEN' : 'TIN number, and RDO code' }) }}</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">2</span>
               <div>
-                <strong>Upload Your Data</strong>
-                <p>Go to <router-link to="/upload">Upload Data</router-link> and upload your Excel or CSV file containing sales and purchase records.</p>
+                <strong>{{ t('guide.stepUpload') }}</strong>
+                <p>{{ t('guide.stepUploadDesc') }}</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">3</span>
               <div>
-                <strong>Confirm Column Mapping</strong>
-                <p>The AI will automatically recognize your column names. Review and confirm the mapping results.</p>
+                <strong>{{ t('guide.stepMapping') }}</strong>
+                <p>{{ t('guide.stepMappingDesc') }}</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">4</span>
               <div>
-                <strong>Generate Report</strong>
-                <p>Go to <router-link to="/reports">Reports</router-link>, select the form type and period, then click "Generate Report".</p>
+                <strong>{{ t('guide.stepGenerate') }}</strong>
+                <p>{{ t('guide.stepGenerateDesc') }}</p>
               </div>
             </div>
             <div class="step">
               <span class="step-num">5</span>
               <div>
-                <strong>Review and Download PDF</strong>
-                <p>Check the calculated results. Edit any fields if needed. Once verified, download the PDF for filing.</p>
+                <strong>{{ t('guide.stepReview') }}</strong>
+                <p>{{ t('guide.stepReviewDesc') }}</p>
               </div>
             </div>
           </div>

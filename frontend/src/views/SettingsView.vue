@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { client } from '../api/client'
 import { authApi, type CreateMemberData } from '../api/auth'
 import { useAuthStore } from '../stores/auth'
 import { useUIStore } from '../stores/ui'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const ui = useUIStore()
 
@@ -123,7 +125,7 @@ async function handleSave() {
 }
 
 async function generateApiKey() {
-  if (!confirm('Generate a new API key? This will invalidate any existing key.')) return
+  if (!confirm(t('settings.generateApiKeyConfirm'))) return
   const res = await client.post('/auth/api-key')
   apiKey.value = res.data.data.api_key
 }
@@ -227,15 +229,15 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 
 <template>
   <div class="settings-view">
-    <h2>Settings</h2>
+    <h2>{{ t('settings.title') }}</h2>
 
     <!-- Appearance -->
     <div class="section-card">
-      <h3>Appearance</h3>
+      <h3>{{ t('settings.appearance') }}</h3>
       <div class="appearance-row">
         <div class="appearance-info">
-          <strong>Dark Mode</strong>
-          <p class="desc">Switch between light and dark themes</p>
+          <strong>{{ t('settings.darkMode') }}</strong>
+          <p class="desc">{{ t('settings.darkModeDesc') }}</p>
         </div>
         <label class="toggle-switch">
           <input type="checkbox" :checked="ui.isDarkMode" @change="ui.toggleDarkMode()" />
@@ -246,62 +248,62 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 
     <!-- Company Settings -->
     <div class="section-card">
-      <h3>Company Information</h3>
+      <h3>{{ t('settings.companyInfo') }}</h3>
       <form class="settings-form" @submit.prevent="handleSave">
         <div class="field">
-          <label>Company Name</label>
+          <label>{{ t('settings.companyName') }}</label>
           <input v-model="form.company_name" required />
         </div>
         <div class="field">
-          <label>TIN (Tax Identification Number)</label>
-          <input v-model="form.tin_number" placeholder="123-456-789-000" />
+          <label>{{ t('settings.tinLabel') }}</label>
+          <input v-model="form.tin_number" :placeholder="t('settings.tinPlaceholder')" />
         </div>
         <div class="field">
-          <label>RDO Code</label>
-          <input v-model="form.rdo_code" placeholder="e.g., 050" />
+          <label>{{ t('settings.rdoCode') }}</label>
+          <input v-model="form.rdo_code" :placeholder="t('settings.rdoCodePlaceholder')" />
         </div>
         <div class="field">
-          <label>VAT Classification</label>
+          <label>{{ t('settings.vatClassification') }}</label>
           <select v-model="form.vat_classification">
-            <option value="vat_registered">VAT Registered</option>
-            <option value="non_vat">Non-VAT (Percentage Tax)</option>
+            <option value="vat_registered">{{ t('settings.vatRegistered') }}</option>
+            <option value="non_vat">{{ t('settings.nonVat') }}</option>
           </select>
         </div>
         <button type="submit" :disabled="saving" class="primary-btn">
-          {{ saving ? 'Saving...' : 'Save Settings' }}
+          {{ saving ? t('settings.saving') : t('settings.saveSettings') }}
         </button>
-        <span v-if="saved" class="success-msg">Settings saved!</span>
+        <span v-if="saved" class="success-msg">{{ t('settings.settingsSaved') }}</span>
       </form>
     </div>
 
     <!-- Telegram Bot Binding (all users) -->
     <div class="section-card">
-      <h3>Telegram Bot</h3>
-      <div v-if="tgLoading" class="loading">Loading...</div>
+      <h3>{{ t('settings.telegramBot') }}</h3>
+      <div v-if="tgLoading" class="loading">{{ t('settings.loading') }}</div>
       <template v-else-if="tgStatus">
         <div v-if="tgStatus.linked" class="tg-status tg-linked">
           <span class="status-dot green"></span>
-          <span>Connected as <strong>@{{ tgStatus.username }}</strong></span>
+          <span>{{ t('settings.connectedAs') }} <strong>@{{ tgStatus.username }}</strong></span>
           <span v-if="tgStatus.linked_at" class="tg-date">
-            since {{ new Date(tgStatus.linked_at).toLocaleDateString() }}
+            {{ t('settings.since') }} {{ new Date(tgStatus.linked_at).toLocaleDateString() }}
           </span>
         </div>
         <div v-else class="tg-status tg-unlinked">
           <span class="status-dot gray"></span>
-          <span>Not connected</span>
+          <span>{{ t('settings.notConnected') }}</span>
           <button
             class="primary-btn tg-btn"
             :disabled="tgLinkLoading"
             @click="handleConnectTelegram"
           >
-            {{ tgLinkLoading ? 'Generating...' : 'Connect Telegram' }}
+            {{ tgLinkLoading ? t('settings.generating') : t('settings.connectTelegram') }}
           </button>
         </div>
         <div v-if="tgLink" class="tg-link-box">
-          <p>Open this link to connect your Telegram account:</p>
+          <p>{{ t('settings.openTelegramLink') }}</p>
           <div class="tg-link-row">
             <a :href="tgLink" target="_blank" class="tg-deep-link">{{ tgLink }}</a>
-            <button class="copy-btn" @click="copyTelegramLink" title="Copy link">Copy</button>
+            <button class="copy-btn" @click="copyTelegramLink" :title="t('settings.copy')">{{ t('settings.copy') }}</button>
           </div>
         </div>
       </template>
@@ -309,7 +311,7 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
 
     <!-- Team Management -->
     <div class="section-card">
-      <h3>Team Members</h3>
+      <h3>{{ t('settings.teamMembers') }}</h3>
 
       <!-- Create Member Form (admin-only) -->
       <div v-if="isOwnerOrAdmin" class="create-member-section">
@@ -317,41 +319,41 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
           class="secondary-btn"
           @click="showCreateMember = !showCreateMember"
         >
-          {{ showCreateMember ? 'Cancel' : '+ Create Member' }}
+          {{ showCreateMember ? t('settings.cancel') : t('settings.createMember') }}
         </button>
 
         <div v-if="showCreateMember" class="create-form">
           <div class="field">
-            <label>Full Name</label>
+            <label>{{ t('settings.fullName') }}</label>
             <input v-model="createForm.full_name" required placeholder="John Doe" />
           </div>
           <div class="field">
-            <label>Email</label>
+            <label>{{ t('settings.email') }}</label>
             <input v-model="createForm.email" type="email" required placeholder="user@example.com" />
           </div>
           <div class="field">
             <label>
-              <input type="checkbox" v-model="autoPassword" /> Auto-generate password
+              <input type="checkbox" v-model="autoPassword" /> {{ t('settings.autoGeneratePassword') }}
             </label>
             <input
               v-if="!autoPassword"
               v-model="createForm.password"
               type="text"
-              placeholder="Min 8 characters"
+              :placeholder="t('settings.minChars')"
               minlength="8"
             />
           </div>
           <div class="field">
-            <label>Telegram Username (optional)</label>
-            <input v-model="createForm.telegram_username" placeholder="@username" />
+            <label>{{ t('settings.telegramUsername') }}</label>
+            <input v-model="createForm.telegram_username" :placeholder="t('settings.telegramPlaceholder')" />
           </div>
           <div class="field">
-            <label>Role</label>
+            <label>{{ t('settings.role') }}</label>
             <select v-model="createForm.role">
-              <option value="member">Member</option>
-              <option value="accountant">Accountant</option>
-              <option value="viewer">Viewer</option>
-              <option value="company_admin">Admin</option>
+              <option value="member">{{ t('settings.roleMember') }}</option>
+              <option value="accountant">{{ t('settings.roleAccountant') }}</option>
+              <option value="viewer">{{ t('settings.roleViewer') }}</option>
+              <option value="company_admin">{{ t('settings.roleAdmin') }}</option>
             </select>
           </div>
           <button
@@ -359,50 +361,50 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
             :disabled="creating || !createForm.email || !createForm.full_name"
             @click="handleCreateMember"
           >
-            {{ creating ? 'Creating...' : 'Create Member' }}
+            {{ creating ? t('settings.creating') : t('settings.createMemberBtn') }}
           </button>
           <p v-if="createErr" class="error-msg">{{ createErr }}</p>
         </div>
 
         <!-- Result Card -->
         <div v-if="createResult" class="result-card">
-          <h4>Member Created Successfully</h4>
-          <div class="result-row"><span class="result-label">Email:</span> {{ createResult.email }}</div>
-          <div class="result-row"><span class="result-label">Password:</span> <code>{{ createResult.password }}</code></div>
-          <div class="result-row"><span class="result-label">API Key:</span> <code class="api-code">{{ createResult.api_key }}</code></div>
+          <h4>{{ t('settings.memberCreated') }}</h4>
+          <div class="result-row"><span class="result-label">{{ t('settings.emailLabel') }}</span> {{ createResult.email }}</div>
+          <div class="result-row"><span class="result-label">{{ t('settings.passwordLabel') }}</span> <code>{{ createResult.password }}</code></div>
+          <div class="result-row"><span class="result-label">{{ t('settings.apiKeyLabel') }}</span> <code class="api-code">{{ createResult.api_key }}</code></div>
           <div v-if="createResult.deep_link" class="result-row">
-            <span class="result-label">Telegram:</span>
+            <span class="result-label">{{ t('settings.telegramLabel') }}</span>
             <a :href="createResult.deep_link" target="_blank" class="tg-deep-link">{{ createResult.deep_link }}</a>
           </div>
           <div class="result-actions">
-            <button class="primary-btn" @click="copyCreateResult">Copy All</button>
-            <button class="secondary-btn" @click="createResult = null">Dismiss</button>
+            <button class="primary-btn" @click="copyCreateResult">{{ t('settings.copyAll') }}</button>
+            <button class="secondary-btn" @click="createResult = null">{{ t('settings.dismiss') }}</button>
           </div>
-          <p class="warn">Save these credentials - they won't be shown again!</p>
+          <p class="warn">{{ t('settings.saveCredentialsWarn') }}</p>
         </div>
       </div>
 
       <!-- Invite Form (admin/owner only) -->
       <div v-if="isOwnerOrAdmin" class="invite-form">
-        <p class="desc">Or invite an existing user by email:</p>
+        <p class="desc">{{ t('settings.inviteHint') }}</p>
         <div class="invite-row">
           <input
             v-model="inviteEmail"
             type="email"
-            placeholder="Email address"
+            :placeholder="t('settings.emailPlaceholder')"
             class="invite-input"
           />
           <select v-model="inviteRole" class="invite-select">
-            <option value="viewer">Viewer</option>
-            <option value="accountant">Accountant</option>
-            <option value="admin">Admin</option>
+            <option value="viewer">{{ t('settings.roleViewer') }}</option>
+            <option value="accountant">{{ t('settings.roleAccountant') }}</option>
+            <option value="admin">{{ t('settings.roleAdmin') }}</option>
           </select>
           <button
             class="primary-btn"
             :disabled="inviting || !inviteEmail"
             @click="handleInvite"
           >
-            {{ inviting ? 'Inviting...' : 'Invite' }}
+            {{ inviting ? t('settings.inviting') : t('settings.invite') }}
           </button>
         </div>
         <p v-if="inviteMsg" class="success-msg">{{ inviteMsg }}</p>
@@ -410,15 +412,15 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
       </div>
 
       <!-- Members Table -->
-      <div v-if="teamLoading" class="loading">Loading team...</div>
+      <div v-if="teamLoading" class="loading">{{ t('settings.loadingTeam') }}</div>
       <table v-else-if="teamMembers.length" class="team-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Telegram</th>
-            <th>Joined</th>
+            <th>{{ t('settings.thName') }}</th>
+            <th>{{ t('settings.thEmail') }}</th>
+            <th>{{ t('settings.thRole') }}</th>
+            <th>{{ t('settings.thTelegram') }}</th>
+            <th>{{ t('settings.thJoined') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -432,38 +434,38 @@ async function handleRoleChange(member: TeamMember, newRole: string) {
                 @change="handleRoleChange(m, ($event.target as HTMLSelectElement).value)"
                 class="role-select"
               >
-                <option value="viewer">Viewer</option>
-                <option value="accountant">Accountant</option>
-                <option value="member">Member</option>
-                <option value="company_admin">Admin</option>
+                <option value="viewer">{{ t('settings.roleViewer') }}</option>
+                <option value="accountant">{{ t('settings.roleAccountant') }}</option>
+                <option value="member">{{ t('settings.roleMember') }}</option>
+                <option value="company_admin">{{ t('settings.roleAdmin') }}</option>
               </select>
               <span v-else class="role-badge" :class="m.role">{{ m.role }}</span>
             </td>
             <td>
               <span v-if="m.telegram_linked" class="tg-cell">
                 <span class="status-dot green"></span>
-                {{ m.telegram_username ? '@' + m.telegram_username : 'Linked' }}
+                {{ m.telegram_username ? '@' + m.telegram_username : t('settings.linked') }}
               </span>
               <span v-else class="tg-cell">
                 <span class="status-dot gray"></span>
-                <span class="muted">Not linked</span>
+                <span class="muted">{{ t('settings.notLinked') }}</span>
               </span>
             </td>
             <td>{{ m.created_at ? new Date(m.created_at).toLocaleDateString() : '\u2014' }}</td>
           </tr>
         </tbody>
       </table>
-      <p v-else class="empty">No team members found.</p>
+      <p v-else class="empty">{{ t('settings.noTeamMembers') }}</p>
     </div>
 
     <!-- API Access -->
     <div class="section-card">
-      <h3>API Access</h3>
-      <p class="desc">Generate an API key for programmatic access to the AIStarlight API.</p>
-      <button class="api-btn" @click="generateApiKey">Generate API Key</button>
+      <h3>{{ t('settings.apiAccess') }}</h3>
+      <p class="desc">{{ t('settings.apiAccessDesc') }}</p>
+      <button class="api-btn" @click="generateApiKey">{{ t('settings.generateApiKey') }}</button>
       <div v-if="apiKey" class="api-key">
         <code>{{ apiKey }}</code>
-        <p class="warn">Save this key - it won't be shown again!</p>
+        <p class="warn">{{ t('settings.saveApiKeyWarn') }}</p>
       </div>
     </div>
   </div>
