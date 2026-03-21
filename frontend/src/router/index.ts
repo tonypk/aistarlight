@@ -17,6 +17,18 @@ const router = createRouter({
       meta: { title: "SSO Login" },
     },
     {
+      path: "/register",
+      name: "register",
+      component: () => import("../views/RegisterView.vue"),
+      meta: { title: "Register" },
+    },
+    {
+      path: "/verify-email",
+      name: "verify-email",
+      component: () => import("../views/VerifyEmailView.vue"),
+      meta: { title: "Verify Email" },
+    },
+    {
       path: "/",
       component: () => import("../components/layout/DashboardLayout.vue"),
       meta: { requiresAuth: true },

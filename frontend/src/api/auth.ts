@@ -8,9 +8,10 @@ export interface LoginData {
 export interface RegisterData {
   email: string;
   password: string;
-  full_name: string;
-  company_name: string;
+  full_name?: string;
+  company_name?: string;
   jurisdiction?: string;
+  referral_code?: string;
 }
 
 export interface Company {
@@ -46,4 +47,8 @@ export const authApi = {
   generateTelegramLink: () => client.post("/telegram/link-token"),
   ssoLogin: (ssoToken: string) =>
     client.post("/auth/sso", { sso_token: ssoToken }),
+  resendVerification: (email: string) =>
+    client.post("/auth/resend-verification", { email }),
+  verifyEmail: (token: string) =>
+    client.post("/auth/verify-email", { token }),
 };
