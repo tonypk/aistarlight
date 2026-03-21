@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { h, computed, ref, onMounted, onUnmounted, type Component } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import {
   NLayout, NLayoutSider, NLayoutHeader, NLayoutContent,
   NMenu, NIcon, NButton, NSpace, NAvatar, NDropdown, NSwitch, NSelect,
@@ -22,15 +23,23 @@ import { useAuthStore } from '../../stores/auth'
 import { useUIStore } from '../../stores/ui'
 import { useAgentStore } from '../../stores/agent'
 import { useNotificationStore } from '../../stores/notification'
+import { integrationApi } from '../../api/integration'
 import AIPanel from '../ai/AIPanel.vue'
 import AITrigger from '../ai/AITrigger.vue'
 
 const router = useRouter()
 const route = useRoute()
+const { t, locale } = useI18n()
 const auth = useAuthStore()
 const ui = useUIStore()
 const agentStore = useAgentStore()
 const notifStore = useNotificationStore()
+
+// --- Locale toggle ---
+function toggleLocale() {
+  locale.value = locale.value === 'en' ? 'zh' : 'en'
+  localStorage.setItem('locale', locale.value)
+}
 
 // --- Notifications ---
 const showNotifications = ref(false)
@@ -83,104 +92,126 @@ const menuOptions = computed<MenuOption[]>(() => {
 
   // Workspace
   const workspace = filterNull([
-    mi('Dashboard', 'dashboard', HomeOutline),
-    mi('AI Chat', 'chat', ChatbubblesOutline),
+    mi(t('nav.dashboard'), 'dashboard', HomeOutline),
+    mi(t('nav.aiChat'), 'chat', ChatbubblesOutline),
   ])
   if (workspace.length) {
-    groups.push({ type: 'group', label: 'Workspace', key: 'g-workspace', children: workspace })
+    groups.push({ type: 'group', label: t('nav.groupWorkspace'), key: 'g-workspace', children: workspace })
   }
 
   // Data & Transactions
   const data = filterNull([
-    mi('Upload Data', 'upload', CloudUploadOutline, 'accountant'),
-    mi('Receipt Scanner', 'receipts', ReceiptOutline, 'accountant'),
-    mi('Transactions', 'transactions', CardOutline),
-    mi('Vendors', 'vendors', BusinessOutline, 'accountant'),
-    mi('Classification', 'classification', PricetagsOutline, 'accountant'),
-    mi('Tags', 'tags', PricetagsOutline, 'accountant'),
-    mi('Approvals', 'approvals', CheckmarkCircleOutline, 'accountant'),
+    mi(t('nav.uploadData'), 'upload', CloudUploadOutline, 'accountant'),
+    mi(t('nav.receiptScanner'), 'receipts', ReceiptOutline, 'accountant'),
+    mi(t('nav.transactions'), 'transactions', CardOutline),
+    mi(t('nav.vendors'), 'vendors', BusinessOutline, 'accountant'),
+    mi(t('nav.classification'), 'classification', PricetagsOutline, 'accountant'),
+    mi(t('nav.tags'), 'tags', PricetagsOutline, 'accountant'),
+    mi(t('nav.approvals'), 'approvals', CheckmarkCircleOutline, 'accountant'),
   ])
   if (data.length) {
-    groups.push({ type: 'group', label: 'Data & Transactions', key: 'g-data', children: data })
+    groups.push({ type: 'group', label: t('nav.groupData'), key: 'g-data', children: data })
   }
 
   // Accounting
   const accounting = filterNull([
-    mi('Chart of Accounts', 'accounts', BookOutline, 'accountant'),
-    mi('Journal Entries', 'journal-entries', CreateOutline, 'accountant'),
-    mi('General Ledger', 'general-ledger', DocumentTextOutline, 'accountant'),
-    mi('Financial Statements', 'statements', BarChartOutline, 'accountant'),
-    mi('HR Integration', 'integration', LinkOutline, 'admin'),
-    mi('GL Mapping', 'gl-mapping', MapOutline, 'admin'),
+    mi(t('nav.chartOfAccounts'), 'accounts', BookOutline, 'accountant'),
+    mi(t('nav.journalEntries'), 'journal-entries', CreateOutline, 'accountant'),
+    mi(t('nav.generalLedger'), 'general-ledger', DocumentTextOutline, 'accountant'),
+    mi(t('nav.financialStatements'), 'statements', BarChartOutline, 'accountant'),
+    mi(t('nav.hrIntegration'), 'integration', LinkOutline, 'admin'),
+    mi(t('nav.glMapping'), 'gl-mapping', MapOutline, 'admin'),
   ])
   if (accounting.length) {
-    groups.push({ type: 'group', label: 'Accounting', key: 'g-accounting', children: accounting })
+    groups.push({ type: 'group', label: t('nav.groupAccounting'), key: 'g-accounting', children: accounting })
   }
 
   // Tax & Filing
   const tax = filterNull([
-    mi('Prep for Taxes', 'tax-prep', ClipboardOutline, 'accountant'),
-    mi('Invoices', 'invoices', ReceiptOutline, 'accountant'),
-    mi('Tax from GL', 'tax-bridge', CalculatorOutline, 'accountant'),
-    mi('Reports', 'reports', DocumentOutline),
-    mi('Form Router', 'form-router', MapOutline),
-    mi('Filing Calendar', 'calendar', CalendarOutline),
-    mi('Penalty Calculator', 'penalty-calculator', AlertCircleOutline, 'accountant'),
-    mi('Withholding Tax', 'withholding', DocumentTextOutline, 'accountant'),
-    mi('CAS Compliance', 'cas-compliance', ShieldCheckmarkOutline, 'accountant'),
+    mi(t('nav.prepForTaxes'), 'tax-prep', ClipboardOutline, 'accountant'),
+    mi(t('nav.invoices'), 'invoices', ReceiptOutline, 'accountant'),
+    mi(t('nav.taxFromGL'), 'tax-bridge', CalculatorOutline, 'accountant'),
+    mi(t('nav.reports'), 'reports', DocumentOutline),
+    mi(t('nav.formRouter'), 'form-router', MapOutline),
+    mi(t('nav.filingCalendar'), 'calendar', CalendarOutline),
+    mi(t('nav.penaltyCalculator'), 'penalty-calculator', AlertCircleOutline, 'accountant'),
+    mi(t('nav.withholdingTax'), 'withholding', DocumentTextOutline, 'accountant'),
+    mi(t('nav.casCompliance'), 'cas-compliance', ShieldCheckmarkOutline, 'accountant'),
   ])
   if (tax.length) {
-    groups.push({ type: 'group', label: 'Tax & Filing', key: 'g-tax', children: tax })
+    groups.push({ type: 'group', label: t('nav.groupTax'), key: 'g-tax', children: tax })
   }
 
   // Reconciliation
   const recon = filterNull([
-    mi('Reconciliation', 'reconciliation', SearchOutline, 'accountant'),
-    mi('Bank Recon', 'bank-reconciliation', WalletOutline, 'accountant'),
+    mi(t('nav.reconciliation'), 'reconciliation', SearchOutline, 'accountant'),
+    mi(t('nav.bankRecon'), 'bank-reconciliation', WalletOutline, 'accountant'),
   ])
   if (recon.length) {
-    groups.push({ type: 'group', label: 'Reconciliation', key: 'g-recon', children: recon })
+    groups.push({ type: 'group', label: t('nav.groupReconciliation'), key: 'g-recon', children: recon })
   }
 
   // More (agents + extras)
   const more = filterNull([
-    mi('Filing Agent', 'agent-filing', FlashOutline),
-    mi('Recon Agent', 'agent-recon', SearchOutline),
-    mi('Journal Agent', 'agent-journal', CreateOutline),
-    mi('Compliance Agent', 'agent-compliance', ShieldCheckmarkOutline),
-    mi('Knowledge', 'knowledge', LibraryOutline),
-    mi('Learning Insights', 'learning', SchoolOutline),
-    mi('Vendor Policies', 'vendor-policies', ClipboardOutline, 'accountant'),
-    mi('Spending', 'spending', WalletOutline),
-    mi('Period Compare', 'compare', ScaleOutline),
+    mi(t('nav.filingAgent'), 'agent-filing', FlashOutline),
+    mi(t('nav.reconAgent'), 'agent-recon', SearchOutline),
+    mi(t('nav.journalAgent'), 'agent-journal', CreateOutline),
+    mi(t('nav.complianceAgent'), 'agent-compliance', ShieldCheckmarkOutline),
+    mi(t('nav.knowledge'), 'knowledge', LibraryOutline),
+    mi(t('nav.learningInsights'), 'learning', SchoolOutline),
+    mi(t('nav.vendorPolicies'), 'vendor-policies', ClipboardOutline, 'accountant'),
+    mi(t('nav.spending'), 'spending', WalletOutline),
+    mi(t('nav.periodCompare'), 'compare', ScaleOutline),
   ])
   if (more.length) {
-    groups.push({ type: 'group', label: 'More', key: 'g-more', children: more })
+    groups.push({ type: 'group', label: t('nav.groupMore'), key: 'g-more', children: more })
   }
 
   // Connected Apps
   const crossApp = filterNull([
-    mi('HR & Payroll', 'cross-hr', PeopleOutline, 'admin'),
+    mi(t('nav.hrPayroll'), 'cross-hr', PeopleOutline, 'admin'),
   ])
   if (crossApp.length) {
-    groups.push({ type: 'group', label: 'Connected Apps', key: 'g-cross', children: crossApp })
+    groups.push({ type: 'group', label: t('nav.groupConnectedApps'), key: 'g-cross', children: crossApp })
   }
 
   // System
   const system = filterNull([
-    mi('Organization', 'org-dashboard', GridOutline, 'admin'),
-    mi('Memory', 'memory', BulbOutline, 'admin'),
-    mi('User Guide', 'guide', HelpCircleOutline),
-    mi('Settings', 'settings', SettingsOutline, 'admin'),
+    mi(t('nav.organization'), 'org-dashboard', GridOutline, 'admin'),
+    mi(t('nav.memory'), 'memory', BulbOutline, 'admin'),
+    mi(t('nav.userGuide'), 'guide', HelpCircleOutline),
+    mi(t('nav.settings'), 'settings', SettingsOutline, 'admin'),
   ])
   if (system.length) {
-    groups.push({ type: 'group', label: 'System', key: 'g-system', children: system })
+    groups.push({ type: 'group', label: t('nav.groupSystem'), key: 'g-system', children: system })
   }
 
   return groups
 })
 
 const activeKey = computed(() => route.name as string)
+
+// --- SSO cross-app navigation ---
+const hrLoading = ref(false)
+
+async function openHR() {
+  if (hrLoading.value) return
+  hrLoading.value = true
+  try {
+    const res = await integrationApi.getHRSSOToken()
+    const data = (res as any)?.data?.data ?? (res as any)?.data ?? res
+    const token = data?.token || data?.sso_token
+    if (token) {
+      window.open(`https://hr.halaos.com/sso?token=${encodeURIComponent(token)}`, '_blank')
+    } else {
+      window.open('https://hr.halaos.com', '_blank')
+    }
+  } catch {
+    window.open('https://hr.halaos.com', '_blank')
+  } finally {
+    hrLoading.value = false
+  }
+}
 
 function handleMenuClick(key: string) {
   // Agent shortcuts
@@ -189,7 +220,7 @@ function handleMenuClick(key: string) {
   if (key === 'agent-journal') { agentStore.openPanel('journal'); return }
   if (key === 'agent-compliance') { agentStore.openPanel('compliance'); return }
   // Cross-app
-  if (key === 'cross-hr') { window.open('https://hr.halaos.com', '_blank'); return }
+  if (key === 'cross-hr') { openHR(); return }
   // Normal navigation
   router.push({ name: key })
 }
@@ -208,11 +239,11 @@ async function handleSwitchCompany(tenantId: string) {
 }
 
 // --- User dropdown ---
-const userMenuOptions = [
-  { label: 'Profile', key: 'profile', icon: renderIcon(PersonOutline) },
+const userMenuOptions = computed(() => [
+  { label: t('nav.profile'), key: 'profile', icon: renderIcon(PersonOutline) },
   { type: 'divider', key: 'd' },
-  { label: 'Logout', key: 'logout', icon: renderIcon(LogOutOutline) },
-]
+  { label: t('nav.logout'), key: 'logout', icon: renderIcon(LogOutOutline) },
+])
 
 function handleUserAction(key: string) {
   if (key === 'logout') {
@@ -278,11 +309,11 @@ function handleUserAction(key: string) {
               </NBadge>
             </template>
             <div style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--n-border-color);">
-              <strong>Notifications</strong>
-              <NButton text size="small" @click="notifStore.markAllRead()" v-if="notifStore.unreadCount > 0">Mark all read</NButton>
+              <strong>{{ t('nav.notifications') }}</strong>
+              <NButton text size="small" @click="notifStore.markAllRead()" v-if="notifStore.unreadCount > 0">{{ t('nav.markAllRead') }}</NButton>
             </div>
             <div style="max-height: 400px; overflow-y: auto;">
-              <NEmpty v-if="notifStore.notifications.length === 0" description="No notifications" style="padding: 24px;" />
+              <NEmpty v-if="notifStore.notifications.length === 0" :description="t('nav.noNotifications')" style="padding: 24px;" />
               <NList v-else hoverable clickable>
                 <NListItem
                   v-for="n in notifStore.notifications"
@@ -299,6 +330,11 @@ function handleUserAction(key: string) {
               </NList>
             </div>
           </NPopover>
+
+          <!-- Locale toggle -->
+          <NButton quaternary size="small" @click="toggleLocale" style="font-weight: 600; min-width: 36px;">
+            {{ locale === 'en' ? '中' : 'EN' }}
+          </NButton>
 
           <!-- Theme toggle -->
           <NSwitch :value="ui.isDark" @update:value="ui.toggleDarkMode()">

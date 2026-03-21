@@ -100,4 +100,7 @@ export const integrationApi = {
   replayEvent: (id: string) => client.post(`/integrations/events/${id}/replay`),
 
   replayAllFailed: () => client.post("/integrations/events/replay-all-failed"),
+
+  // SSO
+  getHRSSOToken: () => client.get("/integrations/hr/sso-token"),
 };
