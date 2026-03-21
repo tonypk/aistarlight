@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { nextTick, onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ChatMessage from '../components/chat/ChatMessage.vue'
 import { useChatStore } from '../stores/chat'
 import { healthApi } from '../api/health'
 import { useAuthStore } from '../stores/auth'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const isSG = computed(() => auth.jurisdiction === 'SG')
 const chat = useChatStore()
@@ -42,27 +44,26 @@ async function handleSend() {
 
 <template>
   <div class="chat-view">
-    <h2>AI Tax Assistant</h2>
+    <h2>{{ t('chat.title') }}</h2>
 
     <div v-if="!aiAvailable" class="ai-offline-banner">
-      AI features are currently offline. The OPENAI_API_KEY has not been configured on the server.
-      Basic functionality is still available.
+      {{ t('chat.aiOfflineBanner') }}
     </div>
 
     <div class="chat-container">
       <div class="messages" ref="messagesEl">
         <div v-if="!chat.messages.length" class="welcome">
-          <p v-if="isSG">Ask me anything about Singapore tax filing!</p>
-          <p v-else>Ask me anything about Philippine tax filing!</p>
+          <p v-if="isSG">{{ t('chat.welcomeSG') }}</p>
+          <p v-else>{{ t('chat.welcomePH') }}</p>
           <div v-if="isSG" class="suggestions">
-            <button @click="input = 'How do I file GST F5?'">How to file GST F5?</button>
-            <button @click="input = 'What is the GST rate in Singapore?'">SG GST rate?</button>
-            <button @click="input = 'Help me generate this quarter\'s GST report'">Generate GST report</button>
+            <button @click="input = 'How do I file GST F5?'">{{ t('chat.suggestGstF5') }}</button>
+            <button @click="input = 'What is the GST rate in Singapore?'">{{ t('chat.suggestGstRate') }}</button>
+            <button @click="input = 'Help me generate this quarter\'s GST report'">{{ t('chat.suggestGstReport') }}</button>
           </div>
           <div v-else class="suggestions">
-            <button @click="input = 'How do I file BIR 2550M?'">How to file BIR 2550M?</button>
-            <button @click="input = 'What is the VAT rate in the Philippines?'">PH VAT rate?</button>
-            <button @click="input = 'Help me generate this month\'s VAT report'">Generate VAT report</button>
+            <button @click="input = 'How do I file BIR 2550M?'">{{ t('chat.suggestBir2550m') }}</button>
+            <button @click="input = 'What is the VAT rate in the Philippines?'">{{ t('chat.suggestVatRate') }}</button>
+            <button @click="input = 'Help me generate this month\'s VAT report'">{{ t('chat.suggestVatReport') }}</button>
           </div>
         </div>
         <ChatMessage
@@ -72,16 +73,16 @@ async function handleSend() {
           :content="msg.content"
           :sources="msg.sources"
         />
-        <div v-if="chat.loading && !chat.messages.some(m => m.streaming)" class="typing">AI is thinking...</div>
+        <div v-if="chat.loading && !chat.messages.some(m => m.streaming)" class="typing">{{ t('chat.thinking') }}</div>
       </div>
 
       <form class="input-area" @submit.prevent="handleSend">
         <input
           v-model="input"
-          :placeholder="aiAvailable ? 'Type your message...' : 'AI is offline — messages may not get responses'"
+          :placeholder="aiAvailable ? t('chat.placeholderOnline') : t('chat.placeholderOffline')"
           :disabled="chat.loading || !aiAvailable"
         />
-        <button type="submit" :disabled="chat.loading || !input.trim() || !aiAvailable">Send</button>
+        <button type="submit" :disabled="chat.loading || !input.trim() || !aiAvailable">{{ t('chat.send') }}</button>
       </form>
     </div>
   </div>

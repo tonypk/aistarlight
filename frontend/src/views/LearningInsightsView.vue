@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { correctionsApi } from '@/api/corrections'
 import type { CorrectionRule, CorrectionStats } from '@/types/correction'
+
+const { t } = useI18n()
 
 const stats = ref<{ total_corrections: number; total_rules: number; active_rules: number; correction_stats: any[] } | null>(null)
 const correctionStats = ref<CorrectionStats | null>(null)
@@ -23,7 +26,7 @@ onMounted(async () => {
     correctionStats.value = corrStatsRes.data.data
     rules.value = rulesRes.data.data || []
   } catch {
-    error.value = 'Failed to load learning data'
+    error.value = t('learning.loadFailed')
   } finally {
     loading.value = false
   }
@@ -43,7 +46,7 @@ async function handleAnalyze() {
     stats.value = statsRes.data.data
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } }
-    error.value = err.response?.data?.error || 'Analysis failed'
+    error.value = err.response?.data?.error || t('learning.analysisFailed')
   } finally {
     analyzing.value = false
   }
@@ -54,7 +57,7 @@ async function toggleRule(rule: CorrectionRule) {
     await correctionsApi.updateRule(rule.id, { is_active: !rule.is_active })
     rule.is_active = !rule.is_active
   } catch {
-    error.value = 'Failed to update rule'
+    error.value = t('learning.updateFailed')
   }
 }
 
@@ -68,43 +71,43 @@ function confidenceColor(confidence: number): string {
 <template>
   <div class="learning-view">
     <div class="header-row">
-      <h2>Learning Insights</h2>
+      <h2>{{ t('learning.title') }}</h2>
       <button class="analyze-btn" @click="handleAnalyze" :disabled="analyzing">
-        {{ analyzing ? 'Analyzing...' : 'Run Pattern Analysis' }}
+        {{ analyzing ? t('learning.analyzing') : t('learning.runAnalysis') }}
       </button>
     </div>
 
     <p v-if="error" class="error">{{ error }}</p>
 
-    <div v-if="loading" class="loading">Loading learning data...</div>
+    <div v-if="loading" class="loading">{{ t('learning.loading') }}</div>
 
     <template v-if="!loading && stats">
       <!-- Stats Cards -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-value">{{ stats.total_corrections }}</div>
-          <div class="stat-label">Total Corrections</div>
+          <div class="stat-label">{{ t('learning.totalCorrections') }}</div>
         </div>
         <div class="stat-card">
           <div class="stat-value">{{ stats.total_rules }}</div>
-          <div class="stat-label">Learned Rules</div>
+          <div class="stat-label">{{ t('learning.learnedRules') }}</div>
         </div>
         <div class="stat-card active">
           <div class="stat-value">{{ stats.active_rules }}</div>
-          <div class="stat-label">Active Rules</div>
+          <div class="stat-label">{{ t('learning.activeRules') }}</div>
         </div>
       </div>
 
       <!-- Correction Frequency -->
       <div class="card" v-if="correctionStats && correctionStats.by_field.length">
-        <h3>Top Correction Patterns</h3>
+        <h3>{{ t('learning.topPatterns') }}</h3>
         <table>
           <thead>
             <tr>
-              <th>Field</th>
-              <th>Corrected To</th>
-              <th>Entity Type</th>
-              <th>Count</th>
+              <th>{{ t('learning.thField') }}</th>
+              <th>{{ t('learning.thCorrectedTo') }}</th>
+              <th>{{ t('learning.thEntityType') }}</th>
+              <th>{{ t('learning.thCount') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -120,9 +123,9 @@ function confidenceColor(confidence: number): string {
 
       <!-- Learned Rules -->
       <div class="card">
-        <h3>Learned Rules</h3>
+        <h3>{{ t('learning.learnedRulesSection') }}</h3>
         <div v-if="rules.length === 0" class="empty">
-          No rules learned yet. Make at least 3 corrections of the same pattern, then run analysis.
+          {{ t('learning.noRules') }}
         </div>
         <div v-for="rule in rules" :key="rule.id" class="rule-card" :class="{ inactive: !rule.is_active }">
           <div class="rule-header">
@@ -131,18 +134,18 @@ function confidenceColor(confidence: number): string {
               {{ (rule.confidence * 100).toFixed(0) }}%
             </span>
             <button class="toggle-btn" @click="toggleRule(rule)">
-              {{ rule.is_active ? 'Deactivate' : 'Activate' }}
+              {{ rule.is_active ? t('learning.deactivate') : t('learning.activate') }}
             </button>
           </div>
           <div class="rule-body">
             <div class="rule-criteria">
-              Match: <code>{{ JSON.stringify(rule.match_criteria) }}</code>
+              {{ t('learning.matchLabel') }} <code>{{ JSON.stringify(rule.match_criteria) }}</code>
             </div>
             <div class="rule-action">
-              Set <strong>{{ rule.correction_field }}</strong> = <strong>{{ rule.correction_value }}</strong>
+              {{ t('learning.setLabel') }} <strong>{{ rule.correction_field }}</strong> = <strong>{{ rule.correction_value }}</strong>
             </div>
             <div class="rule-meta">
-              Based on {{ rule.source_correction_count }} corrections
+              {{ t('learning.basedOn', { count: rule.source_correction_count }) }}
             </div>
           </div>
         </div>
@@ -150,7 +153,7 @@ function confidenceColor(confidence: number): string {
 
       <!-- Analysis Candidates (if just analyzed) -->
       <div class="card" v-if="candidates.length > 0">
-        <h3>New Candidate Rules (from latest analysis)</h3>
+        <h3>{{ t('learning.candidateTitle') }}</h3>
         <div v-for="(cand, idx) in candidates" :key="idx" class="candidate-card">
           <div class="rule-header">
             <span class="rule-type">{{ cand.rule_type }}</span>
@@ -160,10 +163,10 @@ function confidenceColor(confidence: number): string {
           </div>
           <div class="rule-body">
             <div class="rule-action">
-              Set <strong>{{ cand.correction_field }}</strong> = <strong>{{ cand.correction_value }}</strong>
+              {{ t('learning.setLabel') }} <strong>{{ cand.correction_field }}</strong> = <strong>{{ cand.correction_value }}</strong>
             </div>
             <div class="rule-meta">
-              {{ cand.source_correction_count }} matching corrections
+              {{ t('learning.matchingCorrections', { count: cand.source_correction_count }) }}
             </div>
           </div>
         </div>

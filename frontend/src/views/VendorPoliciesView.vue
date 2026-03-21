@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useVendorPolicyStore } from '../stores/vendorPolicies'
 import type { VendorPolicy } from '../api/vendorPolicies'
+
+const { t } = useI18n()
 
 const store = useVendorPolicyStore()
 const showForm = ref(false)
@@ -44,16 +47,16 @@ async function handleSubmit() {
     showForm.value = false
     editingPolicy.value = null
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Update failed'
+    error.value = e?.response?.data?.error ?? t('vendorPolicies.updateFailed')
   }
 }
 
 async function handleDelete(policy: VendorPolicy) {
-  if (!confirm(`Delete vendor policy for "${policy.vendor_normalized}"?`)) return
+  if (!confirm(t('vendorPolicies.deleteConfirm', { vendor: policy.vendor_normalized }))) return
   try {
     await store.deletePolicy(policy.id)
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Delete failed'
+    error.value = e?.response?.data?.error ?? t('vendorPolicies.deleteFailed')
   }
 }
 
@@ -61,7 +64,7 @@ async function handlePromote(policy: VendorPolicy) {
   try {
     await store.promoteRule(policy.id)
   } catch (e: any) {
-    error.value = e?.response?.data?.error ?? 'Promote failed'
+    error.value = e?.response?.data?.error ?? t('vendorPolicies.promoteFailed')
   }
 }
 
@@ -80,8 +83,8 @@ function confidenceLabel(score: number): string {
   <div class="vendor-policies-view">
     <div class="view-header">
       <div>
-        <h2>Vendor Policies</h2>
-        <p class="subtitle">AI-learned vendor posting defaults. These are automatically built from receipt confirmations and corrections.</p>
+        <h2>{{ t('vendorPolicies.title') }}</h2>
+        <p class="subtitle">{{ t('vendorPolicies.subtitle') }}</p>
       </div>
     </div>
 
@@ -89,8 +92,8 @@ function confidenceLabel(score: number): string {
 
     <!-- Rule Suggestions -->
     <div v-if="store.suggestions.length > 0" class="suggestions-section">
-      <h3>Rule Suggestions</h3>
-      <p class="section-desc">These vendors have consistent correction patterns that could be promoted to defaults.</p>
+      <h3>{{ t('vendorPolicies.ruleSuggestions') }}</h3>
+      <p class="section-desc">{{ t('vendorPolicies.suggestionsDesc') }}</p>
       <div class="suggestion-cards">
         <div v-for="s in store.suggestions" :key="s.vendor_normalized" class="suggestion-card">
           <div class="suggestion-info">
@@ -98,7 +101,7 @@ function confidenceLabel(score: number): string {
             <span class="suggestion-detail">{{ s.message }}</span>
           </div>
           <div class="suggestion-stats">
-            <span class="stat">{{ s.correction_count }} corrections</span>
+            <span class="stat">{{ t('vendorPolicies.corrections', { count: s.correction_count }) }}</span>
           </div>
         </div>
       </div>
@@ -107,53 +110,53 @@ function confidenceLabel(score: number): string {
     <!-- Edit Modal -->
     <div v-if="showForm" class="modal-overlay" @click.self="showForm = false">
       <div class="modal">
-        <h3>Edit Vendor Defaults: {{ editingPolicy?.vendor_normalized }}</h3>
+        <h3>{{ t('vendorPolicies.editDefaults', { vendor: editingPolicy?.vendor_normalized }) }}</h3>
         <form @submit.prevent="handleSubmit">
           <div class="form-group">
-            <label>Category</label>
-            <input v-model="formCategory" placeholder="e.g. Transport, Office Supplies..." />
+            <label>{{ t('vendorPolicies.category') }}</label>
+            <input v-model="formCategory" :placeholder="t('vendorPolicies.categoryPlaceholder')" />
           </div>
           <div class="form-group">
-            <label>Account Code</label>
-            <input v-model="formAccountCode" placeholder="e.g. 6200-Transportation" />
+            <label>{{ t('vendorPolicies.accountCode') }}</label>
+            <input v-model="formAccountCode" :placeholder="t('vendorPolicies.accountCodePlaceholder')" />
           </div>
           <div class="form-group">
-            <label>Tax Code</label>
-            <input v-model="formTaxCode" placeholder="e.g. VAT, NON-GST, EXEMPT" />
+            <label>{{ t('vendorPolicies.taxCode') }}</label>
+            <input v-model="formTaxCode" :placeholder="t('vendorPolicies.taxCodePlaceholder')" />
           </div>
           <div class="form-group">
-            <label>Department</label>
-            <input v-model="formDepartment" placeholder="e.g. Operations" />
+            <label>{{ t('vendorPolicies.department') }}</label>
+            <input v-model="formDepartment" :placeholder="t('vendorPolicies.departmentPlaceholder')" />
           </div>
           <div class="form-group">
-            <label>Project</label>
-            <input v-model="formProject" placeholder="e.g. Project Alpha" />
+            <label>{{ t('vendorPolicies.project') }}</label>
+            <input v-model="formProject" :placeholder="t('vendorPolicies.projectPlaceholder')" />
           </div>
           <div class="form-actions">
-            <button type="button" class="btn" @click="showForm = false">Cancel</button>
-            <button type="submit" class="btn primary">Save</button>
+            <button type="button" class="btn" @click="showForm = false">{{ t('vendorPolicies.cancel') }}</button>
+            <button type="submit" class="btn primary">{{ t('vendorPolicies.save') }}</button>
           </div>
         </form>
       </div>
     </div>
 
-    <div v-if="store.loading" class="loading-msg">Loading vendor policies...</div>
+    <div v-if="store.loading" class="loading-msg">{{ t('vendorPolicies.loading') }}</div>
     <div v-else-if="store.policies.length === 0" class="empty">
-      No vendor policies yet. They will appear as the bot processes receipts and learns from your confirmations.
+      {{ t('vendorPolicies.empty') }}
     </div>
 
     <div v-else class="table-container">
       <table>
         <thead>
           <tr>
-            <th>Vendor</th>
-            <th>Aliases</th>
-            <th>Category</th>
-            <th>Account</th>
-            <th>Tax Code</th>
-            <th class="text-center">Used</th>
-            <th class="text-center">Confidence</th>
-            <th>Actions</th>
+            <th>{{ t('vendorPolicies.thVendor') }}</th>
+            <th>{{ t('vendorPolicies.thAliases') }}</th>
+            <th>{{ t('vendorPolicies.thCategory') }}</th>
+            <th>{{ t('vendorPolicies.thAccount') }}</th>
+            <th>{{ t('vendorPolicies.thTaxCode') }}</th>
+            <th class="text-center">{{ t('vendorPolicies.thUsed') }}</th>
+            <th class="text-center">{{ t('vendorPolicies.thConfidence') }}</th>
+            <th>{{ t('vendorPolicies.thActions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -174,9 +177,9 @@ function confidenceLabel(score: number): string {
             </td>
             <td>
               <div class="action-btns">
-                <button class="btn-sm" @click="openEdit(p)">Edit</button>
-                <button v-if="p.confidence_score < 0.7 && p.correction_count >= 5" class="btn-sm promote" @click="handlePromote(p)">Promote</button>
-                <button class="btn-sm danger" @click="handleDelete(p)">Delete</button>
+                <button class="btn-sm" @click="openEdit(p)">{{ t('vendorPolicies.edit') }}</button>
+                <button v-if="p.confidence_score < 0.7 && p.correction_count >= 5" class="btn-sm promote" @click="handlePromote(p)">{{ t('vendorPolicies.promote') }}</button>
+                <button class="btn-sm danger" @click="handleDelete(p)">{{ t('vendorPolicies.delete') }}</button>
               </div>
             </td>
           </tr>

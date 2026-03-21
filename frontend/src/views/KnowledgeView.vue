@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { knowledgeApi } from '../api/knowledge'
+
+const { t } = useI18n()
 
 interface KnowledgeEntry {
   id: string
@@ -33,7 +36,7 @@ onMounted(async () => {
     entries.value = entriesRes.data.data
     stats.value = statsRes.data.data
   } catch {
-    error.value = 'Failed to load knowledge base.'
+    error.value = t('knowledge.loadFailed')
   } finally {
     loading.value = false
   }
@@ -57,22 +60,22 @@ function formatDate(iso: string) {
 
 <template>
   <div class="knowledge-view">
-    <h2>Knowledge Base</h2>
-    <p class="desc">Philippine tax regulations used by the AI assistant</p>
+    <h2>{{ t('knowledge.title') }}</h2>
+    <p class="desc">{{ t('knowledge.desc') }}</p>
 
     <!-- Stats cards -->
     <div v-if="stats" class="stats-row">
       <div class="stat-card">
         <div class="stat-value">{{ stats.total }}</div>
-        <div class="stat-label">Total Entries</div>
+        <div class="stat-label">{{ t('knowledge.totalEntries') }}</div>
       </div>
       <div class="stat-card">
         <div class="stat-value">{{ stats.with_embeddings }}</div>
-        <div class="stat-label">With Embeddings</div>
+        <div class="stat-label">{{ t('knowledge.withEmbeddings') }}</div>
       </div>
       <div class="stat-card">
         <div class="stat-value">{{ Object.keys(stats.categories).length }}</div>
-        <div class="stat-label">Categories</div>
+        <div class="stat-label">{{ t('knowledge.categories') }}</div>
       </div>
     </div>
 
@@ -82,7 +85,7 @@ function formatDate(iso: string) {
         :class="{ active: activeCategory === null }"
         @click="filterByCategory(null)"
       >
-        All ({{ stats.total }})
+        {{ t('knowledge.allFilter', { count: stats.total }) }}
       </button>
       <button
         v-for="(count, cat) in stats.categories"
@@ -98,7 +101,7 @@ function formatDate(iso: string) {
     <div v-if="error" class="error-msg">{{ error }}</div>
 
     <!-- Loading -->
-    <div v-if="loading" class="loading">Loading...</div>
+    <div v-if="loading" class="loading">{{ t('knowledge.loading') }}</div>
 
     <!-- Entries list -->
     <div v-else class="entries">
@@ -106,8 +109,8 @@ function formatDate(iso: string) {
         <div class="entry-header">
           <span class="category-badge">{{ entry.category }}</span>
           <span class="source">{{ entry.source }}</span>
-          <span v-if="entry.has_embedding" class="emb-badge">vector</span>
-          <span v-else class="emb-badge no-emb">no vector</span>
+          <span v-if="entry.has_embedding" class="emb-badge">{{ t('knowledge.vector') }}</span>
+          <span v-else class="emb-badge no-emb">{{ t('knowledge.noVector') }}</span>
         </div>
         <p class="entry-content">{{ entry.content }}</p>
         <div class="entry-footer">
@@ -116,7 +119,7 @@ function formatDate(iso: string) {
       </div>
 
       <div v-if="!entries.length" class="empty">
-        No knowledge entries found.
+        {{ t('knowledge.empty') }}
       </div>
     </div>
   </div>

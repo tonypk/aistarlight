@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { client } from '../api/client'
 import { useAuthStore } from '../stores/auth'
 import { getReportTypes } from '../config/targetFieldsByReportType'
+
+const { t } = useI18n()
 
 interface ComparisonRow {
   field: string
@@ -47,11 +50,11 @@ const periods = recentPeriods()
 
 async function runComparison() {
   if (!periodA.value || !periodB.value) {
-    error.value = 'Please select both periods'
+    error.value = t('periodCompare.selectBothPeriods')
     return
   }
   if (periodA.value === periodB.value) {
-    error.value = 'Please select two different periods'
+    error.value = t('periodCompare.selectDifferentPeriods')
     return
   }
   error.value = ''
@@ -67,7 +70,7 @@ async function runComparison() {
     })
     result.value = res.data.data
   } catch {
-    error.value = 'Failed to load comparison data'
+    error.value = t('periodCompare.loadFailed')
   } finally {
     loading.value = false
   }
@@ -100,32 +103,32 @@ function fieldLabel(field: string): string {
 
 <template>
   <div class="compare-view">
-    <h2>Period Comparison</h2>
-    <p class="subtitle">Compare report data between two filing periods to identify trends and changes.</p>
+    <h2>{{ t('periodCompare.title') }}</h2>
+    <p class="subtitle">{{ t('periodCompare.subtitle') }}</p>
 
     <div class="controls">
       <div class="control-group">
-        <label>Report Type</label>
+        <label>{{ t('periodCompare.reportType') }}</label>
         <select v-model="reportType">
           <option v-for="rt in reportTypes" :key="rt.value" :value="rt.value">{{ rt.label }}</option>
         </select>
       </div>
       <div class="control-group">
-        <label>Period A (Base)</label>
+        <label>{{ t('periodCompare.periodALabel') }}</label>
         <select v-model="periodA">
-          <option value="" disabled>Select period...</option>
+          <option value="" disabled>{{ t('periodCompare.selectPeriod') }}</option>
           <option v-for="p in periods" :key="'a-' + p" :value="p">{{ p }}</option>
         </select>
       </div>
       <div class="control-group">
-        <label>Period B (Compare)</label>
+        <label>{{ t('periodCompare.periodBLabel') }}</label>
         <select v-model="periodB">
-          <option value="" disabled>Select period...</option>
+          <option value="" disabled>{{ t('periodCompare.selectPeriod') }}</option>
           <option v-for="p in periods" :key="'b-' + p" :value="p">{{ p }}</option>
         </select>
       </div>
       <button class="compare-btn" :disabled="loading" @click="runComparison">
-        {{ loading ? 'Comparing...' : 'Compare' }}
+        {{ loading ? t('periodCompare.comparing') : t('periodCompare.compare') }}
       </button>
     </div>
 
@@ -138,26 +141,26 @@ function fieldLabel(field: string): string {
             <strong>{{ result.report_type.replace('_', ' ') }}</strong>
           </span>
           <span class="meta-item" :class="{ missing: !result.has_report_a }">
-            Period A: {{ result.period_a }} {{ result.has_report_a ? '' : '(no data)' }}
+            {{ t('periodCompare.periodACol', { period: result.period_a }) }} {{ result.has_report_a ? '' : t('periodCompare.noData') }}
           </span>
           <span class="meta-item" :class="{ missing: !result.has_report_b }">
-            Period B: {{ result.period_b }} {{ result.has_report_b ? '' : '(no data)' }}
+            {{ t('periodCompare.periodBCol', { period: result.period_b }) }} {{ result.has_report_b ? '' : t('periodCompare.noData') }}
           </span>
         </div>
       </div>
 
       <div v-if="result.comparison.length === 0" class="empty">
-        No numeric fields to compare between these periods.
+        {{ t('periodCompare.empty') }}
       </div>
 
       <table v-else class="compare-table">
         <thead>
           <tr>
-            <th>Field</th>
+            <th>{{ t('periodCompare.thField') }}</th>
             <th class="num">{{ result.period_a }}</th>
             <th class="num">{{ result.period_b }}</th>
-            <th class="num">Difference</th>
-            <th class="num">% Change</th>
+            <th class="num">{{ t('periodCompare.thDifference') }}</th>
+            <th class="num">{{ t('periodCompare.thPctChange') }}</th>
           </tr>
         </thead>
         <tbody>
