@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, h, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import {
   NButton, NInput, NCard, NSpace, NDataTable, NTag,
   NPopconfirm, useMessage,
@@ -11,7 +10,6 @@ import type { ExpenseReport, ExpenseItem } from '../../types/expense'
 import ExpenseItemForm from '../../components/expenses/ExpenseItemForm.vue'
 import ReceiptUploader from '../../components/expenses/ReceiptUploader.vue'
 
-const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, h, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import {
   NButton, NCard, NSpace, NTag, NDataTable, NDescriptions,
   NDescriptionsItem, NPopconfirm, NTimeline, NTimelineItem,
@@ -11,7 +10,6 @@ import { expenseReportApi } from '../../api/expenses'
 import type { ExpenseReport, ExpenseItem, ExpenseAudit } from '../../types/expense'
 import RiskBadge from '../../components/expenses/RiskBadge.vue'
 
-const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()

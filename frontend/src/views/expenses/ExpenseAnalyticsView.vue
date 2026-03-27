@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
 import {
-  NCard, NGrid, NGi, NDataTable, NDatePicker, NStatistic, NSpace, NEmpty,
+  NCard, NGrid, NGi, NDataTable, NDatePicker, NStatistic, NEmpty,
 } from 'naive-ui'
 import { expenseAnalyticsApi } from '../../api/expenses'
 import type { ExpenseSpendSummary, SpendByCategory, SpendByDepartment } from '../../types/expense'
-
-const { t } = useI18n()
 
 const loading = ref(false)
 

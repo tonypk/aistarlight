@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, h } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import {
-  NButton, NDataTable, NSpace, NTag, NModal, NInput, NCard, NEmpty,
+  NButton, NDataTable, NSpace, NTag, NModal, NInput, NEmpty,
 } from 'naive-ui'
 import { expenseApprovalApi, expenseReportApi } from '../../api/expenses'
 import type { ExpenseReport } from '../../types/expense'
 
-const { t } = useI18n()
 const router = useRouter()
 
 const reports = ref<ExpenseReport[]>([])

@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, h } from 'vue'
-import { useI18n } from 'vue-i18n'
 import {
-  NButton, NDataTable, NSpace, NModal, NInput, NEmpty,
+  NButton, NDataTable, NModal, NInput, NEmpty,
 } from 'naive-ui'
 import { expenseFinanceApi, expenseReportApi } from '../../api/expenses'
 import type { ExpenseReport } from '../../types/expense'
-
-const { t } = useI18n()
 
 const reports = ref<ExpenseReport[]>([])
 const total = ref(0)

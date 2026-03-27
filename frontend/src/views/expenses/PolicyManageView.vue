@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, h, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import {
   NButton, NDataTable, NSpace, NTag, NModal, NForm, NFormItem,
   NInput, NInputNumber, NSelect, NSwitch, NPopconfirm, NEmpty,
 } from 'naive-ui'
 import { expensePolicyApi } from '../../api/expenses'
 import type { ExpensePolicy } from '../../types/expense'
-
-const { t } = useI18n()
 
 const policies = ref<ExpensePolicy[]>([])
 const loading = ref(false)
