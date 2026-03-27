@@ -18,6 +18,7 @@ import {
   ScaleOutline, SettingsOutline, PersonOutline, LogOutOutline,
   SunnyOutline, MoonOutline, NotificationsOutline, PeopleOutline,
   HelpCircleOutline, GridOutline, BulbOutline, CalculatorOutline,
+  CashOutline, StatsChartOutline,
 } from '@vicons/ionicons5'
 import { useAuthStore } from '../../stores/auth'
 import { useUIStore } from '../../stores/ui'
@@ -149,6 +150,18 @@ const menuOptions = computed<MenuOption[]>(() => {
   ])
   if (recon.length) {
     groups.push({ type: 'group', label: t('nav.groupReconciliation'), key: 'g-recon', children: recon })
+  }
+
+  // Expenses
+  const expenses = filterNull([
+    mi(t('nav.myExpenses'), 'expenses', WalletOutline),
+    mi(t('nav.expenseApprovals'), 'expense-approvals', CheckmarkCircleOutline),
+    mi(t('nav.financeQueue'), 'expense-finance', CashOutline, 'accountant'),
+    mi(t('nav.expensePolicies'), 'expense-policies', ShieldCheckmarkOutline, 'company_admin'),
+    mi(t('nav.expenseAnalytics'), 'expense-analytics', StatsChartOutline, 'accountant'),
+  ])
+  if (expenses.length) {
+    groups.push({ type: 'group', label: t('nav.expenses'), key: 'g-expenses', children: expenses })
   }
 
   // More (agents + extras)

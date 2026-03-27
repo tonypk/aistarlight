@@ -81,6 +81,15 @@ export default {
     organization: '组织',
     memory: '记忆',
     userGuide: '使用指南',
+    // 费用报销
+    expenses: '费用报销',
+    groupExpenses: '费用报销',
+    myExpenses: '我的报销',
+    expenseApprovals: '待审批',
+    financeQueue: '付款队列',
+    expensePolicies: '报销政策',
+    expenseApprovers: '审批人',
+    expenseAnalytics: '费用分析',
   },
   product: {
     hr: '人事',

@@ -81,6 +81,15 @@ export default {
     organization: 'Organization',
     memory: 'Memory',
     userGuide: 'User Guide',
+    // Expenses
+    expenses: 'Expenses',
+    groupExpenses: 'Expenses',
+    myExpenses: 'My Expenses',
+    expenseApprovals: 'Approvals',
+    financeQueue: 'Finance Queue',
+    expensePolicies: 'Policies',
+    expenseApprovers: 'Approvers',
+    expenseAnalytics: 'Analytics',
   },
   product: {
     hr: 'HR',
