@@ -45,11 +45,11 @@ jobs:
             set -euo pipefail
 
             # Pull latest frontend code
-            cd /home/anna/aistarlight
-            sudo -u anna git pull origin main
+            cd /home/tonypk25/aistarlight
+            git pull origin main
 
             # Rebuild and restart frontend container
-            cd /home/anna/aistarlight-go
+            cd /home/tonypk25/aistarlight-go
             sudo docker compose -f docker-compose.prod.yml build --no-cache frontend
             sudo docker compose -f docker-compose.prod.yml up -d frontend
 
