@@ -1,37 +1,59 @@
-import vue from '@vitejs/plugin-vue'
-import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
-import { VitePWA } from 'vite-plugin-pwa'
+import vue from "@vitejs/plugin-vue";
+import { fileURLToPath, URL } from "node:url";
+import { defineConfig } from "vite";
+import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      registerType: "autoUpdate",
+      includeAssets: ["favicon.svg"],
       manifest: {
-        name: 'AIStarlight - Tax Filing Assistant',
-        short_name: 'AIStarlight',
-        description: 'AI-powered Philippine tax & accounting platform',
-        theme_color: '#4f46e5',
-        background_color: '#f5f7fa',
-        display: 'standalone',
-        orientation: 'any',
-        start_url: '/',
+        name: "AIStarlight - Tax Filing Assistant",
+        short_name: "AIStarlight",
+        description: "AI-powered Philippine tax & accounting platform",
+        theme_color: "#4f46e5",
+        background_color: "#f5f7fa",
+        display: "standalone",
+        orientation: "any",
+        start_url: "/",
         icons: [
-          { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
+          { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
+          {
+            src: "/pwa-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        globPatterns: [
+          "index.html",
+          "registerSW.js",
+          "favicon.svg",
+          "pwa-*.png",
+          "manifest.webmanifest",
+        ],
+        navigateFallback: "index.html",
+        navigateFallbackDenylist: [/^\/api\//],
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\/api\/v1\/.*/i,
-            handler: 'NetworkFirst',
+            urlPattern: /\/assets\/.*\.(?:js|css)$/i,
+            handler: "StaleWhileRevalidate",
             options: {
-              cacheName: 'api-cache',
+              cacheName: "assets-cache",
+              expiration: { maxEntries: 100, maxAgeSeconds: 86400 },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/.*\/api\/v1\/.*/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-cache",
               expiration: { maxEntries: 50, maxAgeSeconds: 300 },
               networkTimeoutSeconds: 10,
             },
@@ -42,16 +64,16 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
   server: {
     port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
+      "/api": {
+        target: "http://localhost:8000",
         changeOrigin: true,
       },
     },
   },
-})
+});
