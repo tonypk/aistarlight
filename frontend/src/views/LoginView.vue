@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { NForm, NFormItem, NInput, NButton, useMessage } from 'naive-ui'
+import { NForm, NFormItem, NInput, NButton, NAlert, useMessage } from 'naive-ui'
 import type { FormRules, FormInst } from 'naive-ui'
 import { useAuthStore } from '../stores/auth'
+import { authApi } from '../api/auth'
 
 const router = useRouter()
+const route = useRoute()
 const { t } = useI18n()
 const message = useMessage()
 const auth = useAuthStore()
@@ -15,6 +17,20 @@ const formRef = ref<FormInst | null>(null)
 const form = ref({ email: '', password: '' })
 const selectedJurisdiction = ref('PH')
 const loading = ref(false)
+const showResendVerification = ref(false)
+const resendEmail = ref('')
+const resendLoading = ref(false)
+const resendSent = ref(false)
+
+onMounted(() => {
+  const saved = localStorage.getItem('halaos_jurisdiction')
+  if (saved) selectedJurisdiction.value = saved
+})
+
+function selectJurisdiction(code: string) {
+  selectedJurisdiction.value = code
+  localStorage.setItem('halaos_jurisdiction', code)
+}
 
 const jurisdictions = [
   { code: 'PH', name: 'Philippines' },
@@ -31,6 +47,18 @@ const rules = computed<FormRules>(() => ({
   ],
 }))
 
+async function handleResendVerification() {
+  resendLoading.value = true
+  try {
+    await authApi.resendVerification(resendEmail.value)
+    resendSent.value = true
+  } catch {
+    message.error('Failed to resend verification email')
+  } finally {
+    resendLoading.value = false
+  }
+}
+
 async function handleLogin() {
   if (!formRef.value) return
   try {
@@ -42,12 +70,23 @@ async function handleLogin() {
     return
   }
   loading.value = true
+  showResendVerification.value = false
+  resendSent.value = false
   try {
     await auth.login({ email: form.value.email, password: form.value.password })
-    router.push('/')
+    const redirect = (route.query.redirect as string) || '/'
+    router.push(redirect)
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { error?: string } } }
-    message.error(err.response?.data?.error || t('auth.loginFailed'))
+    const err = e as { response?: { data?: { error?: { code?: string; message?: string } | string } } }
+    const errorData = err.response?.data?.error
+    const errorCode = typeof errorData === 'object' ? errorData?.code : undefined
+    const errorMsg = typeof errorData === 'object' ? errorData?.message : (errorData || t('auth.loginFailed'))
+    if (errorCode === 'email_not_verified') {
+      showResendVerification.value = true
+      resendEmail.value = form.value.email
+    } else {
+      message.error(errorMsg || t('auth.loginFailed'))
+    }
   } finally {
     loading.value = false
   }
@@ -83,7 +122,7 @@ async function handleLogin() {
             class="jurisdiction-btn"
             :class="{ active: selectedJurisdiction === j.code }"
             :data-testid="`jurisdiction-${j.code.toLowerCase()}`"
-            @click="selectedJurisdiction = j.code"
+            @click="selectJurisdiction(j.code)"
           >
             <span class="flag">{{ j.code }}</span>
             <span class="country-name">{{ j.name }}</span>
@@ -126,6 +165,32 @@ async function handleLogin() {
           {{ t('auth.login') }}
         </NButton>
       </NForm>
+
+      <!-- Resend verification banner -->
+      <NAlert
+        v-if="showResendVerification && !resendSent"
+        type="warning"
+        title="Email not verified"
+        style="margin-top: 16px;"
+      >
+        <p style="margin: 0 0 12px;">Your email hasn't been verified yet. Please check your inbox or resend the verification email.</p>
+        <NButton
+          size="small"
+          type="warning"
+          :loading="resendLoading"
+          @click="handleResendVerification"
+        >
+          Resend Verification Email
+        </NButton>
+      </NAlert>
+      <NAlert
+        v-if="resendSent"
+        type="success"
+        title="Verification email sent!"
+        style="margin-top: 16px;"
+      >
+        Check your inbox for the verification link.
+      </NAlert>
 
       <div class="auth-footer">
         <span>{{ t('auth.noAccount') }}</span>
